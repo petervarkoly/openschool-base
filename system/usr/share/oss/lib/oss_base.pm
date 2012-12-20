@@ -3890,7 +3890,7 @@ sub add_room($$$)
     }
     $this->{LDAP}->modify( $dn , add => {
                                          serviceAccesControl => [ 'DEFAULT all:0 proxy:1 printing:1 mailing:1 samba:1',
-                                                                  '06:00:1111111 DEFAULT'
+                                                                  '06:00:1111111:1 DEFAULT'
                                                                 ]
                                         });
     $this->{LDAP}->add( dn => "resourceName=$desc,ou=ResourceObjects,".$this->{SCHOOL_BASE},
@@ -4192,21 +4192,27 @@ EXAMPLE
                                     'samba'    => 1,
                                     'proxy'    => 1
                                   },
-                    '06:00' => {
+                    '06:00:1111111:1' => {
                                      'DEFAULT' => 1
                                },
-		    '12:00' => {
+		    '12:00:0111110:0' => {
                                     'all'      => 1,
                                     'printing' => 1,
                                     'mailing'  => 1,
                                     'samba'    => 1,
                                     'proxy'    => 1
                                   },
-                    '13:00' => {
+                    '13:00:0111110:0' => {
                                      'DEFAULT' => 1
                                },
 		};
     $oss->set_room_access_list($dn,$acls);
+
+    The keys of the hash are the time definitions.
+    This contains 3 informations:
+    Time hour:minute
+    Days Sun-San
+    Holiday If this is set true the action will be executed during the holidays too.
 =cut
 
 sub set_room_access_list($$)

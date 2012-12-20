@@ -42,6 +42,7 @@ use vars qw(
 	@EXPORT
 	$VERSION
 	@LANGUAGES
+	@DAY_FIND_STRING
 	);
 
 
@@ -49,6 +50,7 @@ use vars qw(
 
 @EXPORT = qw(
 	@LANGUAGES
+	@DAY_FIND_STRING
 	&check_mac
 	&cmd_pipe
 	&contains
@@ -81,9 +83,12 @@ use vars qw(
 	&check_domain_name_for_proxy
 	&date_format_convert
 );
-$VERSION = '0.01';
+$VERSION = '3.4.0';
 # Debug only
 #use Data::Dumper;
+# Exported Variables
+my @LANGUAGES       = ( 'DE', 'CZ', 'EN', 'ES', 'FR', 'HU', 'IT', 'RO', 'SL' );
+my @DAY_FIND_STRING = ( '1......','.1.....','..1....','...1...','....1..','.....1.','......1' );
 
 # Privat Variable
 # SERVER
@@ -100,7 +105,6 @@ my $ssl_cert_file = '/etc/ssl/servercerts/schoolservercert.pem';
 my $ssl_ca_file = '/etc/ssl/certs/YaST-CA.pem';
 my $ssl_use_cert = 1; 
 my $ssl_verify_mode = '0x01';
-my @LANGUAGES = ( 'DE', 'CZ', 'EN', 'ES', 'FR', 'HU', 'IT', 'RO', 'SL' );
 #######################################################################################
 # End header                                                                          #
 #######################################################################################

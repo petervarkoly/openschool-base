@@ -12,9 +12,14 @@ $| = 1; # do not buffer stdout
 use strict;
 use Net::LDAP;
 use oss_base;
+use oss_utils;
 
 my $time = shift || `date  +%H:%M`;
 chomp $time;
+my $otime = $time;
+my $d = `date  +%w`;
+chomp $d;
+
 
 my $oss = oss_base->new || exit;
 
@@ -23,7 +28,10 @@ my $result = $oss->{LDAP}->search(
 		filter => "serviceAccesControl=$time*",
 		attr   => ['serviceAccesControl','dhcpRange','dhcpNetMask','description'] 
 	);
-
+if( $time ne 'DEFAULT' )
+{
+	$time = $time.":".$DAY_FIND_STRING[$d];
+}
 foreach my $entry ($result->all_entries) {
 	my $network= $entry->get_value('dhcpRange').'/'.$entry->get_value('dhcpNetMask');
 	my $desc   = $entry->get_value('description');
@@ -38,10 +46,13 @@ foreach my $entry ($result->all_entries) {
 		    @SAC = @DSAC;
 		    last;
 		}
-	    } elsif ($tmp eq $time ) {
+	    }
+	    elsif ($tmp =~ /^$time/ || $tmp eq $otime )
+	    {
 		@SAC = @defaults;
 	    }
 	}
+	next if( @SAC = () );
         if($SAC[0] eq 'DEFAULT' ) {
 	   @SAC = @DSAC;
 	}
