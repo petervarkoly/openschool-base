@@ -29,6 +29,7 @@ package oss_utils;
 use strict;
 use Socket;
 use Data::Dumper;
+use XML::Simple;
 use Time::Local;
 use Digest::MD5  qw(md5_hex);
 use MIME::Base64;
@@ -42,6 +43,7 @@ use vars qw(
 	@EXPORT
 	$VERSION
 	@LANGUAGES
+	@DAY_FIND_STRING
 	);
 
 
@@ -49,6 +51,7 @@ use vars qw(
 
 @EXPORT = qw(
 	@LANGUAGES
+	@DAY_FIND_STRING
 	&check_mac
 	&cmd_pipe
 	&contains
@@ -80,10 +83,14 @@ use vars qw(
 	&xml_time
 	&check_domain_name_for_proxy
 	&date_format_convert
+	&insert_host_to_wpkghostsxml
 );
-$VERSION = '0.01';
+$VERSION = '3.4.0';
 # Debug only
 #use Data::Dumper;
+# Exported Variables
+my @LANGUAGES       = ( 'DE', 'CZ', 'EN', 'ES', 'FR', 'HU', 'IT', 'RO', 'SL' );
+my @DAY_FIND_STRING = ( '1......','.1.....','..1....','...1...','....1..','.....1.','......1' );
 
 # Privat Variable
 # SERVER
@@ -100,7 +107,6 @@ my $ssl_cert_file = '/etc/ssl/servercerts/schoolservercert.pem';
 my $ssl_ca_file = '/etc/ssl/certs/YaST-CA.pem';
 my $ssl_use_cert = 1; 
 my $ssl_verify_mode = '0x01';
-my @LANGUAGES = ( 'DE', 'CZ', 'EN', 'ES', 'FR', 'HU', 'IT', 'RO', 'SL' );
 #######################################################################################
 # End header                                                                          #
 #######################################################################################
@@ -1121,6 +1127,32 @@ sub date_format_convert
         }
 
         return $new_date;
+}
+
+=item B<$oss->insert_host_to_wpkghostsxml("PCname")>
+
+EXAMPLE :  $oss->insert_host_to_wpkghostsxml("edv-pc01");
+
+=cut
+
+sub insert_host_to_wpkghostsxml($)
+{
+	my $host_name = shift;
+	my $xml       = XML::Simple->new(KeepRoot => 1, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>');
+	my $hosts_xml = '/srv/itool/swrepository/wpkg/hosts.xml';
+	my $xmlData   = $xml->XMLin($hosts_xml);
+
+	if( !exists($xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'})){
+		if( exists($xmlData->{'hosts:wpkg'}->{host}->{'name'}) ){
+			my $pcname = $xmlData->{'hosts:wpkg'}->{host}->{'name'};
+			$xmlData->{'hosts:wpkg'}->{host}->{$pcname}->{'profile-id'} = 'all_packages';
+			delete $xmlData->{'hosts:wpkg'}->{host}->{'name'};
+			delete $xmlData->{'hosts:wpkg'}->{host}->{'profile-id'};
+		}
+		$xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'} = 'all_packages';
+		my $new_hosts_xml = $xml->XMLout($xmlData);
+		write_file( $hosts_xml, $new_hosts_xml);
+	}
 }
 
 1;
