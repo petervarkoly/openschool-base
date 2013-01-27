@@ -29,6 +29,7 @@ package oss_utils;
 use strict;
 use Socket;
 use Data::Dumper;
+use XML::Simple;
 use Time::Local;
 use Digest::MD5  qw(md5_hex);
 use MIME::Base64;
@@ -82,6 +83,7 @@ use vars qw(
 	&xml_time
 	&check_domain_name_for_proxy
 	&date_format_convert
+	&insert_host_to_wpkghostsxml
 );
 $VERSION = '3.4.0';
 # Debug only
@@ -1125,6 +1127,32 @@ sub date_format_convert
         }
 
         return $new_date;
+}
+
+=item B<$oss->insert_host_to_wpkghostsxml("PCname")>
+
+EXAMPLE :  $oss->insert_host_to_wpkghostsxml("edv-pc01");
+
+=cut
+
+sub insert_host_to_wpkghostsxml($)
+{
+	my $host_name = shift;
+	my $xml       = XML::Simple->new(KeepRoot => 1, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>');
+	my $hosts_xml = '/srv/itool/swrepository/wpkg/hosts.xml';
+	my $xmlData   = $xml->XMLin($hosts_xml);
+
+	if( !exists($xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'})){
+		if( exists($xmlData->{'hosts:wpkg'}->{host}->{'name'}) ){
+			my $pcname = $xmlData->{'hosts:wpkg'}->{host}->{'name'};
+			$xmlData->{'hosts:wpkg'}->{host}->{$pcname}->{'profile-id'} = 'all_packages';
+			delete $xmlData->{'hosts:wpkg'}->{host}->{'name'};
+			delete $xmlData->{'hosts:wpkg'}->{host}->{'profile-id'};
+		}
+		$xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'} = 'all_packages';
+		my $new_hosts_xml = $xml->XMLout($xmlData);
+		write_file( $hosts_xml, $new_hosts_xml);
+	}
 }
 
 1;

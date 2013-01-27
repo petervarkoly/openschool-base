@@ -802,6 +802,182 @@ sub get_config_value($$)
 
 #-----------------------------------------------------------------------
 
+=item B<get_config_values(DN-of-the-object, 'KEY', 'HASH|ARRAY')>
+
+Returns an configurations values of a object
+
+EXAMPLE:
+
+ my $VALUE = $oss->get_config_values( 'cn=edv-pc01,cn=Room0,cn=172.17.0.0,cn=config1,cn=schooladmin,ou=DHCP,dc=EXTIS-School,dc=de', 'HW' HASH);
+
+=cut
+
+sub get_config_values($$)
+{
+    my $this = shift;
+    my $dn   = shift;
+    my $key  = shift || '';
+    my $type = shift || '';
+    my @avalues = ();
+    my %hvalues = ();
+
+    my $mesg = $this->{LDAP}->search( base   => $dn,
+                                      scope  => 'base',
+                                      filter => '(objectclass=*)',
+                                      attrs  => [ 'configurationValue' ]
+                            );
+    if( $mesg && $mesg->count() == 1)
+    {
+	if( ($key eq 'description') )
+	{
+	    push @avalues, $mesg->entry(0)->get_value('description') if(($type eq 'ARRAY') or (!$type));
+	    push @{$hvalues{description}}, $mesg->entry(0)->get_value('description') if( $type eq 'HASH');
+
+	}
+	elsif(!$key)
+	{
+	    push @avalues, $mesg->entry(0)->get_value('description') if(($type eq 'ARRAY') or (!$type));
+	    push @{$hvalues{description}}, $mesg->entry(0)->get_value('description') if( $type eq 'HASH');
+	}
+	my @conf_values = $mesg->entry(0)->get_value('configurationValue');
+	foreach my $config (@conf_values)
+	{
+	    my ($keyn,$value) = split /=/,$config,2;
+	    if( $key and ($config =~ /^$key=/i) )
+	    {
+		push @avalues, $value if(($type eq 'ARRAY') or (!$type));
+		push @{$hvalues{$keyn}}, $value if( $type eq 'HASH');
+	    }elsif(!$key){
+		push @avalues, $value if(($type eq 'ARRAY') or (!$type));
+		push @{$hvalues{$keyn}}, $value if( $type eq 'HASH');
+	    }
+	}
+    }
+
+    return \@avalues if( scalar(@avalues) > 0 );
+    return \%hvalues if( keys %hvalues );
+    return undef;
+}
+
+#-----------------------------------------------------------------------
+
+=item B<check_config_value(DN-of-the-object, 'KEY', 'VALUE')>
+
+Checks if the config value contains a value.
+
+EXAMPLE:
+
+	if( $oss->check_config_value('cn=edv-pc01,cn=Room0,cn=172.17.0.0,cn=config1,cn=schooladmin,ou=DHCP,dc=EXTIS-School,dc=de', 'SWPackage', 'VALUE'))
+	{
+		print "You may write";
+	}
+
+=cut
+
+sub check_config_value($$$)
+{
+    my $this  = shift;
+    my $dn    = shift;
+    my $key   = shift;
+    my $value = shift;
+
+    my $mesg = $this->{LDAP}->search( base   => $dn,
+                                      scope  => 'base',
+                                      filter => '(objectclass=*)',
+                                      attrs  => [ 'configurationValue' ]
+                            );
+    if( $mesg && $mesg->count() == 1)
+    {
+	my @conf_values = $mesg->entry(0)->get_value('configurationValue');
+	foreach my $config (@conf_values)
+	{
+	    if( $config =~ /^$key=$value$/i )
+	    {
+		return 1;
+	    }
+	}
+    }
+    return 0;
+}
+
+#-----------------------------------------------------------------------
+
+=item B<delete_config_value(DN-of-the-object, 'KEY', 'VALUE')>
+
+Delete the config value.
+
+EXAMPLE:
+	$oss->delete_config_value('cn=edv-pc01,cn=Room0,cn=172.17.0.0,cn=config1,cn=schooladmin,ou=DHCP,dc=EXTIS-School,dc=de', 'SWPackage', 'VALUE'))
+
+=cut
+
+sub delete_config_value($$$)
+{
+    my $this   = shift;
+    my $dn     = shift;
+    my $key    = shift;
+    my $value  = shift;
+    my @VALUES = ();
+
+    my $mesg = $this->{LDAP}->search( base   => $dn,
+                                      scope  => 'base',
+                                      filter => '(objectclass=*)',
+                                      attrs  => [ 'configurationValue' ]
+                            );
+    if( $mesg && $mesg->count() == 1)
+    {
+        my @conf_values = $mesg->entry(0)->get_value('configurationValue');
+        foreach my $config (@conf_values)
+        {
+            next if( $config =~ /^$key=$value$/i );
+	    push @VALUES, $config;
+        }
+	$this->{LDAP}->modify( $dn, replace => { configurationvalue =>\@VALUES } );
+    }
+}
+
+#-----------------------------------------------------------------------
+
+=item B<add_config_value(DN-of-the-object, 'KEY', 'VALUE')>
+
+Add the config value to a vendor object.
+
+EXAMPLE:
+        $oss->add_config_value('cn=edv-pc01,cn=Room0,cn=172.17.0.0,cn=config1,cn=schooladmin,ou=DHCP,dc=EXTIS-School,dc=de', 'SWPackage', 'VALUE'))
+
+=cut
+
+sub add_config_value($$$)
+{
+    my $this   = shift;
+    my $dn     = shift;
+    my $key    = shift;
+    my $value  = shift;
+    my @VALUES = ();
+
+    my $mesg = $this->{LDAP}->search( base   => $dn,
+                                      scope  => 'base',
+                                      filter => '(objectclass=*)',
+                                      attrs  => [ 'configurationValue' ]
+                            );
+    if( $mesg && $mesg->count() == 1)
+    {
+	my @conf_values = $mesg->entry(0)->get_value('configurationValue');
+	foreach my $config (@conf_values)
+	{
+	    if( $config =~ /^$key=$value$/i ){
+		return 0;
+	    }
+	}
+	push @conf_values, $key."=".$value;
+	$this->{LDAP}->modify( $dn, replace => { configurationvalue =>\@conf_values } );
+	return 1;
+    }
+    return 0;
+}
+
+#-----------------------------------------------------------------------
+
 =item B<set_config_value(DN-of-the-object,'KEY','new value')>
 
 Sets a configurations value of a object
@@ -5644,6 +5820,31 @@ sub get_logged_users
 	}
 
 	return \%hash;
+}
+
+sub prodkey_allocation($$)
+{
+	my $this  = shift;
+	my $sw_dn = shift;
+	my $pcn   = shift;
+	my $obj   = $this->search_vendor_object_for_vendor( 'productkeys', $sw_dn);
+	if( defined $obj->[0] ){
+		foreach my $pk_dn ( sort @$obj ){
+			my $prodkey = $this->get_attribute($pk_dn, 'configurationKey');
+			my $number_of_pieces = $this->get_config_value($pk_dn, 'NUMBEROFPIECES');
+			my $used = $this->get_vendor_object( $sw_dn, 'productkeys', "$prodkey");
+			my $free_nop = $number_of_pieces - (scalar(@$used) - 1);
+			if( $this->check_vendor_object( $sw_dn, 'productkeys', "$prodkey", "USED=$pcn") ){
+				return 1;
+			}
+			if( $free_nop ){
+				$this->add_value_to_vendor_object( $sw_dn, 'productkeys', "$prodkey", "USED=$pcn");
+				return 1;
+			}
+		}
+	}
+
+	return 0;
 }
 
 1;
