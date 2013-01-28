@@ -242,7 +242,7 @@ sub PreSetup
    # If no ldapbase defined we set it
    if( !$globals->{LDAPBASE} )
    {
-	print STDERR "We generate the LDAPBASE";
+	print STDERR "We generate the LDAPBASE\n";
 	my @domain = split /\./, $globals->{DOMAIN};
 	foreach (@domain)
 	{
@@ -264,7 +264,7 @@ sub PreSetup
    # If no workgroup defined we set it
    if( !$globals->{WORKGROUP} )
    {
-	print STDERR "We generate the WORKGROUP";
+	print STDERR "We generate the WORKGROUP\n";
 	my @tmp = split /\./, $globals->{WORKGROUP};
 	$workgroup = $tmp[$#tmp-2];
    }
@@ -272,10 +272,10 @@ sub PreSetup
    {
 	$workgroup=$globals->{WORKGROUP};
    }
-   if( length($workgroup) > 14 )
+   if( length($workgroup) > 15 )
    {
-       print STDERR "The name of the workgroup '$workgroup' is to long, we've trunkated it to 14 chars.";
-       $workgroup = substr $workgroup,0,14;
+       print STDERR "The name of the workgroup '$workgroup' is to long, we've trunkated it to 15 chars.\n";
+       $workgroup = substr $workgroup,0,15;
    }
 
    # If netbios name is defined we use it
