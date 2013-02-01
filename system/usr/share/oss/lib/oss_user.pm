@@ -600,6 +600,20 @@ sub modify
     my $user = shift;
     my $old  = $this->get_entry($user->{dn},1);
     my $attr = $user->{dn}."\n";
+
+    my $o_sn = $old->get_value('sn');
+    my $o_givenname = $old->get_value('givenname');
+    if( ($o_sn ne $user->{sn}) or ($o_givenname ne $user->{givenname}) )
+    {
+	$this->create_cn($user);
+	my $old_susemailacceptaddress = $this->get_attributes($user->{dn}, ['suseMailAcceptAddress']);
+	my $uid = $old->get_value('uid');
+	foreach my $item ( @{$old_susemailacceptaddress->{suseMailAcceptAddress}} )
+	{
+	    push @{$user->{susemailacceptaddress}}, $item if(($item !~ /^$uid@(.*)/) and !(grep {$_ eq $item} @{$user->{susemailacceptaddress}}));
+	}
+    }
+
     foreach my $i ( keys %{$user} )
     {
 	if( $i eq 'webdav_access'){
