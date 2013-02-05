@@ -11,6 +11,7 @@
    ldap idmap suffix = ou=Idmap
    ldap machine suffix = ou=Computers
    ldap passwd sync = yes
+   ldap ssl = off
    ldap suffix = #LDAPBASE#
    ldap user suffix = ou=people
    load printers = no
