@@ -21,8 +21,8 @@ sub usage
 		'Options :'."\n".
 		'Mandatory parameters :'."\n".
 		'	     --pass          Password.'."\n".
-		'	     --salt          Salt.'."\n".
 		'Optional parameters: '."\n".
+		'	     --salt          Salt.'."\n".
 		'	-h,  --help          Display this help.'."\n".
 		'	-d,  --description   Display the descriptiont.'."\n";
 }
@@ -38,8 +38,8 @@ if( defined($options{'description'}) )
 		'PARAMETERS:'."\n".
 		'	MANDATORY:'."\n".
 		'		     --pass          : Password.(type=string)'."\n".
-		'		     --salt          : Salt.(type=string)'."\n".
 		'       OPTIONAL:'."\n".
+		'		     --salt          : Salt.(type=string)'."\n".
 		'		-h,  --help          : Display this help.(type=boolean)'."\n".
 		'		-d,  --description   : Display the descriptiont.(type=boolean)'."\n";
 	exit 0;
@@ -53,8 +53,6 @@ if( defined($options{'pass'}) ){
 }
 if( defined($options{'salt'}) ){
 	$salt = $options{'salt'};
-}else{
-	usage(); exit;
 }
 
 sub random_bytes($) {
