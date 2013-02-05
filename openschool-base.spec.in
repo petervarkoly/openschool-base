@@ -17,7 +17,7 @@ BuildArch:    noarch
 Requires:     amavisd-new
 Requires:     cron perl perl-Config-IniFiles perl-Crypt-SmbHash perl-DBI
 Requires:     perl-DBD-mysql perl-Digest-SHA1 perl-Net-Netmask perl-NetxAP
-Requires:     perl-ldap quota perl-Quota rinetd mysql 
+Requires:     perl-ldap quota perl-Quota rinetd mysql
 Prereq:	      apache2 openldap2 postfix samba yast2 filesystem sitar
 BuildRequires: update-desktop-files
 
@@ -114,16 +114,17 @@ done
 %dir /etc/apache2/vhosts.d/oss-ssl/
 %config /etc/apache2/vhosts.d/admin-ssl/admin.conf
 %config /etc/cron.daily/oss*
+%config(noreplace) /etc/logrotate.d/oss-base
 %config(noreplace) /etc/cron.d/oss*
+%config(noreplace) /etc/rinetd.conf.ppp
+%config(noreplace) /etc/squid/acl_*
+%config(noreplace) /etc/uucp/*
 %dir /etc/imap
 %config /etc/imap/procmailrc
 %config /etc/openldap/*
-%config(noreplace) /etc/rinetd.conf.ppp
 %config /etc/samba/*
 %dir /etc/squid/
 %config /etc/squid/squid*
-%config(noreplace) /etc/squid/acl_*
-%config(noreplace) /etc/uucp/*
 %dir /etc/skel/Desktop
 %config /etc/skel/Desktop/*
 %dir /etc/tomcat6 
