@@ -1,9 +1,0 @@
-/var/log/oss-backup.log {
-    compress
-    dateext
-    maxage 365
-    rotate 99
-    size=+1024k
-    missingok
-    copytruncate
-}

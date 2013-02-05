@@ -1,0 +1,19 @@
+/var/log/oss-backup.log {
+    compress
+    dateext
+    maxage 365
+    rotate 99
+    size=+1024k
+    missingok
+    copytruncate
+}
+
+/var/log/virus_scan_logs/*.log {
+    compress
+    dateext
+    maxage 120
+    rotate 99
+    size=+1024k
+    missingok
+    copytruncate
+}
