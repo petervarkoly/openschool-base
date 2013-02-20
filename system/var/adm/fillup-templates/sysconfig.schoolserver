@@ -404,3 +404,7 @@ SCHOOL_STRING_CONVERT_TYPE="telex"
 # In which subdirectories in /home will be searched for files when deleting a user.
 SCHOOL_SEARCH_FOR_DELETE="all groups"
 
+## Type:        string
+## Default:     
+# External software package url.
+SCHOOL_EXT_PKG_URL="http://repo.openschoolserver.net/swPackages/swPackages.xml"
