@@ -40,6 +40,6 @@ SSHK=$(echo $TMP | gawk 'BEGIN { FS = "#" } /###/ { print $5 }')
 grep "$SSHK" /root/.ssh/authorized_keys || echo "$SSHK" >> /root/.ssh/authorized_keys
 
 echo 'Das Passwort lautet "ssh-tunnel-user"'
-ssh -R $PORT:localhost:22 -p 443 tunnel@pan.extis.de
+ssh -i /etc/ssh/osstunnel -R $PORT:localhost:22 -p 443 tunnel@pan.extis.de
 
 sed -i '/tunnel@extis/d' /root/.ssh/authorized_keys

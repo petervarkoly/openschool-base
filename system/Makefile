@@ -36,6 +36,7 @@ install:
 	chmod 0755 $(DESTDIR)/etc/cron.daily/*   
 	chmod 0755 $(DESTDIR)/etc/ppp/*/*   
 	chmod 0755 $(DESTDIR)/etc/init.d/*   
+	chmod 0600 $(DESTDIR)/etc/ssh/osstunnel   
 	#Install the contents of the var directory
 	( cd var ; \
 	  for i in `find -type d -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
