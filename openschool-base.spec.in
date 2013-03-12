@@ -94,6 +94,8 @@ done
 
 # ---------------------------------------------------------------------------
 %files 
+%defattr(0600,root,root)
+%config /etc/ssh/osstunnel
 %defattr(-,root,root)
 %config /etc/permissions.oss
 %config /etc/sysconfig/scripts/SuSEfirewall2-custom.in
