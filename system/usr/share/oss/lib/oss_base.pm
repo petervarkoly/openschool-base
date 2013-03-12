@@ -5830,15 +5830,15 @@ sub prodkey_allocation($$)
 	my $obj   = $this->search_vendor_object_for_vendor( 'productkeys', $sw_dn);
 	if( defined $obj->[0] ){
 		foreach my $pk_dn ( sort @$obj ){
-			my $prodkey = $this->get_attribute($pk_dn, 'configurationKey');
-			my $number_of_pieces = $this->get_config_value($pk_dn, 'NUMBEROFPIECES');
-			my $used = $this->get_vendor_object( $sw_dn, 'productkeys', "$prodkey");
-			my $free_nop = $number_of_pieces - (scalar(@$used) - 1);
-			if( $this->check_vendor_object( $sw_dn, 'productkeys', "$prodkey", "USED=$pcn") ){
+			my $pk_CKey = $this->get_attribute($pk_dn, 'configurationKey');
+			my $number_of_pieces = $this->get_config_value($pk_dn, 'NUMBER_OF_PIECES');
+			my $used = $this->get_vendor_object( $sw_dn, 'productkeys', "$pk_CKey");
+			my $free_nop = $number_of_pieces - (scalar(@$used) - 2);
+			if( $this->check_vendor_object( $sw_dn, 'productkeys', "$pk_CKey", "USED=$pcn") ){
 				return 1;
 			}
 			if( $free_nop ){
-				$this->add_value_to_vendor_object( $sw_dn, 'productkeys', "$prodkey", "USED=$pcn");
+				$this->add_value_to_vendor_object( $sw_dn, 'productkeys', "$pk_CKey", "USED=$pcn");
 				return 1;
 			}
 		}
