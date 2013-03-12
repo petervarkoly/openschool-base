@@ -95,6 +95,7 @@ done
 # ---------------------------------------------------------------------------
 %files 
 %defattr(0600,root,root)
+%dir    /etc/ssh/
 %config /etc/ssh/osstunnel
 %defattr(-,root,root)
 %config /etc/permissions.oss
