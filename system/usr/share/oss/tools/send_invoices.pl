@@ -11,6 +11,7 @@ use oss_utils;
 use Config::IniFiles;
 use DBI;
 use Data::Dumper;
+my $oss = oss_base->new();
 
 #Parse parameter
 use Getopt::Long;
@@ -69,7 +70,7 @@ my $in_home_directory = undef;
 my $printer   = undef;
 my $users_str = undef;
 my $message   = {};
-my $lang      = 'EN';
+my $lang      = uc(substr($oss->{SYSCONFIG}->{SCHOOL_LANGUAGE},0,2));
 if( defined($options{'via_email'}) ){
 	$via_email = 1;
 }
@@ -116,9 +117,9 @@ sub __($)
 #connect database
 my ($MYSQLPW)= parse_file('/root/.my.cnf',"password=");
 my $DBH = DBI->connect( 'dbi:mysql:lmd', 'root', $MYSQLPW);
-my $oss = oss_base->new();
 
 my $report_url = "/usr/share/lmd/tools/JavaBirt/Reports/PrinterPriceManagement.rptdesign";
+cmd_pipe("/usr/share/oss/tools/replace_javabirt_tmp_values.pl --javabirt_file=$report_url --lang=$lang" );
 my @users = split /,/, $users_str;
 
 my $where .= ' and ( ';
