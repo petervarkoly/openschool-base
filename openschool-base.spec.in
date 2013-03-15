@@ -73,7 +73,7 @@ then
 else
     #first installation
     cp /usr/share/oss/templates/rootprofile /root/.profile
-    cp -a /usr/share/oss/software /home/software
+    rsync -av /usr/share/oss/software/oss/ /home/software/oss/
     cp /etc/sysconfig/scripts/SuSEfirewall2-custom.in /etc/sysconfig/scripts/SuSEfirewall2-custom
     sed -i 's#^FW_CUSTOMRULES=.*#FW_CUSTOMRULES="/etc/sysconfig/scripts/SuSEfirewall2-custom"#' /etc/sysconfig/SuSEfirewall2
     cp /etc/apache2/listen.conf.in    /etc/apache2/listen.conf
