@@ -46,6 +46,7 @@ dist:
 		fi
 		echo $(NRELEASE) > RELEASE
 	git commit -a -m "New release"
+	git push
 
 package:	dist
 		rm -rf /usr/src/packages/*
