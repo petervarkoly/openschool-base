@@ -52,7 +52,7 @@ foreach my $entry ($result->all_entries) {
 		@SAC = @defaults;
 	    }
 	}
-	next if( @SAC = () );
+	next if( @SAC eq () );
         if($SAC[0] eq 'DEFAULT' ) {
 	   @SAC = @DSAC;
 	}
