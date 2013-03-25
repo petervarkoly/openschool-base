@@ -449,6 +449,11 @@ ff02::3         ipv6-allhosts
 ".$globals->{PROXY}.      "     proxy.".$globals->{DOMAIN}." proxy
 ".$globals->{BACKUP_SERVER}."     backup.".$globals->{DOMAIN}." backup
 ";
+if( $globals->{ISGATE} eq "yes" )
+{
+	$etc_hosts .= $globals->{SERVER_EXT_IP}."	extip
+";
+}
 
    writef("/etc/hosts",$etc_hosts);
 
@@ -1178,7 +1183,13 @@ chkconfig lmd on
 chkconfig xrdp on
 if [ "'.$globals->{ISGATE}.'" = "yes" ]
 then
-	chkconfig rinetd on
+	postconf -e inet_interfaces=localhost,mailserver,extip
+	sed \'s/admin:443/admin:443 extip:444/\'               /etc/apache2/vhosts.d/admin_include.conf.in > /etc/apache2/vhosts.d/admin_include.conf
+	sed \'s/schoolserver:443/schoolserver:443 extip:443/\' /etc/apache2/vhosts.d/oss_include.conf.in   > /etc/apache2/vhosts.d/oss_include.conf
+else
+	postconf -e inet_interfaces=localhost,mailserver
+	cp /etc/apache2/vhosts.d/admin_include.conf.in /etc/apache2/vhosts.d/admin_include.conf
+	cp /etc/apache2/vhosts.d/oss_include.conf.in   /etc/apache2/vhosts.d/oss_include.conf
 fi
 chkconfig xinetd on
 chkconfig squid  on
