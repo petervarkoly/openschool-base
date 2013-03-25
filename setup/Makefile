@@ -9,6 +9,7 @@ install:
 	mkdir -p $(SHARE)/setup/ldap
 	if [ -e update ]; then install -m 755 update $(SHARE)/setup; fi
 	install -m 755 oss_setup.pl $(SHARE)/setup
+	install -m 755 rinet-to-forwar-masq.pl $(SHARE)/setup
 	install -m 755 init-portal.pl $(SHARE)/setup
 	install -m 755 update-* $(SHARE)/setup
 	install -m 644 ldap/* $(SHARE)/setup/ldap 
