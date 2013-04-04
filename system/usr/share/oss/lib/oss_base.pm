@@ -5809,12 +5809,13 @@ sub get_logged_users
 
 	foreach my $dn (sort @{$this->get_workstations_of_room($room_dn)} )
 	{
-		$hash{$dn}->{host_name} = $this->get_attribute($dn,'cn');
 		my @ws = $this->get_attribute($dn,'configurationValue');
 		foreach my $conf_value (@ws){
 			if( $conf_value =~ /^LOGGED_ON=(.*)$/){
+				$hash{$dn}->{host_name} = $this->get_attribute($dn,'cn');
 				$hash{$dn}->{user_name} = $1;
-				$hash{$dn}->{user_cn} = $this->get_attribute($this->get_user_dn("$1"), 'cn');
+				$hash{$dn}->{user_cn}   = $this->get_attribute($this->get_user_dn("$1"), 'cn');
+				last;
 			}
 		}
 	}

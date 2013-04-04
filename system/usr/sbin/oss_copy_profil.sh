@@ -94,7 +94,6 @@ else
 
 	mkdir   -m 700 -p    $PROFIL
 	chown    $1          $PROFIL
-	setfacl -d -m o::rwx $PROFIL
 	rsync   -a "$TPROFIL/"  "$PROFIL/"
 	chown   -R $1        $PROFIL
 	chmod   -R 700       $PROFIL

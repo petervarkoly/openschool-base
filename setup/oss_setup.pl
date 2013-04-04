@@ -288,7 +288,7 @@ sub PreSetup
    # If language defined we use it
    if( $globals->{LANGUAGE} )
    {
-      $Lang = $globals->{LANGUAGE};
+      $Lang = uc(substr($globals->{LANGUAGE},0,2));
    }
 
    # If country defined we use it
