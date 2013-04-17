@@ -201,7 +201,7 @@ sub new
         $self->init_sysconfig();
         if( ! $self->login($connect->{aDN},$connect->{aPW}) )
         {
-	   print STDERR $this->{ERROR}->{text};
+	   print STDERR $self->{ERROR}->{text};
            return undef;
         }
 	if( $self->is_admin($connect->{aDN}))
@@ -812,7 +812,7 @@ EXAMPLE:
 
 =cut
 
-sub get_config_values($$)
+sub get_config_values
 {
     my $this = shift;
     my $dn   = shift;
@@ -4166,6 +4166,7 @@ sub get_rooms()
     my $this   = shift;
     my $all    = shift || undef ;
     my $filter = '(&(Objectclass=SchoolRoom)(description=*)(&(!(description=ANON_DHCP))(!(description=SERVER_NET))))';
+    my @srooms = ();
     if( defined $all && $all eq 'all' )
     {
 	    $filter = '(&(Objectclass=SchoolRoom)(description=*))'
@@ -4183,8 +4184,18 @@ sub get_rooms()
                                        scope   => 'sub',
                                        filter  => $filter
                               );
-    return $result->as_struct;
+    my $rooms = $result->as_struct;
+    my %tmp   = ();
+    foreach my $dn (keys %{$rooms})
+    {
+            $tmp{$rooms->{$dn}->{"description"}->[0]} = $dn;
+    }
+    foreach my $i ( sort keys %tmp )
+    {
+            push @srooms, [ $tmp{$i} , $i ];
 
+    }
+    return @srooms;
 }
 #-----------------------------------------------------------------------
 
