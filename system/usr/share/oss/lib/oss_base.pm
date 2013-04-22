@@ -136,7 +136,8 @@ sub new
                 'telephonenumber',
                 'title',
                 'uid',
-                'uidnumber'
+                'uidnumber',
+		'zarafasendasprivilege'
 
 	];
     $self->{DEFAULT_GROUP_ATTRIBUTES} = [
