@@ -101,8 +101,8 @@ foreach my $entry ( $mess->entries ) {
 		  if( -d $home )
 		  {
 			  system("ln -s $home /home/classes/$cn/$uid");
-                          system("setfacl -RPb $home; chgrp teachers $home; chmod 2771 $home;");
-                          system("find $home ".'-type d -exec chgrp teachers {} \\;');
+                          system("setfacl -RPb $home; chgrp -PR teachers $home; chmod 2771 $home;");
+                          system("find $home ".'-type f -exec chmod g+rw {} \\;');
                           system("find $home ".'-type d -exec chmod 2771 {} \\;');
                           system("find $home ".'-type d -exec setfacl -dm g:teachers:rwx {} \\;');
 			  system("mkdir -p $home/public_html; chmod 755 $home/public_html; chown $uid $home/public_html;");
