@@ -8,7 +8,7 @@
    local master = no
    netbios name = printserver
    os level = 100
-   printer admin = root admin
+   printer admin = root @SYSADMINS
    preferred master = no
    printcap = cups
    security = domain
