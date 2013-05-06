@@ -24,8 +24,7 @@ Listen schulserver:80
     <IfDefine !NOSSL>
         <IfModule mod_ssl.c>
 
-            Listen admin:443
-            Listen schulserver:443
+            Listen 443
 
         </IfModule>
     </IfDefine>
