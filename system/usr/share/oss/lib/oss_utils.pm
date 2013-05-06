@@ -967,6 +967,7 @@ Makes array attributes from newline separated lists by following ldap attributes
 	class
 	newgroup
 	group
+	zarafasendasprivilege
 
 =cut
 
@@ -975,7 +976,7 @@ sub make_array_attributes($)
         my $hash = shift;
         foreach(keys %$hash )
         {
-                if(/^member|memberOff|memberUid|newmember|group|newgroup|rasaccess|class$/i || /mailAcceptAddress|mailForwardAddress$/i)
+                if(/^member|memberOff|memberUid|newmember|group|newgroup|rasaccess|class|zarafasendasprivilege$/i || /mailAcceptAddress|mailForwardAddress$/i)
                 {
                         my @a = split /\n/, $hash->{$_};
 			if( scalar @a )

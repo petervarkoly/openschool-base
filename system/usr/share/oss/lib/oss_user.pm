@@ -710,7 +710,7 @@ sub modify
 	next if ( !is_user_ldap_attribute($i) );
 	if( $old->exists($i) )
 	{
-	    if( $user->{$i} eq '' )
+	    if( ( ref $user->{$i} eq 'ARRAY' && ! scalar (@{$user->{$i}}) ) || $user->{$i} eq '' )
 	    {
 	        $old->delete( $i => [] );
 		$attr .= "delete $i\n";
@@ -725,7 +725,7 @@ sub modify
 	}
 	else
 	{
-	    if( $user->{$i} )
+	    if( ( ref $user->{$i} eq 'ARRAY' && scalar (@{$user->{$i}}) ) || ( ref $user->{$i} ne 'ARRAY' && $user->{$i} ) )
 	    {
 	        $old->add( $i => $user->{$i} );
 		$attr .= "add $i ".$user->{$i}."\n";
