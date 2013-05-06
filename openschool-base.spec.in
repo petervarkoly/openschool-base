@@ -106,8 +106,8 @@ done
 %config /etc/apache2/listen.conf.in
 %config /etc/apache2/conf.d/jk.conf.in
 %config /etc/apache2/vhosts.d/oss_vhost.template
-%config /etc/apache2/vhosts.d/admin_include.conf
-%config /etc/apache2/vhosts.d/oss_include.conf
+%config /etc/apache2/vhosts.d/admin_include.conf.in
+%config /etc/apache2/vhosts.d/oss_include.conf.in
 %config /etc/apache2/vhosts.d/oss/*
 %config /etc/apache2/vhosts.d/oss-ssl/*
 %config /etc/slp.reg.d/oss.reg
