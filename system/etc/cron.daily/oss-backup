@@ -7,12 +7,14 @@
 
 LOGFILE=/var/log/oss-backup.log
 DATE=`date +%Y-%m-%d-%H-%M`
+#TODO Make all variables configurable.
 MYSQLDUMP_OPTIONS="--lock-tables --add-drop-database --add-locks --quote-names --opt --create-options"
 MAILADDR="admin"
 FORCE="no"
 VERBOSE="yes"
 CONFIG=/etc/sysconfig/schoolserver
-RSYNCPARS=" -aA --delete "
+RSYNCPARS=" -aA --delete --size-only "
+LIMIT=80
 
 
 if [ -e /var/adm/oss/BackupRunning ]
@@ -48,8 +50,6 @@ function usage (){
 }
 
 function check_discspace() {
-	#TODO Limit have to be configurable
-	LIMIT=80
 	#SIZE=`df  $1 | tail -n1 | awk '{ print $(NF-4) }'`
 	#USED=`df  $1 | tail -n1 | awk '{ print $(NF-3) }'`
 	USED=`df $1 | tail -n1 | awk '{ print $(NF-1) }' | sed s/%//`
