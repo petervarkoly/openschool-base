@@ -28,6 +28,13 @@ else
         cp /etc/apache2/vhosts.d/admin_include.conf.in /etc/apache2/vhosts.d/admin_include.conf
         cp /etc/apache2/vhosts.d/oss_include.conf.in   /etc/apache2/vhosts.d/oss_include.conf
 fi
+#Add new global configuration
+echo "SCHOOL_EXT_PKG_URL
+http://repo.openschoolserver.net/swPackages/swPackages.xml
+External software package url.
+string
+
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
 #Convert the serviceAccesControl attributes
 perl -e 'BEGIN
