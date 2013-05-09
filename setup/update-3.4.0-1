@@ -12,9 +12,11 @@ fi
 DATE=$( /usr/share/oss/tools/oss_date.sh )
 SCHOOL_LDAPBASE=`echo $BASE_CONFIG_DN | sed s/ou=ldapconfig,//`
 
-
+mv /etc/apache2/listen.conf /etc/apache2/listen.conf-$DATE
+cp /etc/apache2/listen.conf.in /etc/apache2/listen.conf
 if [ "$SCHOOL_ISGATE" = "yes" ]; then
 	echo "$SCHOOL_SERVER_EXT_IP	extip" >> /etc/hosts
+	rcrinetd stop
 	postconf -e inet_interfaces=localhost,mailserver,extip
 	sed 's/admin:443/admin:443 extip:444/'               /etc/apache2/vhosts.d/admin_include.conf.in > /etc/apache2/vhosts.d/admin_include.conf
 	sed 's/schoolserver:443/schoolserver:443 extip:443/' /etc/apache2/vhosts.d/oss_include.conf.in   > /etc/apache2/vhosts.d/oss_include.conf
@@ -64,7 +66,8 @@ if( $result && $result->count())
 		$entry->update( $oss->{LDAP} );
 	}
 }
-'
+rclmd restart
+rcapache2 restart'
 #Mark this patch as installed
 mkdir -p /var/adm/oss
 touch /var/adm/oss/update-3.4.0-1
