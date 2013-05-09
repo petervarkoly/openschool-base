@@ -23,7 +23,7 @@ close RINET;
 system("perl -pi -e 's#^FW_FORWARD_MASQ=.*#FW_FORWARD_MASQ=\"$ACCESS\"#' /etc/sysconfig/SuSEfirewall2");
 
 my $ms = $oss->get_school_config("SCHOOL_MONITOR_SERVICES");
-$ms ~= s/,rinetd//;
+$ms =~ s/,rinetd//;
 $oss->set_school_config("SCHOOL_MONITOR_SERVICES",$ms);
 system("/usr/sbin/oss_ldap_to_sysconfig.pl");
 
