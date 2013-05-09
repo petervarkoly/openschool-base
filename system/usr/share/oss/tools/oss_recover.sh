@@ -165,9 +165,20 @@ if [ ! -f $CONFIG ]; then
     exit 1
 fi
 
-. ./$CONFIG
-
-SCHOOL_BACKUP_FULL_DIR=`dirname $0`
+if [ -e ./$CONFIG ]
+then 
+	. ./$CONFIG
+	SCHOOL_BACKUP_FULL_DIR=`dirname $0`
+else
+	. $CONFIG
+	echo "Execute BACKUP_START_CMD: $SCHOOL_BACKUP_START_CMD"
+	eval $SCHOOL_BACKUP_START_CMD
+	echo "Testing if $SCHOOL_BACKUP_FULL_DIR contains a backup."
+	if [ ! -e "$SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz" -o ! -e "$SCHOOL_BACKUP_FULL_DIR/schoolserver" ]; then
+		echo "$SCHOOL_BACKUP_FULL_DIR does not contains a valid OSS Backup"
+		exit
+	fi
+fi
 
 # egroupware
 if [ "$SCHOOL_USE_EGROUPWARE" = "yes" -a -e $SCHOOL_BACKUP_FULL_DIR/egroupware.gz -a "$EGROUPWARE" = "yes" ]; then
@@ -299,13 +310,6 @@ if [ -d $SCHOOL_BACKUP_FULL_DIR/root -a "$SSH" = "yes" ]; then
 	rsync -aH $SCHOOL_BACKUP_FULL_DIR/etc/ssh/ /etc/ssh/ >> $LOGFILE  2>&1
 	SSH_RESTART="yes"
 fi
-#LDAP
-if [ "$LDAP_RESTART" = "yes" ]; then
-	setfacl -m u:ldap:r /etc/ssl/servercerts/serverkey.pem
-	setfacl -m u:mail:r /etc/ssl/servercerts/serverkey.pem
-	/usr/sbin/rcldap restart
-	APACHE_RESTART="yes"
-fi
 # SSL
 if [ -d etc/ssl -a "$SSL" = "yes" ]; then
 	echo "restoring SSL settings" >> $LOGFILE
@@ -313,7 +317,13 @@ if [ -d etc/ssl -a "$SSL" = "yes" ]; then
 	rsync -aAH $SCHOOL_BACKUP_FULL_DIR/etc/ssl/ /etc/ssl/ >> $LOGFILE  2>&1
 	SSL_RESTART="yes"
 fi
-
+#LDAP
+if [ "$LDAP_RESTART" = "yes" ]; then
+	setfacl -m u:ldap:r /etc/ssl/servercerts/serverkey.pem
+	setfacl -m u:mail:r /etc/ssl/servercerts/serverkey.pem
+	/usr/sbin/rcldap restart
+	APACHE_RESTART="yes"
+fi
 # restart services which are updated....
 if [ "$MYSQL_RESTART" = "yes" ]; then
 	echo "restart mysql" >> $LOGFILE
