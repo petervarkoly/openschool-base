@@ -210,11 +210,6 @@ SCHOOL_TEACHER_OBSERV_HOME="no"
 SCHOOL_USE_EGROUPWARE="no"
 
 ## Type:	yesno readonly
-## Default:	no
-# The OpeneXchange groupware will be used.
-SCHOOL_USE_OX="yes"
-
-## Type:	yesno readonly
 ## Default:	"no"	
 # The OSS uses the Time for Kids web filter programm.
 SCHOOL_USE_TFK="no"
