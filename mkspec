@@ -13,7 +13,6 @@ Packager:     peter@varkoly.de
 Group:        Productivity/
 Autoreqprov:  on
 Summary:      Base package for the Open School Server
-Prereq:       sudo 
 Version:      $1
 Release:      $2
 Source:       openschool-base-$1.tar.bz2
@@ -44,11 +43,6 @@ if [ -e /etc/sysconfig/scripts/SuSEfirewall2-custom ]
 then
   cp /etc/sysconfig/scripts/SuSEfirewall2-custom /etc/sysconfig/scripts/SuSEfirewall2-custom.$DATE-oss
 fi
-if [ -e /etc/sudoers ]
-then
-  cp /etc/sudoers /etc/sudoers.$DATE-oss
-fi
-cp -p /etc/sudoers.in /etc/sudoers
 cp /etc/openldap/schema/openxchange.schema.in  /etc/openldap/schema/openxchange.schema
 cp /etc/openldap/schema/phpgwaccount.schema.in /etc/openldap/schema/phpgwaccount.schema
 cp /etc/openldap/schema/phpgwcontact.schema.in /etc/openldap/schema/phpgwcontact.schema
