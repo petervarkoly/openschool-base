@@ -70,10 +70,6 @@ cp /etc/sysconfig/scripts/SuSEfirewall2-custom.in /etc/sysconfig/scripts/SuSEfir
 /etc/openldap/*
 /etc/permissions.oss
 /etc/postfix/*
-/etc/ppp/scripts/dyndns
-/etc/ppp/ip-down.d/rinetd_stop
-/etc/ppp/ip-up.d/rinetd_start
-%config(noreplace) /etc/rinetd.conf.ppp
 /etc/samba/*
 /etc/skel/
 /etc/squid/squid*
