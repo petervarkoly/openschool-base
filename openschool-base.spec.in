@@ -119,7 +119,6 @@ done
 %config /etc/cron.daily/oss*
 %config(noreplace) /etc/logrotate.d/oss-base
 %config(noreplace) /etc/cron.d/oss*
-%config(noreplace) /etc/rinetd.conf.ppp
 %config(noreplace) /etc/squid/acl_*
 %config(noreplace) /etc/uucp/*
 %dir /etc/imap
@@ -144,9 +143,6 @@ done
 
 %defattr(755,root,root)
 /etc/init.d/*mb-printserver
-/etc/sysconfig/network/scripts/dhcpcd-restart-rinetd
-/etc/ppp/ip-up.d/rinetd_start
-/etc/ppp/ip-down.d/rinetd_stop
 /var/lib/support/oss.include
 /usr/sbin/*
 /srv/www/cgi-bin/*.cgi
