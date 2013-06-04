@@ -402,4 +402,4 @@ SCHOOL_SEARCH_FOR_DELETE="all groups"
 ## Type:        string
 ## Default:     
 # External software package url.
-SCHOOL_EXT_PKG_URL="http://repo.openschoolserver.net/swPackages/swPackages.xml"
+SCHOOL_EXT_PKG_URL="http://repo.openschoolserver.net/cgi-bin/swpkg.pl"

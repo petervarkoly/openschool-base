@@ -32,7 +32,7 @@ else
 fi
 #Add new global configuration
 echo "SCHOOL_EXT_PKG_URL
-http://repo.openschoolserver.net/swPackages/swPackages.xml
+http://repo.openschoolserver.net/cgi-bin/swpkg.pl
 External software package url.
 string
 
