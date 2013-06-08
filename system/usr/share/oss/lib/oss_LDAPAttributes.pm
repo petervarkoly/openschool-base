@@ -529,6 +529,7 @@ uid
 title
 sn
 givenname
+birthday
 description
 admin
 quota
