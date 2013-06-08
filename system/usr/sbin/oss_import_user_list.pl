@@ -524,12 +524,6 @@ sub add_user
 	{
 	    $USER{'domain'} = $DOMAIN;
         }
-	# If a default password was defined we use it
-	if( $userpassword )
-	{
-	  $USER{'userpassword'} = $userpassword;
-	}
-
         #Check if all classes are present, someone who belongs to all classes
 	#can not belong to not existend classes
         if( scalar(@classes) && $classes[0] ne 'ALL' )
@@ -718,6 +712,12 @@ sub add_user
 	{
 	    # Loging
             print "  NEW USER\n";
+	    # If a default password was defined we use it
+	    if( $userpassword )
+	    {
+	      $USER{'userpassword'} = $userpassword;
+	    }
+
 	    # It is a new user 
 	    if( !$USER{'userpassword'} || $USER{'userpassword'} eq "*")
 	    {
