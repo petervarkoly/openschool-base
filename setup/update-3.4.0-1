@@ -67,8 +67,11 @@ if( $result && $result->count())
 		$entry->update( $oss->{LDAP} );
 	}
 }
+my $serv   = $this->get_school_config("SCHOOL_MONITOR_SERVICES");
+$serv =~ s/,rinetd//;
+$this->set_school_config("SCHOOL_MONITOR_SERVICES",$serv);
+'
 rclmd restart
-rcapache2 restart'
 #Mark this patch as installed
 mkdir -p /var/adm/oss
 touch /var/adm/oss/update-3.4.0-1
