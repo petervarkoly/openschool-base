@@ -5,11 +5,10 @@ use strict;
 use MIME::Base64;
 use POSIX;
 use Data::Dumper;
-use Encode ( 'encode', 'decode' );
-use open ':utf8';
+use Encode;
 binmode STDIN, ':utf8';
 binmode STDOUT,':utf8';
-binmode STERR, ':utf8';
+binmode STDERR, ':utf8';
 
 my $uid   = undef;
 my $path  = undef;
@@ -62,22 +61,23 @@ sub print_file
 sub recursiv
 {
 	my $aktpath = shift;
+	Encode::_utf8_on($aktpath);
 	my @lpath   = split /\//, $aktpath;
         my $depth   = $#lpath;
 	my @dirs  = ();
 	my @files = ();
-	opendir DIR, $aktpath;
-	foreach (readdir(DIR))
+        opendir DIR, $aktpath;
+        foreach my $f (readdir(DIR))
 	{
-		next if( !$all && /^\./ );
-		$_ = decode('UTF-8',$_);
-		if( -f $aktpath.'/'.$_ )
+		Encode::_utf8_on($f);
+		next if( !$all && $f =~ /^\./ );
+		if( -f $aktpath.'/'.$f )
 		{
-			push @files,$_;
+			push @files,$f;
 		}
-		elsif( -d $aktpath.'/'.$_ )
+		elsif( -d $aktpath.'/'.$f )
 		{
-			push @dirs,$_;
+			push @dirs,$f;
 		}
 	}
 	close(DIR);
@@ -87,16 +87,18 @@ sub recursiv
 		recursiv("$aktpath/".$full[$depth+1]);
 		$OUT .= "</dir>\n";
 	}
-	foreach (sort (@dirs))
+	foreach my $d (sort (@dirs))
 	{
-		next if( $_ eq '.' || $_ eq '..' );
-		next if( $full[$depth+1] eq $_ );
-		print_dir($aktpath,$_,0);
+		Encode::_utf8_on($d);
+		next if( $d eq '.' || $_ eq '..' );
+		next if( $full[$depth+1] eq $d );
+		print_dir($aktpath,$d,0);
 	}
 	if( $aktpath eq $path ) {
-		foreach (sort (@files))
+		foreach my $f (sort (@files))
 		{
-			print_file($aktpath,$_);
+			Encode::_utf8_on($f);
+			print_file($aktpath,$f);
 		}
 	}
 
@@ -105,3 +107,4 @@ sub recursiv
 recursiv($home);
 $OUT .= "</dir>";
 print $OUT;
+
