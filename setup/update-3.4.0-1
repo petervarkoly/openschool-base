@@ -18,8 +18,9 @@ if [ "$SCHOOL_ISGATE" = "yes" ]; then
 	echo "$SCHOOL_SERVER_EXT_IP	extip" >> /etc/hosts
 	rcrinetd stop
 	postconf -e inet_interfaces=localhost,mailserver,extip
-	echo "sed 's/admin:443/admin:443 extip:444/'               /etc/apache2/vhosts.d/admin_include.conf.in > /etc/apache2/vhosts.d/admin_include.conf" | at now + 3 Minutes
-	echo "sed 's/schoolserver:443/schoolserver:443 extip:443/' /etc/apache2/vhosts.d/oss_include.conf.in   > /etc/apache2/vhosts.d/oss_include.conf"   | at now + 3 Minutes
+	echo "sed 's/admin:443/admin:443 extip:444/'               /etc/apache2/vhosts.d/admin_include.conf.in > /etc/apache2/vhosts.d/admin_include.conf" | at now + 2 Minutes
+	echo "sed 's/schoolserver:443/schoolserver:443 extip:443/' /etc/apache2/vhosts.d/oss_include.conf.in   > /etc/apache2/vhosts.d/oss_include.conf"   | at now + 2 Minutes
+	echo "/etc/init.d/apache2 restart" | at now + 3 Minutes
 	/usr/share/oss/setup/rinet-to-forwar-masq.pl
 	perl -pi -e 's#^FW_MASQUERADE=.*#FW_MASQUERADE="yes"#' /etc/sysconfig/SuSEfirewall2;
 	perl -pi -e 's#FW_MASQ_NETS="0/0"#FW_MASQ_NETS=""#'    /etc/sysconfig/SuSEfirewall2;
@@ -66,8 +67,11 @@ if( $result && $result->count())
 		$entry->update( $oss->{LDAP} );
 	}
 }
+my $serv   = $this->get_school_config("SCHOOL_MONITOR_SERVICES");
+$serv =~ s/,rinetd//;
+$this->set_school_config("SCHOOL_MONITOR_SERVICES",$serv);
+'
 rclmd restart
-rcapache2 restart'
 #Mark this patch as installed
 mkdir -p /var/adm/oss
 touch /var/adm/oss/update-3.4.0-1

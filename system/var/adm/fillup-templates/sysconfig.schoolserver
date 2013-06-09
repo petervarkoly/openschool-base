@@ -272,7 +272,7 @@ SCHOOL_IMPORT_FILE_FORMAT="CSV"
 ## Type:	string
 ## Default:
 # This services have be monitored.
-SCHOOL_MONITOR_SERVICES="amavis,apcupsd,cups,cyrus,dhcpd,ldap,named,nmb,postfix,rinetd,smb,squid"
+SCHOOL_MONITOR_SERVICES="amavis,apcupsd,cups,cyrus,dhcpd,ldap,named,nmb,postfix,smb,squid"
 
 ## Type:	yesno
 ## Default:	no

@@ -524,12 +524,6 @@ sub add_user
 	{
 	    $USER{'domain'} = $DOMAIN;
         }
-	# If a default password was defined we use it
-	if( $userpassword )
-	{
-	  $USER{'userpassword'} = $userpassword;
-	}
-
         #Check if all classes are present, someone who belongs to all classes
 	#can not belong to not existend classes
         if( scalar(@classes) && $classes[0] ne 'ALL' )
@@ -718,6 +712,12 @@ sub add_user
 	{
 	    # Loging
             print "  NEW USER\n";
+	    # If a default password was defined we use it
+	    if( $userpassword )
+	    {
+	      $USER{'userpassword'} = $userpassword;
+	    }
+
 	    # It is a new user 
 	    if( !$USER{'userpassword'} || $USER{'userpassword'} eq "*")
 	    {
@@ -911,20 +911,25 @@ sub add_user
 	  }		 
 	}
     }
-    # Syncing mysql settings if necessary
-    if( $oss->{SYSCONFIG}->{SCHOOL_USE_EGROUPWARE}  eq 'yes')
+    #Some important things to do if it was not a test
+    if( $notest )
     {
-        open( OUT, ">>$output");
-        print OUT '---syncingdb<b>'.__('syncingdb')."</b>\n";
-        close( OUT );
-
-       	system("ssh $mailserver /usr/sbin/oss_sync_group_ldap_mysql.pl");
-       	system("ssh $mailserver /usr/sbin/oss_sync_user_ldap_mysql.pl");
+	# Syncing mysql settings if necessary
+	if( $oss->{SYSCONFIG}->{SCHOOL_USE_EGROUPWARE}  eq 'yes')
+	{
+	    open( OUT, ">>$output");
+	    print OUT '---syncingdb<b>'.__('syncingdb')."</b>\n";
+	    close( OUT );
+	
+	    system("ssh $mailserver /usr/sbin/oss_sync_group_ldap_mysql.pl");
+	    system("ssh $mailserver /usr/sbin/oss_sync_user_ldap_mysql.pl");
+	}
+    	system("rcnscd  restart");
+    	system("rcsquid restart");
     }
-    system("rcnscd restart");
-    # Starting archiving of the user in the background
     system("rm $PIDFILE");
-#    system("rm $input");
+    system("chown root $input");
+    system("chmod 600  $input");
     exit;
 }
 
