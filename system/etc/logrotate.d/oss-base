@@ -17,3 +17,13 @@
     missingok
     copytruncate
 }
+
+/var/log/apach2/admin*.log  /var/log/apach2/schoolserver*.log {
+    compress
+    dateext
+    maxage 120
+    rotate 99
+    size=+1024k
+    missingok
+    copytruncate
+}
