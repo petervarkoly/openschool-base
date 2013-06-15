@@ -29,6 +29,6 @@ then
         echo '          -d,   --description : Display the descriptiont.(type=boolean)'
         exit
 fi
-
+mkdir -p /tmp/VIRUS /var/log/virus_scan_logs
 /usr/bin/clamscan --move=/tmp/VIRUS -r /home | grep 'FOUND\|OK' > /var/log/virus_scan_logs/$(date +%Y-%m-%d_%T).log
 

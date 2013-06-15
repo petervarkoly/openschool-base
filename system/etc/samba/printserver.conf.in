@@ -1,8 +1,6 @@
 [global]
-   #add machine script = /sbin/yast /usr/share/YaST2/data/add_machine.ycp %m$
    add machine script =
    bind interfaces only = yes
-   cups options = raw
    encrypt passwords = yes
    interfaces = #PRINTSERVER#
    local master = no
