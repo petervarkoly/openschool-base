@@ -47,6 +47,8 @@ perl -e 'BEGIN
 use strict;
 use oss_base;
 use oss_utils;
+use Config::IniFiles;
+
 my $oss    = oss_base->new();
 my $result = $oss->{LDAP}->search( base   => $oss->{SYSCONFIG}->{DHCP_BASE},
                                    scope  => "sub",
@@ -60,16 +62,26 @@ if( $result && $result->count())
 		foreach my $SAC ( $entry->get_value("serviceAccesControl") )
 		{
 			next if( $SAC =~ /^DEFAULT/ );
-			$entry->delete( serviceAccesControl => $SAC );
 			my( $a, $b ) = split / /, $SAC;
+			next if( length( $a ) > 7 );
+			$entry->delete( serviceAccesControl => $SAC );
 			$entry->add( serviceAccesControl => $a.":0111110:1 ".$b );
 		}
 		$entry->update( $oss->{LDAP} );
 	}
 }
-my $serv   = $this->get_school_config("SCHOOL_MONITOR_SERVICES");
+my $serv   = $oss->get_school_config("SCHOOL_MONITOR_SERVICES");
 $serv =~ s/,rinetd//;
-$this->set_school_config("SCHOOL_MONITOR_SERVICES",$serv);
+$oss->set_school_config("SCHOOL_MONITOR_SERVICES",$serv);
+
+#Adapt smb.conf
+my $m = new Config::IniFiles( -file => "/etc/samba/smb.conf" );
+$m->ReadConfig;
+if( ! $m->val("profiles","root preexec") )
+{
+        $m->newval("profiles","root preexec","/usr/share/oss/tools/check_profil.sh %u %a %m");
+}
+
 '
 rclmd restart
 #Mark this patch as installed

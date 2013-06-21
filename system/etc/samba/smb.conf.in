@@ -70,6 +70,7 @@
    hide files = /.*/
    hide dot files = yes
 [profiles]
+   root preexec  = /usr/share/oss/tools/check_profil.sh %u %a %m
    browseable = no
    comment = Network Profiles Service
    create mask = 0600
