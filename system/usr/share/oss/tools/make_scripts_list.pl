@@ -80,7 +80,11 @@ foreach my $line ( sort ( glob "/usr/share/oss/tools/*" ) ){
 	my $mandatory_param = split_parameter($tmp[8]);
 	#optional parameters
 	my $optional_param  = split_parameter($tmp[10]);
-
+        if( !$s_name || !$s_desc || !$mandatory_param || !$optional_param )
+        {
+                print STDERR "make_scripts_list.pl missing description: $line\n";
+                next;
+        }
 	$writer->startTag("$s_name");
 		$writer->startTag("NAME");
                         $writer->characters("$s_name");
