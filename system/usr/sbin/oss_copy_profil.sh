@@ -80,7 +80,12 @@ else
 
 	if [ $3 = 'Default_User' ]
 	then
-	  TPROFIL='/var/lib/samba/netlogon/'$2'/Default User/'
+	  if [ $2 = 'Vista.V2' ]
+	  then
+	    TPROFIL='/var/lib/samba/netlogon/Vista/Default User/'
+	  else  
+	    TPROFIL='/var/lib/samba/netlogon/'$2'/Default User/'
+	  fi
 	else
 	  TPROFIL="/$SCHOOL_HOME_BASE/profile/$3/$2/"
 	fi
