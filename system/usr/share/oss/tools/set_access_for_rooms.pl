@@ -57,7 +57,7 @@ if( defined($options{'description'}) ){
 		'		    --access	  : The access state or command to be set. Please close this between two \' if containing spaces'."\n". 
 		'	OPTIONAL:'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".
-		'		-d, --description : Display the descriptiont.(type=boolean)'."\n".
+		'		-d, --description : Display the descriptiont.(type=boolean)'."\n";
 	exit 0;
 }
 my $times  = 0;
