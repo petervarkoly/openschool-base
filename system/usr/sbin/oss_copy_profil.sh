@@ -95,7 +95,7 @@ else
 	  exit
 	fi
 
-	find $TPROFIL -iname desktop.ini -exec rm -f {} \;
+	find "$TPROFIL" -iname desktop.ini -exec rm -f {} \;
 	test -e $PROFIL && rm -rf $PROFIL
 
 	mkdir   -m 700 -p    $PROFIL
