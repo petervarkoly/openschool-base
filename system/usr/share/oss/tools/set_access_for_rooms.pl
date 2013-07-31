@@ -26,7 +26,7 @@ sub usage
 		'This script sets the access for the rooms.'."\n\n".
 		'Options :'."\n".
 		'Mandatory parameters :'."\n".
-		'	    --times        Comma separated list of times when the default access have to be set. (Ex: --times=06:00:0111110:1,08:00:0111110:1)'."\n".
+		'	    --times        Comma separated list of times when the access have to be set. (Ex: --times=06:00:0111110:1,08:00:0111110:1)'."\n".
 		'	    --access	   The access state or command to be set. Please close this between two \' if containing spaces'."\n". 
 		'			   Ex: ClientControl:ShutDownCmdSHUTDOWN'."\n".
 		'			   Ex: ClientControl:ShutDownCmdREBOOT'."\n".
@@ -48,12 +48,12 @@ if ( defined($options{'help'}) ){
 }
 if( defined($options{'description'}) ){
 	print   'NAME:'."\n".
-		'	set_default_access_for_rooms.pl'."\n".
+		'	set_access_for_rooms.pl'."\n".
 		'DESCRIPTION:'."\n".
-		'	This script sets the default access for the rooms.'."\n".
+		'	This script sets the access for the rooms.'."\n".
 		'PARAMETERS:'."\n".
 		'	MANDATORY:'."\n".
-		'		    --times       : Comma separated list of times when the default access have to be set.(Ex: --times=06:00:0111110:1,08:00:0111110:1) (type=string)'."\n".
+		'		    --times       : Comma separated list of times when the access have to be set.(Ex: --times=06:00:0111110:1,08:00:0111110:1) (type=string)'."\n".
 		'		    --access	  : The access state or command to be set. Please close this between two \' if containing spaces'."\n". 
 		'	OPTIONAL:'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".

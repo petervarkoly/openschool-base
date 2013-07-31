@@ -63,6 +63,7 @@ then
     		$i &> /var/log/oss-update/$b 
     	done
     	rsync -av /usr/share/oss/software/oss/ /home/software/oss/
+	/usr/share/oss/tools/make_scripts_list.pl
     fi
     cd /usr/share/oss/templates/
     for i in *in
