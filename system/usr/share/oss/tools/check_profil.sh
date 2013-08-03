@@ -4,9 +4,9 @@
 user=$1
 arch=$2
 host=$3
-if [ ! -e $SCHOOL_HOME_BASE/profile/$user/arch ]; then
-	mkdir -m 700 -p $SCHOOL_HOME_BASE/profile/$user/arch
-	chown $user $SCHOOL_HOME_BASE/profile/$user $SCHOOL_HOME_BASE/profile/$user/arch
+if [ ! -e $SCHOOL_HOME_BASE/profile/$user/$arch ]; then
+	mkdir -m 700 -p $SCHOOL_HOME_BASE/profile/$user/$arch
+	chown $user $SCHOOL_HOME_BASE/profile/$user $SCHOOL_HOME_BASE/profile/$user/$arch
 fi
 USERHOME=$( /usr/sbin/oss_get_home $user )
 MODE="700"
