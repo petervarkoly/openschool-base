@@ -104,6 +104,8 @@ my $aliases_admin      = 'dns samba nfs install timeserver admin ldap schooladmi
 my $aliases_mailserver = 'mailserver mailszerver schoolserver suliszerver schulserver';
 my $Lang = 'EN';
 my $regcode    = '';
+#Map to convert number of workstations in room into netmask
+my %nrtobit = ( 256 => 24 , 128 => 25 , 64 => 26 , 32 => 27 , 16 => 28 , 8 => 29 , 4 => 30 , 2 => 31 );
 
 if ( ! -e '/etc/SuSE-release' )
 {
@@ -634,14 +636,17 @@ sed -i 's/NAMED_INITIALIZE_SCRIPTS=.*/NAMED_INITIALIZE_SCRIPTS=\"createNamedConf
 sub SetupDHCP
 {
    print STDERR "Setting up DHCP-server for the network: $network\n";
-   my $block = new Net::Netmask($globals->{SERVER_NET});
-   my $server_nm = $block->bits();
+   my $block         = new Net::Netmask($globals->{SERVER_NET});
+   my $school_network= new Net::Netmask($globals->{NETWORK}.'/'.$globals->{NETMASK});
+   my $server_nm     = $block->bits();
+   my $anon_dhcp_nm  = $block->bits();
    $server_net = $block->base();
 
    if( $globals->{USE_DHCP} ne 'no' ) 
    {
-      $block = new Net::Netmask($anon_dhcp_first.'/'.$server_nm);
-      $anon_dhcp_first = $block->base();
+	my @blocks = range2cidrlist($anon_dhcp_first,$anon_dhcp_last);
+      	$block = new Net::Netmask($blocks[0]);
+	$anon_dhcp_first = $block->base();
    }
 
    my $baseldif = '/var/lib/ldap/LDAP_DHCP.ldif';
@@ -725,9 +730,9 @@ objectClass: dhcpGroup
 objectClass: SchoolRoom
 cn: Room-1
 description: ANON_DHCP
-dhcpNetMask: $server_nm
+dhcpNetMask: $anon_dhcp_nm
 dhcpRange: $anon_dhcp_first
-serviceAccesControl: 06:00 DEFAULT
+serviceAccesControl: 06:00:1111111:1 DEFAULT
 ";
 
 
@@ -742,10 +747,18 @@ serviceAccesControl: 06:00 DEFAULT
 
   my $i = 0;
   my ($a, $b, $c, $d) = split /\./,$globals->{FIRST_ROOM_NET};
-  $d=0 if( $d != 0 && $d != 64 && $d != 128 && $d != 172 );
+  my $ws_in_room      = $globals->{WORKSTATIONS_IN_ROOM} || 64 ;
+  my $room_nm         = $nrtobit{$ws_in_room};
+  $d=int($d/$ws_in_room)*$ws_in_room;
   while( $i < $globals->{ROOM_NR})
   {
     my $roomnet = "$a.$b.$c.$d";
+    if ( ! $school_network->match($roomnet))
+    {
+        $globals->{ROOM_NR} = $i;
+        #TODO Save it in LDAP
+        last;
+    }
     $dhcpldif .= "
 dn: cn=Room$i,cn=$network,cn=config1,cn=$hostname,ou=DHCP,$ldapbase
 objectClass: top
@@ -753,10 +766,10 @@ objectClass: dhcpOptions
 objectClass: dhcpGroup
 objectClass: SchoolRoom
 cn: Room$i
-dhcpNetMask: 26
+dhcpNetMask: $room_nm
 dhcpRange: $roomnet
 ";
-      $d = $d + 64;
+      $d = $d + $ws_in_room;
       if( $d > 255)
       {
          $d = 0;

@@ -169,6 +169,11 @@ SCHOOL_BACKUP_SERVER="172.16.0.6"
 # The (appr.) number of the school rooms.
 SCHOOL_ROOM_NR="32"
 
+## Type:	integer readonly
+## Default:	64
+# The (appr.) number of the workstations in the rooms.
+SCHOOL_WORKSTATIONS_IN_ROOM="64"
+
 ## Type:	string readonly
 ## Default:	"172.16.0.2"
 # IP-address of the admin server of the OSS.
