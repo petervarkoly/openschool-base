@@ -603,7 +603,7 @@ sub modify
 
     my $o_sn = $old->get_value('sn');
     my $o_givenname = $old->get_value('givenname');
-    if( ($o_sn ne $user->{sn}) or ($o_givenname ne $user->{givenname}) )
+    if( ( defined $user->{sn} && defined $user->{givenname} ) and ( ($o_sn ne $user->{sn}) or ($o_givenname ne $user->{givenname})) )
     {
 	$this->create_cn($user);
 	my $old_susemailacceptaddress = $this->get_attributes($user->{dn}, ['suseMailAcceptAddress']);
