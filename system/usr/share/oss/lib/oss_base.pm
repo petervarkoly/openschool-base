@@ -5119,6 +5119,7 @@ sub create_vendor_object
     {
 	    $this->{LDAP}->modify( $kbase, add    => { description => $description } );
     }
+    return $kbase;
 }
 #-----------------------------------------------------------------------
 
