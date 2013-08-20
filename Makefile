@@ -4,7 +4,7 @@
 DESTDIR         = /
 SHARE           = $(DESTDIR)/usr/share/oss/
 SUBDIRS		= system setup
-TOPACKAGE	= Makefile PRODNAME RELEASE VERSION buildit-local docs mkspec system setup
+TOPACKAGE	= Makefile PRODNAME RELEASE VERSION buildit-local docs system setup
 VERSION         = $(shell test -e ../VERSION && cp ../VERSION VERSION ; cat VERSION)
 RELEASE         = $(shell cat RELEASE )
 NRELEASE        = $(shell echo $(RELEASE) + 1 | bc )
