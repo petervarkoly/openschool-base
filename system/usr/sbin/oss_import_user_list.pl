@@ -845,7 +845,7 @@ sub add_user
     # Logging
 #    print ">>>>>>>>>>>>>>>>DUMP OF THE NEW USER LIST<<<<<<<<<<<<<\n".Dumper($NEWLIST)."\n>>>>>>>>>>>>>>>END DUMP OF THE NEW USER LIST<<<<<<<<<<<<<<<<<<<";
     # Save the user list:
-    system("mkdir -m 700 $SYSADMINSdir/userimport.$date");
+    system("mkdir -pm 770 $SYSADMINSdir/userimport.$date");
     system("chown $admin_user:$admin_group $SYSADMINSdir/userimport.$date");
     if( $role eq 'students' )
     {
