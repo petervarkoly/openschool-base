@@ -15,7 +15,7 @@ VERBOSE="yes"
 CONFIG=/etc/sysconfig/schoolserver
 RSYNCPARS=" -aA --delete --size-only "
 LIMIT=80
-
+DAY_OF_WEEK=$( date +%u )
 
 if [ -e /var/adm/oss/BackupRunning ]
 then
@@ -50,8 +50,10 @@ function usage (){
 }
 
 function check_discspace() {
-	#SIZE=`df  $1 | tail -n1 | awk '{ print $(NF-4) }'`
-	#USED=`df  $1 | tail -n1 | awk '{ print $(NF-3) }'`
+	if [ "$OSS_BACKUP_WARNING_LIMIT" ]; then
+		LIMIT=$OSS_BACKUP_WARNING_LIMIT
+	fi
+
 	USED=`df $1 | tail -n1 | awk '{ print $(NF-1) }' | sed s/%//`
 	if [ $USED -gt $LIMIT ]; then
 	{
@@ -90,6 +92,15 @@ if [ ! -f $CONFIG ]; then
 fi
 
 . $CONFIG
+if [ -z "$SCHOOL_BACKUP_DAYS" ]; then
+        SCHOOL_BACKUP_DAYS="1234567"
+fi
+
+if [ "${SCHOOL_BACKUP_DAYS/$DAY_OF_WEEK/}" = $SCHOOL_BACKUP_DAYS ]; then
+        LOG "********** No backup needed today **********"
+        exit 0;
+fi
+
 MAILADDR="admin@$SCHOOL_DOMAIN"
 
 if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
