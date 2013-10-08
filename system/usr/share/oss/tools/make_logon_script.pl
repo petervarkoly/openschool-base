@@ -90,7 +90,7 @@ foreach ( @$dprint )
         $script .= "rundll32 printui.dll,PrintUIEntry /y /n \\\\printserver\\$_ /j\"Default $_\"\r\n";   
 }
 
-foreach ( @$prints )
+foreach (split /\n/,$prints->[0] )
 {
 	$script .= "rundll32 printui.dll,PrintUIEntry /q /in /n \\\\printserver\\$_ /j\"$_\"\r\n";
 }
