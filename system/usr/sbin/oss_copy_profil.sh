@@ -11,21 +11,22 @@ usage()
 {
 echo "
 
-Usage: oss_copy_profil.sh uid OS profil [ro]
-	uid	UID of the user
-	OS	The target operating system WinNT Win2K WinXP Win3K Linux
-	profil  The name of the profil to be distributed
-	ro	If this parameter set the profil is read only (optional)
+Usage: oss_copy_profil.sh uid OS profil ro/rw desktopOnly
+	uid		UID of the user
+	OS		The target operating system WinNT Win2K WinXP Win3K Linux
+	profil  	The name of the profil user to be distributed
+	ro/rw		If this parameter is set to rw the profil will be copied read only.
+	desktopOnly	If this parameter is set to 1 only the desktop datas will be copyed.
 
 Examples:
 
-	oss_copy_profil.sh bigboss WinXP tteachers
+	oss_copy_profil.sh bigboss WinXP tteachers rw 1
 
-	oss_copy_profil.sh minibos WinXP Default_User ro
+	oss_copy_profil.sh minibos WinXP Default_User ro 0
 
 "
 }
-if [ $# -lt 3 ]
+if [ $# -lt 5 ]
 then
   usage
   exit 1;
@@ -53,7 +54,13 @@ then
 		done
 	fi
 	find -P /home/templates/$3/ -type f  -exec touch {} \;
-        rsync -a --exclude-from=/usr/share/oss/templates/exclude-from-linux-profile /home/templates/$3/ /$home/
+	if [ $5 = 1 ]; then
+	        rsync -a --exclude-from=/usr/share/oss/templates/exclude-from-linux-profile /home/templates/$3/Desktop/ /$home/Desktop/
+        	chown -R $1:$gid $home/Desktop/
+		exit 0
+	else
+	        rsync -a --exclude-from=/usr/share/oss/templates/exclude-from-linux-profile /home/templates/$3/ /$home/
+	fi
         #in this directories we have to sed
         for i in `cat /usr/share/oss/templates/grep-uid-profile`
         do
@@ -95,6 +102,19 @@ else
 	  exit
 	fi
 
+	if [ $5 = 1 ]; then
+		if [ $2 = 'Vista.V2' ]; then
+			if [ -e "$TPROFIL/appsFolder.itemdata-ms" ]; then
+				cp "$TPROFIL/appsFolder.itemdata-ms" "$PROFIL/"
+				chown $1:$gid "$PROFIL/appsFolder.itemdata-ms"
+				chmod 700 "$PROFIL/appsFolder.itemdata-ms"
+			fi
+		fi
+		rsync -a      "$TPROFIL/Desktop/"  "$PROFIL/Desktop/"
+		chown $1:$gid "$PROFIL/Desktop/"
+		chmod -R 700  "$PROFIL/Desktop/"
+	fi
+
 	find "$TPROFIL" -iname desktop.ini -exec rm -f {} \;
 	test -e $PROFIL && rm -rf $PROFIL
 
@@ -112,3 +132,4 @@ else
 	    fi
 	fi  
 fi
+exit 0
