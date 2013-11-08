@@ -756,6 +756,11 @@ sub make_delete_user_webdavshare
 
 	my $user_uid = $this->get_attribute( $user_dn, 'uid' );
 	my $user_homeDirectory  = $this->get_attribute( $user_dn, 'homeDirectory' );
+	if( ! $user_homeDirectory || $user_homeDirectory !~ /^$this->{SYSCONFIG}->{SCHOOL_HOME_BASE}/ )
+	{
+		return 0;
+	}
+        	
 	my $WebDavAccess_values = $this->get_vendor_object( $user_dn, 'EXTIS', 'WebDavAccess');
 	if( defined $WebDavAccess_values->[0]){
 		$this->modify_vendor_object( $user_dn, 'EXTIS', 'WebDavAccess', "$webdav_access" );
