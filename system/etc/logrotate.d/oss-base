@@ -27,3 +27,18 @@
     missingok
     copytruncate
 }
+
+/var/log/tomcat6/*.log /var/log/tomcat6/catalina.out {
+        compress
+        dateext
+        notifempty
+        create 640 tomcat tomcat
+        rotate 99
+        size 4M
+        maxage 365
+        sharedscripts
+        postrotate
+                /etc/init.d/tomcat6 restart
+        endscript
+}
+
