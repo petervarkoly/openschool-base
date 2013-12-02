@@ -26,7 +26,9 @@ sub usage
 		'This script sets the access for the rooms.'."\n\n".
 		'Options :'."\n".
 		'Mandatory parameters :'."\n".
-		'	    --times        Comma separated list of times when the access have to be set. (Ex: --times=06:00:0111110:1,08:00:0111110:1)'."\n".
+		'	    --times        Comma separated list of times when the access have to be set. '."\n".
+		'			   (Ex: --times=06:00:0111110:1,08:00:0111110:1)'."\n".
+		'			   This attribute can be "DEFAULT" too to set the default access state.'."\n".
 		'	    --access	   The access state or command to be set. Please close this between two \' if containing spaces'."\n". 
 		'			   Ex: ClientControl:ShutDownCmdSHUTDOWN'."\n".
 		'			   Ex: ClientControl:ShutDownCmdREBOOT'."\n".
@@ -37,6 +39,8 @@ sub usage
 		'			   Ex: DEFAULT'."\n".
 		'			   Ex: \'all:0 proxy:1 printing:1 mailing:1 samba:1\' '."\n".
 		'Optional parameters: '."\n".
+		'	--cleanup          Clean up all existing access lines befor setting the new accesse.'."\n".
+		'			   DEFAULT access will be deleted also.'."\n".
 		'	-h, --help         Display this help.'."\n".
 		'	-d, --description  Display the description.'."\n\n";
 }
@@ -53,15 +57,17 @@ if( defined($options{'description'}) ){
 		'	This script sets the access for the rooms.'."\n".
 		'PARAMETERS:'."\n".
 		'	MANDATORY:'."\n".
-		'		    --times       : Comma separated list of times when the access have to be set.(Ex: --times=06:00:0111110:1,08:00:0111110:1) (type=string)'."\n".
+		'		    --times       : Comma separated list of times when the access have to be set.(Ex: --times=06:00:0111110:1,08:00:0111110:1) (type=string).This attribute can be "DEFAULT" too to set the default access state.'."\n".
 		'		    --access	  : The access state or command to be set. Please close this between two \' if containing spaces'."\n". 
 		'	OPTIONAL:'."\n".
+		'		    --cleanup     : Clean up all existing access lines befor setting the new accesse. DEFAULT access will be deleted also.'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".
 		'		-d, --description : Display the descriptiont.(type=boolean)'."\n";
 	exit 0;
 }
-my $times  = 0;
-my $access = 0;
+my $times   = 0;
+my $access  = 0;
+my $cleanup = 0;
 if ( defined($options{'times'}) )
 {
 	$times=$options{'times'};
@@ -75,20 +81,25 @@ if ( defined($options{'access'}) )
 	usage(); exit 0;
 }
 
+if ( defined($options{'cleanup'}) )
+{
+	$cleanup=1;
+}
 # Make LDAP Connection
 my $oss = oss_base->new();
 
 ##############################################################################
 # now we start to work
-my $result = $oss->{LDAP}->search( base   => $oss->{SYSCONFIG}->{DHCP_BASE},
-                                       scope   => 'sub',
-                                       filter  => '(&(Objectclass=SchoolRoom)(description=*)(!(description=ANON_DHCP)))'
-                              );
+my @rooms = $oss->get_rooms;
+
 foreach my $room ( $result->all_entries )
 {
     foreach ( split /,/,$times )
     {
-	$oss->{LDAP}->modify( $room->dn, add => {serviceAccesControl => "$_ $access" } );
+	if( $cleanup ) {
+		$oss->{LDAP}->modify( $room->[0], delete => [ 'serviceAccesControl' ]   );
+	}
+	$oss->{LDAP}->modify( $room->[0], add => {serviceAccesControl => "$_ $access" } );
     }
 }
 

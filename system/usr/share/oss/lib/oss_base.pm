@@ -4149,7 +4149,7 @@ sub get_free_rooms($)
 }
 #-----------------------------------------------------------------------
 
-=item B<get_rooms(undef|'all'|'clients','ownerDN') >
+=item B<get_rooms(undef|'all'|'clients'|'ownerDN') >
 
 Returns the rooms.
    undef => all registered rooms
