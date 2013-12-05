@@ -57,7 +57,8 @@ then
     	echo "Executing Update Scripts"
     	mkdir -p /var/adm/oss
     	mkdir -p /var/log/oss-update
-    	for i in /usr/share/oss/setup/update-%{version}-*
+	UV=$( echo %{version} | sed -r 's/(...)../\1/' )
+    	for i in /usr/share/oss/setup/update-$UV-*
     	do
     		b=$(basename $i)
     		$i &> /var/log/oss-update/$b 
