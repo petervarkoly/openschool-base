@@ -103,16 +103,22 @@ else
 	fi
 
 	if [ $5 = 1 ]; then
+		if [ ! -d "$PROFIL/" ]; then
+			echo "Desktop datas can be only copied in existing profil."
+			exit 1
+		fi
 		if [ $2 = 'Vista.V2' ]; then
 			if [ -e "$TPROFIL/appsFolder.itemdata-ms" ]; then
 				cp "$TPROFIL/appsFolder.itemdata-ms" "$PROFIL/"
 				chown $1:$gid "$PROFIL/appsFolder.itemdata-ms"
 				chmod 700 "$PROFIL/appsFolder.itemdata-ms"
+				exit 0
 			fi
 		fi
 		rsync -a      "$TPROFIL/Desktop/"  "$PROFIL/Desktop/"
 		chown $1:$gid "$PROFIL/Desktop/"
 		chmod -R 700  "$PROFIL/Desktop/"
+		exit 0
 	fi
 
 	find "$TPROFIL" -iname desktop.ini -exec rm -f {} \;

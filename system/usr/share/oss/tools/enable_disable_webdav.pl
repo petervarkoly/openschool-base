@@ -115,7 +115,7 @@ sub usage
 	print "enable\" | enable_disable_webdav.pl -\n\n";
 }
 my @groups = ();
-my @DNs    = ();
+my %DNs    = ();
 my $oss = oss_base->new();
 if( ! $oss )
 {
@@ -150,8 +150,9 @@ if($member)
 	{
 		foreach my $dn ( @{$oss->get_users_of_group($g)})
 		{
-			next if ( $dn =~ /^cn=Administrator/ );
-			push @DNs, $dn;
+			next if ( $dn =~ /^uid=Administrator,/i || $dn =~ /^cn=Administrator,/i || $dn =~ /^uid=root,/i );
+			next if ( $oss->is_workstation($dn) );
+			$DNs{$dn} = 1 if ( $oss->exists_dn($dn));
 		}
 	}
 }
@@ -166,11 +167,11 @@ else
 	}
 	foreach my $g ( @groups )
 	{
-		push @DNs, $g;
+		$DNs{$g} = 1;
 	}
 }
 
-foreach my $dn (@DNs)
+foreach my $dn (keys %DNs)
 {
 	print "Processing $dn\n";
 	if($member){

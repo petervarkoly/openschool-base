@@ -31,6 +31,7 @@ then
 fi
 
 touch /var/adm/oss/registering
+. /etc/profile.d/profile.sh
 . /etc/sysconfig/schoolserver
 ARCH=$( uname -m )
 OSSV=$( rpm -q --qf %{VERSION} openschool-base )

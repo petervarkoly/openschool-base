@@ -530,16 +530,20 @@ sub make_delete_group_webdavshare
 		system("mkdir /var/lib/dav/");
 		system("chown wwwrun:www /var/lib/dav/");
 	}
-
+	my $groupDir = $this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/groups/$group_cn/";
+	if( ! -e $groupDir )
+	{
+		return 0;
+	}
 	if( $webdav_access )
 	{
 		my $group_cn_lc = lc("$group_cn");
-		system("setfacl -PRm  u:wwwrun:rwx /home/groups/$group_cn/");
-		system("setfacl -PRdm u:wwwrun:rwx /home/groups/$group_cn/");
-		my $file_content = "Alias /webdav/g/$group_cn_lc \"/home/groups/$group_cn/\"\n".
+		system("setfacl -PRm  u:wwwrun:rwx $groupDir");
+		system("setfacl -PRdm u:wwwrun:rwx $groupDir");
+		my $file_content = "Alias /webdav/g/$group_cn_lc \"$groupDir\"\n".
 				"<IfModule mod_dav_fs.c>\n".
 				"        DAVLockDB /var/lib/dav/lockdb\n".
-				"<Directory /home/groups/$group_cn/>\n".
+				"<Directory $groupDir>\n".
 				"        Options All -FollowSymLinks\n".
 				"        AllowOverride All\n".
 				"        Order deny,allow\n".
@@ -559,8 +563,8 @@ sub make_delete_group_webdavshare
 	elsif( (!$webdav_access) and (-e "/etc/apache2/vhosts.d/oss-ssl/$group_cn.conf"))
 	{
 		system( "rm /etc/apache2/vhosts.d/oss-ssl/$group_cn.conf" );
-		system( "setfacl -PRx  u:wwwrun /home/groups/$group_cn/");
-		system( "setfacl -PRdx u:wwwrun /home/groups/$group_cn/");
+		system( "setfacl -PRx  u:wwwrun $groupDir");
+		system( "setfacl -PRdx u:wwwrun $groupDir");
 		system( "rcapache2 reload");
 	}
 
