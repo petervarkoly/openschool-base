@@ -18,6 +18,7 @@ my $result = GetOptions(\%options,
 			"help",
 			"description",
 			"times=s",
+			"cleanup",
 			"access=s"
 		);
 sub usage
@@ -94,11 +95,11 @@ my @rooms = $oss->get_rooms;
 
 foreach my $room ( $result->all_entries )
 {
+    if( $cleanup ) {
+    	$oss->{LDAP}->modify( $room->[0], delete => [ 'serviceAccesControl' ]   );
+    }
     foreach ( split /,/,$times )
     {
-	if( $cleanup ) {
-		$oss->{LDAP}->modify( $room->[0], delete => [ 'serviceAccesControl' ]   );
-	}
 	$oss->{LDAP}->modify( $room->[0], add => {serviceAccesControl => "$_ $access" } );
     }
 }

@@ -647,6 +647,24 @@ sub modify
 	    }
 	    next;
 	}
+        if( $i eq 'newzarafasendasprivilege' )
+        {
+            $old->add( zarafasendasprivilege => $user->{$i} ) if ( scalar @{$user->{$i}} );
+            foreach(@{$user->{$i}})
+            {
+                $attr .= "delete zarafasendasprivilege $_\n";
+            }
+            next;
+        }
+        if( $i eq 'zarafasendasprivilege' )
+        {
+            $old->delete( $i => $user->{$i} ) if ( scalar @{$user->{$i}} );
+            foreach(@{$user->{$i}})
+            {
+                $attr .= "delete $i $_\n";
+            }
+            next;
+        }
 	if( $i =~ /^new(.*Address)$/i )
 	{
 	    my $newattr = $1;
