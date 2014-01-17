@@ -55,6 +55,7 @@ use vars qw(
 	&check_mac
 	&cmd_pipe
 	&contains
+	&create_job
 	&get_name_of_dn
 	&get_time_zones
 	&get_parent_dn
@@ -189,6 +190,36 @@ sub contains {
     }
     return 0;
 }
+
+#-----------------------------------------------------------------------
+
+=item B<create_job($command,$description,$time)>
+
+Creates a job starting with at. Each job gets an uuid. The command the
+description and the output of the command will be saved in the directory
+/home/groups/SYSADMIN/jobs:
+<uuid>.command
+<uuid>.desc
+<uuid>.log
+create_job returns the uuid.
+
+=cut
+
+sub create_job {
+    my $command = shift;
+    my $descr   = shift;
+    my $time    = shift || 'now';
+    my $job     = cmd_pipe('uuidgen -t'); chomp $job;
+    system("mkdir -m 770 -p /home/groups/SYSADMINS/jobs/; chgrp SYSADMINS /home/groups/SYSADMINS/jobs");
+    my $path    = "/home/groups/SYSADMINS/jobs/$job";
+    $command    = "( /usr/share/oss/tools/oss_date.sh\n".$command."\n".' echo $? '."\n/usr/share/oss/tools/oss_date.sh\n) &> $path.log";
+    write_file("$path.command",$command);
+    write_file("$path.descr",  $descr);
+    system("at -f $path.command $time");
+    return $job;
+}
+
+#-----------------------------------------------------------------------
 
 =item B<get_time_zones()>
 
