@@ -96,7 +96,7 @@ if [ -z "$SCHOOL_BACKUP_DAYS" ]; then
         SCHOOL_BACKUP_DAYS="1234567"
 fi
 
-if [ "${SCHOOL_BACKUP_DAYS/$DAY_OF_WEEK/}" = $SCHOOL_BACKUP_DAYS ]; then
+if [ "${SCHOOL_BACKUP_DAYS/$DAY_OF_WEEK/}" = $SCHOOL_BACKUP_DAYS -a [ "$FORCE" != "yes" ] ]; then
         LOG "********** No backup needed today **********"
         exit 0;
 fi
@@ -226,7 +226,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	LOG "Syncing /home/" 
 	test -e /usr/share/oss/templates/exclude-from-home-backup || touch /usr/share/oss/templates/exclude-from-home-backup
 	# If $SCHOOL_BACKUP_FULL_DIR equal $SCHOOL_BACKUP_INC_DIR we make hartlinks
-	if [ $SCHOOL_BACKUP_FULL_DIR = $SCHOOL_BACKUP_INC_DIR ]; then
+	if [ $SCHOOL_BACKUP_FULL_DIR = $SCHOOL_BACKUP_INC_DIR -a "$SCHOOL_BACKUP_WITH_HARDLINK" = "yes" ]; then
 	    if [ -d $SCHOOL_BACKUP_FULL_DIR/home/ ]; then
 	    	mv $SCHOOL_BACKUP_FULL_DIR/home/ $BACKUP_DIR/home/
 	    else

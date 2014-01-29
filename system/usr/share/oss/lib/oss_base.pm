@@ -3465,7 +3465,7 @@ sub get_schools
     my $hash        = shift || 0;
     my $schools     = {};
     my ($LMD_ADDRESS, $LMD_PORT) = parse_file('/etc/sysconfig/lmd', "LMD_ADDRESS=", "LMD_PORT=");
-    my @sorted      = ( { sdn               => $this->{LDAP_BASE},
+    my @sorted      = ( { sdn              => $this->{LDAP_BASE},
 			  o                => $this->get_school_config('SCHOOL_NAME',$this->{LDAP_BASE}),
 			  lmd_address      => $LMD_ADDRESS,
 			  lmd_port         => $LMD_PORT,

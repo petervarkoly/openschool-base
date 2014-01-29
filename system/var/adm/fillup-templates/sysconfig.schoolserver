@@ -94,6 +94,12 @@ SCHOOL_BACKUP_STOP_CMD="umount /mnt/backup"
 # Is the backup medium more filled in percent admin will get a warning mail.
 SCHOOL_BACKUP_WARNING_LIMIT="80"
 
+## Type:        yesno
+## Default:     no
+# Should create backup with hardlinks. It is possible only if SCHOOL_BACKUP_FULL_DIR
+# and SCHOOL_BACKUP_INC_DIR are the same.
+SCHOOL_BACKUP_WITH_HARDLINK="no"
+
 
 ########################################################################
 ## Path:        Network/Server/Basis
