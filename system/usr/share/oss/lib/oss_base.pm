@@ -216,7 +216,15 @@ sub new
     }
     else
     {
-        $self->init_sysconfig('file');    
+	if( defined $connect->{sDN} )
+	{
+		$self->{SCHOOL_BASE} = $connect->{sDN};
+        	$self->init_sysconfig();
+	}
+	else
+	{
+        	$self->init_sysconfig('file');    
+	}
 	$self->{LDAP}->unbind;
 	$self->{LDAP} = undef;
         $self->connect_ldap('admin') || return undef;
@@ -1316,8 +1324,8 @@ sub init_sysconfig
     {
         $this->{SCHOOL_BASE} = $this->{LDAP_BASE};
     }
-    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{LDAP_BASE}        if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
-    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{LDAP_BASE}         if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
+    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{SCHOOL_BASE}      if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
+    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{SCHOOL_BASE}       if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
     $this->{SYSCONFIG}->{COMPUTERS_BASE}  = 'ou=Computers,'.$this->{SCHOOL_BASE} if( !defined $this->{SYSCONFIG}->{COMPUTERS_BASE} );
     $this->{SYSCONFIG}->{USER_BASE}       = 'ou=people,'.$this->{SCHOOL_BASE}    if( !defined $this->{SYSCONFIG}->{USER_BASE} );
     $this->{SYSCONFIG}->{GROUP_BASE}      = 'ou=group,'.$this->{SCHOOL_BASE}     if( !defined $this->{SYSCONFIG}->{GROUP_BASE} );
@@ -3482,12 +3490,13 @@ sub get_schools
     {
 	my $o  = $entry->get_value('o');
 	my $dn = $entry->dn();
-        $schools->{$o}->{sdn} = $dn;
         $schools->{$o}->{uniqueidentifier} = $entry->get_value('uniqueidentifier');
 	my $lmdhost = $this->get_vendor_object($dn,'CEPHALIX','LMD_ADRESS' );
 	my $lmdport = $this->get_vendor_object($dn,'CEPHALIX','LMD_PORT' );
+	my $sdn     = $this->get_vendor_object($dn,'CEPHALIX','SDN' );
         $schools->{$o}->{lmd_address} = $lmdhost->[0] || $LMD_ADDRESS;
         $schools->{$o}->{lmd_port}    = $lmdport->[0] || $LMD_PORT;
+	$schools->{$o}->{sdn}         = $sdn->[0]     || $dn;
         push @dns, $entry->dn();
     }
     if( ! $hash )
@@ -5689,11 +5698,9 @@ sub get_mail_domains()
    }
    if( $default )
    {
-       $mess = $this->{LDAP}->search( base => $this->{SYSCONFIG}->{DNS_BASE},
-				      filter => '(&(objectclass=suseMailDomain)(suseMailDomainType=main))',
-				      attrs  => ['zoneName']
-				);
-	push @domains, '---DEFAULTS---',$mess->entry(0)->get_value('zoneName');
+        my $domain = $this->get_school_config('SCHOOL_DOMAIN');
+        push @domains, $domain if( ! contains($domain,\@domains) );
+        push @domains, '---DEFAULTS---',$domain;
    }
    return \@domains;
 }
