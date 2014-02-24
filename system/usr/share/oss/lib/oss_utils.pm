@@ -85,6 +85,7 @@ use vars qw(
 	&check_domain_name_for_proxy
 	&date_format_convert
 	&insert_host_to_wpkghostsxml
+	&install_software_now
 );
 $VERSION = '3.4.0';
 # Debug only
@@ -1185,6 +1186,32 @@ sub insert_host_to_wpkghostsxml($)
 		my $new_hosts_xml = $xml->XMLout($xmlData);
 		write_file( $hosts_xml, $new_hosts_xml);
 	}
+}
+
+sub install_software_now
+{
+	my $this    = shift;
+	my $pcs     = shift || undef;
+	my $pcnames = '';
+	my $cmd     = 'for i in PCNAMES
+do
+    /usr/sbin/oss_control_client.pl --client="$i" --cmd=WOLCmd
+    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=cscript.exe --execworkdir="C:\Windows\System32" --execarg="C:\Windows\System32\GroupPolicy\Machine\Scripts\Startup\sw_installing.vbs" &
+done';
+
+	if( !$pcs ){
+		return 0;
+	}elsif( ref($pcs) eq 'ARRAY'){
+		foreach my $pcn ( sort @$pcs ){
+			$pcnames .= $pcn." ";
+		}
+	}else{
+		$pcnames .= $pcs;
+	}
+
+	$cmd =~ s/PCNAMES/$pcnames/;
+	create_job($cmd, "Start sw_installing script on: $pcnames", 'now');
+	return 1;
 }
 
 1;
