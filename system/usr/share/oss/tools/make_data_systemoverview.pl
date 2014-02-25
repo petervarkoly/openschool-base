@@ -164,8 +164,9 @@ $this->add_value_to_vendor_object( "$school_dn", 'extis', 'SystemOverview', "sof
 #Licence-Information
 #my $licenceinformation = __('The site is not accessible :'). "http://repo.openschoolserver.net/cgi-bin/validate-regcode.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}";
 my $licenceinformation = __('Problem with internet access. The license and support status can not be determined.');
-my $URL = "http://repo.openschoolserver.net/cgi-bin/validate-regcode.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}";
-system("wget -O /tmp/url.txt $URL");
+my $fqhn = `hostname -f`; chomp $fqhn;
+my $URL = "http://repo.openschoolserver.net/cgi-bin/validate-regcode.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}&fqhn=$fqhn";
+system("wget -O /tmp/url.txt '$URL'");
 open(INFILE, "/tmp/url.txt") || die "Cannot open $URL";
 while (<INFILE>) {
 	if ($_ =~ /<h[0-9]>(.*)<\/h[0-9]>/) {

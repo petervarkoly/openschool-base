@@ -216,7 +216,15 @@ sub new
     }
     else
     {
-        $self->init_sysconfig('file');    
+	if( defined $connect->{sDN} )
+	{
+		$self->{SCHOOL_BASE} = $connect->{sDN};
+        	$self->init_sysconfig();
+	}
+	else
+	{
+        	$self->init_sysconfig('file');    
+	}
 	$self->{LDAP}->unbind;
 	$self->{LDAP} = undef;
         $self->connect_ldap('admin') || return undef;
@@ -1316,8 +1324,8 @@ sub init_sysconfig
     {
         $this->{SCHOOL_BASE} = $this->{LDAP_BASE};
     }
-    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{LDAP_BASE}        if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
-    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{LDAP_BASE}         if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
+    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{SCHOOL_BASE}      if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
+    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{SCHOOL_BASE}       if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
     $this->{SYSCONFIG}->{COMPUTERS_BASE}  = 'ou=Computers,'.$this->{SCHOOL_BASE} if( !defined $this->{SYSCONFIG}->{COMPUTERS_BASE} );
     $this->{SYSCONFIG}->{USER_BASE}       = 'ou=people,'.$this->{SCHOOL_BASE}    if( !defined $this->{SYSCONFIG}->{USER_BASE} );
     $this->{SYSCONFIG}->{GROUP_BASE}      = 'ou=group,'.$this->{SCHOOL_BASE}     if( !defined $this->{SYSCONFIG}->{GROUP_BASE} );
@@ -3451,8 +3459,11 @@ Delivers the DNs or DNS and Names of all schools in the database.
    In this case the @school list is an array of the DNs of the schools, starting with the LDAP_BASE.
 
    my @school   = $oss->get_schools(1);
-   In this case the @school list is an array of hashes { DNs => o } of the schools,i
-   starting with the LDAP_BASE { LDAP_BASE => SCHOOL_NAME }.
+   In this case the @school list is an array of hashes { 'sdn'  => DNs,
+							 'name' => o,
+							 'host' => lmdhost,
+							 'uiniqueidntifier'  => uiniqueidntifier } 
+   of the schools, starting with the LDAP_BASE.
 
 =cut
 
@@ -3460,28 +3471,46 @@ sub get_schools
 {
     my $this        = shift;
     my $hash        = shift || 0;
-    my %schools     = ();
-    my @sorted      = ( { $this->{LDAP_BASE} => $this->get_school_config('SCHOOL_NAME',$this->{LDAP_BASE}) } );
+    my $schools     = {};
+    my ($LMD_ADDRESS, $LMD_PORT) = parse_file('/etc/sysconfig/lmd', "LMD_ADDRESS=", "LMD_PORT=");
+    my @sorted      = ( { sdn              => $this->{LDAP_BASE},
+			  o                => $this->get_school_config('SCHOOL_NAME',$this->{LDAP_BASE}),
+			  lmd_address      => $LMD_ADDRESS,
+			  lmd_port         => $LMD_PORT,
+			  uniqueidentifier => ''
+			 } );
     my @dns         = ( $this->{LDAP_BASE} );
 
     my $mesg = $this->{LDAP}->search( base   => $this->{LDAP_BASE},
                                       scope  => 'one',
-                                      filter => '(objectclass=customer)',
-                                      attrs  => ['dn','o']
+                                      filter => '(objectclass=customer)'
                         );
 
     foreach my $entry ( $mesg->entries )
     {
-        $schools{$entry->get_value('o')} = $entry->dn();
+	my $o  = $entry->get_value('o');
+	my $dn = $entry->dn();
+        $schools->{$o}->{uniqueidentifier} = $entry->get_value('uniqueidentifier');
+	my $lmdhost = $this->get_vendor_object($dn,'CEPHALIX','LMD_ADRESS' );
+	my $lmdport = $this->get_vendor_object($dn,'CEPHALIX','LMD_PORT' );
+	my $sdn     = $this->get_vendor_object($dn,'CEPHALIX','SDN' );
+        $schools->{$o}->{lmd_address} = $lmdhost->[0] || $LMD_ADDRESS;
+        $schools->{$o}->{lmd_port}    = $lmdport->[0] || $LMD_PORT;
+	$schools->{$o}->{sdn}         = $sdn->[0]     || $dn;
         push @dns, $entry->dn();
     }
     if( ! $hash )
     {
         return \@dns;
     }
-    foreach my $o ( sort {uc($a) cmp uc($b)} keys %schools )
+    foreach my $o ( sort {uc($a) cmp uc($b)} keys %$schools )
     {
-        push @sorted, { $schools{$o} => $o };
+        push @sorted, { sdn              => $schools->{$o}->{'sdn'},
+			o                => $o,
+			lmd_address      => $schools->{$o}->{'lmd_address'},
+			lmd_port         => $schools->{$o}->{'lmd_port'},
+			uniqueidentifier => $schools->{$o}->{'uniqueidentifier'}
+		      };
     }
     return \@sorted;
 
@@ -4149,7 +4178,7 @@ sub get_free_rooms($)
 }
 #-----------------------------------------------------------------------
 
-=item B<get_rooms(undef|'all'|'clients'|'ownerDN') >
+=item B<get_rooms(undef|'all'|'clients','ownerDN') >
 
 Returns the rooms.
    undef => all registered rooms
@@ -5669,11 +5698,9 @@ sub get_mail_domains()
    }
    if( $default )
    {
-       $mess = $this->{LDAP}->search( base => $this->{SYSCONFIG}->{DNS_BASE},
-				      filter => '(&(objectclass=suseMailDomain)(suseMailDomainType=main))',
-				      attrs  => ['zoneName']
-				);
-	push @domains, '---DEFAULTS---',$mess->entry(0)->get_value('zoneName');
+        my $domain = $this->get_school_config('SCHOOL_DOMAIN');
+        push @domains, $domain if( ! contains($domain,\@domains) );
+        push @domains, '---DEFAULTS---',$domain;
    }
    return \@domains;
 }
@@ -5861,5 +5888,483 @@ sub prodkey_allocation($$)
 
 	return 0;
 }
+#-----------------------------------------------------------------------
+
+=item B<get_sofware_categorie([CATEGORY])>
+
+Returns an hash result of a software caategory ;
+
+EXAMPLE:
+
+    my $obj = $oss->get_sofware_categorie();
+    print Dumper($obj);
+
+=cut
+
+sub get_sofware_categorie
+{
+	my $this     = shift;
+	my $category = shift || undef;
+	my $all_software = $this->search_vendor_object_for_vendor( 'osssoftware', "ou=Computers,$this->{LDAP_BASE}");
+	my %hash;
+
+	foreach my $sw_dn ( sort @$all_software ){
+		my $sw_name     = $this->get_attribute($sw_dn, 'configurationKey');
+		my $sw_category = $this->get_config_value($sw_dn, 'CATEGORIE');
+		my @categories = split(";", $sw_category);
+		$hash{EMPTY_CATEGORY}->{$sw_dn} = $sw_name if(!$sw_category);
+		foreach my $item ( sort @categories ){
+			next if( $category and ($category ne $item) );
+			$hash{$item}->{$sw_dn} = $sw_name;
+		}
+	}
+	return \%hash;
+}
+#-----------------------------------------------------------------------
+
+=item B<get_software_info(software_dn)>
+
+Returns an hash result of a software information ;
+
+EXAMPLE:
+
+    my $obj = $oss->get_software_info($sw_dn);
+    print Dumper($obj);
+
+=cut
+
+sub get_software_info
+{
+        my $this  = shift;
+        my $sw_dn = shift;
+        my %hash;
+
+	my $h = $this->get_config_values($sw_dn, "", "HASH");
+	my %hash;
+	delete $h->{description};
+	foreach my $item ( sort keys %{$h}){
+		$hash{lc($item)} = $h->{$item}->[0];
+	}
+        $hash{setup_files} = "";
+        $hash{be_installed} = 0;
+
+        if( ($hash{type} eq "MSI") or ($hash{type} eq "WPKG") ){
+                my $obj = $this->search_vendor_object_for_vendor( 'productkeys', $sw_dn);
+                if( defined $obj->[0] ){
+                        $hash{isprodkey} = 1;
+                }
+        }
+
+	if( $hash{file_requiremente} ){
+                if( $hash{type} eq "MSI" ){
+                        my $msi_file = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/*.msi");
+                        chomp $msi_file; $hash{setup_files} = "$msi_file";
+                        if( -e "$msi_file"){
+                                $hash{be_installed} = 1;
+                        }else{
+                                $hash{warning} = main::__('Missing the msi file!').'<BR>'.sprintf(main::__('Please copy the msi software to the "/srv/itool/swrepository/%s/" directory.'), $hash{name});
+                        }
+                }elsif( $hash{type} eq "DISKDIFF" ){
+                        my $files_diff  = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/files_diff/*.zip"); chomp $files_diff;
+                        my $reg_diff = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/registry_diff/*.reg"); chomp $reg_diff;
+                        if( (-e "$files_diff") and (-e "$reg_diff")){
+                                $hash{be_installed} = 1;
+                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
+                        }elsif( (!-e "$files_diff") and (!-e "$reg_diff")){
+                                $hash{warning} = main::__('Missing the file diff files!').'<BR>'.main::__('Missing the registry diff file!');
+                        }elsif( !-e "$files_diff" ){
+                                $hash{warning} = main::__('Missing the file diff files!').'<BR>';
+                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
+                        }elsif( !-e "$reg_diff" ){
+                                $hash{warning} .= main::__('Missing the registry diff file!');
+                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
+                        }
+                }elsif( $hash{type} eq "WPKG" ){
+                        my $files = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/* | grep -E ^\\/\\.*exe\\|^\\/\\.*vbs\\|^\\/\\.*bat\\|^\\/\\.*jar\\|^\\/\\.*msi\\|^\\/\\.*EXE\\|^\\/\\.*VBS\\|^\\/\\.*BAT\\|^\\/\\.*JAR\\|^\\/\\.*MSI"); chomp $files;
+                        my $wpkg_xml_file = cmd_pipe("ls /srv/itool/swrepository/wpkg/packages/".$hash{name}.".xml"); chomp $wpkg_xml_file;
+			my @file_size = split("\n", $files);
+			if( ($files and (-e "$wpkg_xml_file")) and scalar(@file_size) < $hash{file_requiremente} ){
+				$hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} );
+                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
+                        }elsif( $files and (-e "$wpkg_xml_file")){
+                                $files =~ s/\n/<BR>/g;
+                                $hash{be_installed} = 1;
+                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
+                        }elsif( (!$files) and (!-e "$wpkg_xml_file")){
+                                $hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.
+                                sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} )."<BR>".
+                                main::__('Missing the xml file!')."<BR>".
+                                sprintf(main::__('Please make the %s.xml file the "/srv/itool/swrepository/wpkg/packages/" directory.'), $hash{name});
+                        }elsif( !$files ){
+                                $hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} );
+                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
+                        }elsif( !-e "$wpkg_xml_file" ){
+                                $hash{warning} = main::__('Missing the xml file!')."<BR>".sprintf(main::__('Please make the %s.xml file the "/srv/itool/swrepository/wpkg/packages/" directory.'), $hash{name});
+				$hash{setup_files} = $files."<BR>".$wpkg_xml_file;
+                        }
+
+                }
+        }else{
+                $hash{be_installed} = 1;
+                $hash{setup_files}  = '-';
+        }
+
+        return \%hash;
+}
+
+#-----------------------------------------------------------------------
+
+=item B<software_install_cmd(workstation_dns, software_list, install_now [, others])>
+
+Make windows software install cmd and start;
+
+EXAMPLE:
+
+    my $result = $oss->software_install_cmd(\@ws_dns, \@sw_name_list, 1, $reply);
+
+=cut
+
+sub software_install_cmd
+{
+	my $this   = shift;
+	my $ws_dns = shift;
+	my $sw_name_list   = shift;
+	my $sw_install_now = shift || 0;
+	my $reply          = shift;
+	my @pcs;
+	my %ret;
+
+#	print "\n\nold software list\n\n";
+#	print Dumper($sw_name_list);
+	my $sw_result = $this->get_requiremente_sw($sw_name_list);
+#	print "\n\nnew software list\n\n";
+#	print Dumper($sw_result);
+#	exit;
+
+	my $missing_sw_list = '';
+	foreach my $sw_name ( @{$sw_result->{missing_sw_list}} )
+	{
+		$missing_sw_list .= $sw_name."... ; ";
+	}
+
+	$ret{missing_sw_list}   = $missing_sw_list if( $missing_sw_list );
+	$ret{selected_computer} = "";
+	$ret{selected_software} = join(", ", @$sw_name_list);
+	foreach my $ws_user_dn ( sort @$ws_dns ){
+		$ws_user_dn =~ s/o=oss,//;
+		my $ws_name = $this->get_attribute($ws_user_dn, 'uid');
+		push @pcs, $ws_name;
+		$ret{selected_computer} .= $ws_name.", ";
+		my $vbase = 'o=oss,'.$ws_user_dn;
+		if( !$this->exists_dn($vbase) )
+		{
+			my $result = $this->{LDAP}->add( dn =>  $vbase,
+					     attr => [
+						objectclass => [ 'top', 'organization' ],
+						o           => 'oss'
+					     ]);
+			if( $result->code )
+			{
+				$this->ldap_error($result);
+				print STDERR "Error by creating $vbase\n";
+				print STDERR $this->{ERROR}->{code}."\n";
+				print STDERR $this->{ERROR}->{text}."\n";
+			}
+		}
+
+		foreach my $sw_dn ( @{$sw_result->{sorted_sw_list}} ){ # It is important not to sorted.
+			my $sw_name = $this->get_attribute($sw_dn, 'configurationKey');
+			my $values = $this->get_vendor_object( $vbase, 'osssoftware', "$sw_name");
+			cmd_pipe("chmod -R 777 /srv/itool/swrepository/$sw_name/");
+			if( !$values->[0] ){
+				my $allocationtype = $this->get_config_value($sw_dn, 'LICENSALLOCATIONTYPE');
+				my $pkgtype = $this->get_config_value($sw_dn, 'TYPE');
+				my $status = 0;
+				if( ($allocationtype eq "NO_LICENSE_KEY") or ($pkgtype eq "DISKDIFF") )
+				{
+					$status = 1;
+					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
+				}
+				elsif( !$this->exists_dn("o=productkeys,".$sw_dn) and ($allocationtype ne "NO_LICENSE_KEY"))
+				{
+					$status = 0;
+					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '0';
+				}
+				else
+				{
+					$status = $this->prodkey_allocation($sw_dn, $ws_name);
+					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1' if($status eq 1);
+					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '0' if($status eq 0);
+				}
+				if($status){
+					$this->create_vendor_object( $vbase, 'osssoftware', "$sw_name", "installation_scheduled");
+					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
+					$ret{deinstallation_scheduled}->{$ws_name} = $this->remove_old_version_software($vbase, $sw_dn, $ws_name);
+				}
+			}elsif( $values->[0] and exists($reply->{det_try_again}) and !('installed' eq $values->[0]) ){
+				$this->modify_vendor_object( $vbase, 'osssoftware', "$sw_name", "installation_scheduled");
+				$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
+				$ret{deinstallation_scheduled}->{$ws_name} = $this->remove_old_version_software($vbase, $sw_dn, $ws_name);
+			}else{
+				$ret{exists_status}->{$ws_name}->{$sw_name} = "$values->[0]";
+			}
+		}
+
+		foreach my $i (sort @{$this->search_vendor_object_for_vendor( 'osssoftware', $ws_user_dn)}){
+			my $sw_name = $this->get_attribute($i, 'configurationKey');
+			my $status  = $this->get_attribute($i, 'configurationValue');
+#			if( !exists($ret{exists_status}->{$ws_name}->{$sw_name}) ){
+			if(('deinstallation_scheduled' eq $status) and (exists($ret{deinstallation_scheduled}->{$ws_name}->{$sw_name}))){
+				delete($ret{exists_status}->{$ws_name}->{$sw_name});
+			}
+			if(('deinstallation_scheduled' eq $status) and (!exists($ret{deinstallation_scheduled}->{$ws_name}->{$sw_name}))){
+				$ret{exists_status}->{$ws_name}->{$sw_name} = "deinstallation_scheduled";
+			}
+			if(('installation_scheduled' eq $status) and (!exists($ret{installation_scheduled}->{$ws_name}->{$sw_name}))){
+				$ret{exists_status}->{$ws_name}->{$sw_name} = "installation_scheduled";
+			}
+#			}
+		}
+
+		insert_host_to_wpkghostsxml($ws_name);
+		if( !-e "/srv/itool/swrepository/logs/$ws_name/" ){
+			cmd_pipe("mkdir /srv/itool/swrepository/logs/$ws_name/");
+			cmd_pipe("chmod -R 777 /srv/itool/swrepository/logs/$ws_name/");
+		}
+	}
+
+	if( $sw_install_now ){
+		$this->install_software_now(\@pcs);
+	}
+
+	return \%ret;
+}
+
+#-----------------------------------------------------------------------
+
+=item B<software_deinstall_cmd(workstation_dns, software_list, install_now [, others])>
+
+Make windows software deinstall cmd and start;
+
+EXAMPLE:
+
+    my $result = $oss->software_deinstall_cmd(\@ws_dns, \@sw_name_list, 1, $reply);
+
+=cut
+
+sub software_deinstall_cmd
+{
+	my $this   = shift;
+	my $ws_dns = shift;
+	my $sw_name_list   = shift;
+        my $sw_install_now = shift || 0;
+        my $reply          = shift;
+        my @pcs;
+        my %ret;
+
+	$ret{selected_computer} = "";
+        $ret{selected_software} = join(", ", @$sw_name_list);
+        foreach my $ws_user_dn ( sort @$ws_dns ){
+                $ws_user_dn =~ s/o=oss,//;
+                my $ws_name = $this->get_attribute($ws_user_dn, 'uid');
+                push @pcs, $ws_name;
+                $ret{selected_computer} .= $ws_name.", ";
+                my $vbase = 'o=oss,'.$ws_user_dn;
+                if( !$this->exists_dn($vbase) )
+                {
+                        my $result = $this->{LDAP}->add( dn =>  $vbase,
+                                             attr => [
+                                                objectclass => [ 'top', 'organization' ],
+                                                o           => 'oss'
+                                             ]);
+                        if( $result->code )
+                        {
+                                $this->ldap_error($result);
+                                print STDERR "Error by creating $vbase\n";
+                                print STDERR $this->{ERROR}->{code}."\n";
+                                print STDERR $this->{ERROR}->{text}."\n";
+                        }
+                }
+
+                foreach my $sw_name ( @$sw_name_list ){
+			my $values = $this->get_vendor_object( $vbase, 'osssoftware', "$sw_name");
+			my $sw_dn = "configurationKey=$sw_name,o=osssoftware,".$this->{SYSCONFIG}->{COMPUTERS_BASE};
+                        if( $values->[0] ){
+                                $this->modify_vendor_object( $vbase, 'osssoftware', "$sw_name", "deinstallation_scheduled");
+				$ret{deinstallation_scheduled}->{$ws_name}->{$sw_name} = '1';
+                        }else{
+				$ret{deinstallation_scheduled}->{$ws_name}->{$sw_name} = '0';
+                        }
+                }
+        }
+
+	if( $sw_install_now ){
+		$this->install_software_now(\@pcs);
+	}
+
+	return \%ret;
+}
+
+
+sub remove_old_version_software
+{
+        my $this       = shift;
+        my $ws_user_dn = shift;
+	my $sw_dn      = shift;
+        my $ws_name    = shift;
+        my $updatetype = $this->get_config_value($sw_dn, 'UPDATETYPE');
+	my %change_status;
+
+        if( 'module' eq $updatetype )
+        {
+            my $previuspackages = $this->get_config_value($sw_dn, 'PREVIUS_PACKAGES');
+            my @prevpackages    = split(";",$previuspackages);
+            my $sw_name = $this->get_attribute( $sw_dn, 'configurationKey');
+            my $obj     = $this->search_vendor_object_for_vendor( 'osssoftware', "$ws_user_dn");
+            foreach my $item ( sort @$obj ){
+                my $cKeyName = $this->get_attribute( $item, 'configurationKey');
+                next if( $cKeyName eq $sw_name );
+                foreach my $prevpackage ( sort @prevpackages ){
+                        if( $cKeyName =~ /$prevpackage*/ ){
+                                my $values = $this->get_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName");
+                                if( $values->[0] eq 'installed' ){
+                                        $this->modify_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName", "deinstallation_scheduled");
+					$change_status{$cKeyName} = '1';
+                                }elsif( $values->[0] eq 'installation_scheduled' ){
+                                        $this->delete_vendor_object( $ws_user_dn, 'osssoftware', $cKeyName );
+                                }elsif( $values->[0] eq 'installation_failed' ){
+                                        $this->delete_vendor_object( $ws_user_dn, 'osssoftware', $cKeyName );
+                                }elsif( $values->[0] eq 'deinstallation_failed' ){
+                                        $this->modify_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName", "deinstallation_scheduled");
+					$change_status{$cKeyName} = '1';
+                                }
+                        }
+                }
+            }
+        }
+	return \%change_status;
+}
+
+#-----------------------------------------------------------------------
+
+=item B<get_requiremente_sw(sw_name_list)>
+
+Get requiremente software for installation;
+
+EXAMPLE:
+
+    my $result = $oss->get_requiremente_sw(\%sw_name_list);
+
+$VAR1 = {
+          'missing_sw_list' => [
+                                 'JRE'
+                               ],
+          'sorted_sw_list' => [
+                                'configurationKey=FirefoxV22.0.DE,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro',
+                                'configurationKey=FirefoxV24.0.DE,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro',
+                                'configurationKey=GeonextV1.74,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro'
+                              ]
+        };
+=cut
+sub get_requiremente_sw
+{
+	my $this    = shift;
+	my $sw_list = shift;
+	my $ws_list = shift;
+	my $status  = shift;
+	my %ret  = ();
+	my %hash = ();
+	my %data = ();
+	my %missing_sw_list = ();
+
+	foreach my $sw_name ( @$sw_list ){
+		my $sw_dn = "configurationKey=$sw_name,o=osssoftware,".$this->{SYSCONFIG}->{COMPUTERS_BASE};
+		my $func1;
+		$func1 = sub {
+			my $sw_dnf     = shift;
+			my @sw_pkg_req = split(";", $this->get_config_value($sw_dnf,'PKG_REQUIREMENTE'));
+			my @new = ();
+			foreach my $sw_n ( sort @sw_pkg_req ){
+				my $sw_dnss = $this->search_vendor_object('osssoftware', "$sw_n*", "*");
+				my @sw_dns = reverse(sort(@$sw_dnss));
+				my $fl = 0;
+				foreach my $i ( @sw_dns ){
+					if( $i =~ /(.*),o=osssoftware,ou=Computers,(.*)/){
+						push @new, $i;
+						$fl = 1;
+						last;
+					}
+				}
+				$missing_sw_list{$sw_n} = 0 if( !$fl );
+			}
+
+			$data{$sw_dnf} = \@new;
+			my %h;
+			if( scalar(@new) > 0 ){
+				foreach my $sw_dn_t ( sort @new){
+					my $sw_dns = $func1->($sw_dn_t);
+					$h{$sw_dn_t} = $sw_dns;
+				}
+			}
+			return \%h ;
+		};
+		$func1->($sw_dn);
+	}
+	#print "\n\ndata\n\n";
+	#print Dumper(\%data);
+
+	map { %{$hash{$_}} = map { $_ => {}; } @{$data{$_}}; } keys %data;
+	#print "\n\nhash\n\n";
+	#print Dumper(\%hash);
+
+	my $func2;
+	$func2 = sub
+	{
+		my $h = shift;
+		my $id = shift;
+		my %newh = ();
+		foreach my $i ( sort keys %{$h} ){
+			if( ! keys %{$h->{$i}} ){
+				$newh{$id}->{$i} = 1;
+			}else{
+				$newh{$i} = $h->{$i};
+			}
+		}
+		foreach my $i ( sort keys %{$h} ){
+			foreach my $j (sort keys %{$h->{$i}} ){
+				if( exists($newh{$id}->{$j}) ){
+					delete $newh{$i}->{$j};
+				}
+			}
+		}
+
+		my $fl = 1;
+		foreach my $i ( sort keys %newh ){
+			$fl = 0 if($i !~ /^[0-9]{1,4}$/);
+		}
+
+		if($fl){
+			return \%newh;
+		}else{
+			$id++;
+			$func2->(\%newh, $id);
+		}
+	};
+
+	my $new_sw_list = $func2->(\%hash, 1);
+	foreach my $item (sort keys %{$new_sw_list}){
+		foreach my $swdn ( sort keys %{$new_sw_list->{$item}}){
+			push @{$ret{sorted_sw_list}}, $swdn;
+		}
+	}
+
+	foreach my $item ( keys %missing_sw_list ){
+		push @{$ret{missing_sw_list}}, $item;
+	}
+#print Dumper(%ret); exit;
+
+	return \%ret;
+}
+
 
 1;
