@@ -1128,7 +1128,7 @@ sub check_domain_name_for_proxy
                         }else{
                                 push @good_doomain_list, $domain_name;
                         }
-		}elsif($domain_name =~ /^([\-0-9a-zA-Z]+\.)+([a-zA-Z]+)$/){
+		}elsif($domain_name =~ /^[\.a-zA-Z]([\-0-9a-zA-Z]+\.)+([a-zA-Z]+)$/){
 			push @good_doomain_list, $domain_name;
                 }else{
                         push @bad_domain_list, $domain_name;
