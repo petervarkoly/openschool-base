@@ -216,7 +216,15 @@ sub new
     }
     else
     {
-        $self->init_sysconfig('file');    
+	if( defined $connect->{sDN} )
+	{
+		$self->{SCHOOL_BASE} = $connect->{sDN};
+        	$self->init_sysconfig();
+	}
+	else
+	{
+        	$self->init_sysconfig('file');    
+	}
 	$self->{LDAP}->unbind;
 	$self->{LDAP} = undef;
         $self->connect_ldap('admin') || return undef;
@@ -1316,8 +1324,8 @@ sub init_sysconfig
     {
         $this->{SCHOOL_BASE} = $this->{LDAP_BASE};
     }
-    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{LDAP_BASE}        if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
-    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{LDAP_BASE}         if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
+    $this->{SYSCONFIG}->{DHCP_BASE}       = 'ou=DHCP,'.$this->{SCHOOL_BASE}      if( !defined $this->{SYSCONFIG}->{DHCP_BASE} );
+    $this->{SYSCONFIG}->{DNS_BASE}        = 'ou=DNS,'.$this->{SCHOOL_BASE}       if( !defined $this->{SYSCONFIG}->{DNS_BASE} );
     $this->{SYSCONFIG}->{COMPUTERS_BASE}  = 'ou=Computers,'.$this->{SCHOOL_BASE} if( !defined $this->{SYSCONFIG}->{COMPUTERS_BASE} );
     $this->{SYSCONFIG}->{USER_BASE}       = 'ou=people,'.$this->{SCHOOL_BASE}    if( !defined $this->{SYSCONFIG}->{USER_BASE} );
     $this->{SYSCONFIG}->{GROUP_BASE}      = 'ou=group,'.$this->{SCHOOL_BASE}     if( !defined $this->{SYSCONFIG}->{GROUP_BASE} );
@@ -3451,8 +3459,11 @@ Delivers the DNs or DNS and Names of all schools in the database.
    In this case the @school list is an array of the DNs of the schools, starting with the LDAP_BASE.
 
    my @school   = $oss->get_schools(1);
-   In this case the @school list is an array of hashes { DNs => o } of the schools,i
-   starting with the LDAP_BASE { LDAP_BASE => SCHOOL_NAME }.
+   In this case the @school list is an array of hashes { 'sdn'  => DNs,
+							 'name' => o,
+							 'host' => lmdhost,
+							 'uiniqueidntifier'  => uiniqueidntifier } 
+   of the schools, starting with the LDAP_BASE.
 
 =cut
 
@@ -3460,28 +3471,46 @@ sub get_schools
 {
     my $this        = shift;
     my $hash        = shift || 0;
-    my %schools     = ();
-    my @sorted      = ( { $this->{LDAP_BASE} => $this->get_school_config('SCHOOL_NAME',$this->{LDAP_BASE}) } );
+    my $schools     = {};
+    my ($LMD_ADDRESS, $LMD_PORT) = parse_file('/etc/sysconfig/lmd', "LMD_ADDRESS=", "LMD_PORT=");
+    my @sorted      = ( { sdn              => $this->{LDAP_BASE},
+			  o                => $this->get_school_config('SCHOOL_NAME',$this->{LDAP_BASE}),
+			  lmd_address      => $LMD_ADDRESS,
+			  lmd_port         => $LMD_PORT,
+			  uniqueidentifier => ''
+			 } );
     my @dns         = ( $this->{LDAP_BASE} );
 
     my $mesg = $this->{LDAP}->search( base   => $this->{LDAP_BASE},
                                       scope  => 'one',
-                                      filter => '(objectclass=customer)',
-                                      attrs  => ['dn','o']
+                                      filter => '(objectclass=customer)'
                         );
 
     foreach my $entry ( $mesg->entries )
     {
-        $schools{$entry->get_value('o')} = $entry->dn();
+	my $o  = $entry->get_value('o');
+	my $dn = $entry->dn();
+        $schools->{$o}->{uniqueidentifier} = $entry->get_value('uniqueidentifier');
+	my $lmdhost = $this->get_vendor_object($dn,'CEPHALIX','LMD_ADRESS' );
+	my $lmdport = $this->get_vendor_object($dn,'CEPHALIX','LMD_PORT' );
+	my $sdn     = $this->get_vendor_object($dn,'CEPHALIX','SDN' );
+        $schools->{$o}->{lmd_address} = $lmdhost->[0] || $LMD_ADDRESS;
+        $schools->{$o}->{lmd_port}    = $lmdport->[0] || $LMD_PORT;
+	$schools->{$o}->{sdn}         = $sdn->[0]     || $dn;
         push @dns, $entry->dn();
     }
     if( ! $hash )
     {
         return \@dns;
     }
-    foreach my $o ( sort {uc($a) cmp uc($b)} keys %schools )
+    foreach my $o ( sort {uc($a) cmp uc($b)} keys %$schools )
     {
-        push @sorted, { $schools{$o} => $o };
+        push @sorted, { sdn              => $schools->{$o}->{'sdn'},
+			o                => $o,
+			lmd_address      => $schools->{$o}->{'lmd_address'},
+			lmd_port         => $schools->{$o}->{'lmd_port'},
+			uniqueidentifier => $schools->{$o}->{'uniqueidentifier'}
+		      };
     }
     return \@sorted;
 
@@ -5667,11 +5696,9 @@ sub get_mail_domains()
    }
    if( $default )
    {
-       $mess = $this->{LDAP}->search( base => $this->{SYSCONFIG}->{DNS_BASE},
-				      filter => '(&(objectclass=suseMailDomain)(suseMailDomainType=main))',
-				      attrs  => ['zoneName']
-				);
-	push @domains, '---DEFAULTS---',$mess->entry(0)->get_value('zoneName');
+        my $domain = $this->get_school_config('SCHOOL_DOMAIN');
+        push @domains, $domain if( ! contains($domain,\@domains) );
+        push @domains, '---DEFAULTS---',$domain;
    }
    return \@domains;
 }

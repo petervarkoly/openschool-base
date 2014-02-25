@@ -9,6 +9,7 @@ use strict;
 use Net::LDAP;
 use MIME::Base64;
 use oss_base;
+use oss_utils;
 
 my $UID      = shift;
 my $IP       = shift;
@@ -42,7 +43,7 @@ if( $UID !~ /^root|administrator$/i )
 
 }
 
-print STDERR "netlogon $UID\n";
+print STDERR "netlogon ".xml_time().": $UID $role $IP $ARCH $name\n";
 if( $UID =~ /^root|administrator$/i )
 {
 	$script = `cat /var/lib/samba/netlogon/root.bat`;

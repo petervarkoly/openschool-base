@@ -15,6 +15,7 @@ my %options    = ();
 my $result = GetOptions(\%options,
 			"help",
 			"description",
+			"base=s"
 		);
 sub usage
 {
@@ -26,6 +27,7 @@ sub usage
 		'Optional parameters: '."\n".
 		'	-h, --help         Display this help.'."\n".
 		'	-d, --description  Display the descriptiont.'."\n";
+		'       -b, --base         BaseDN of the School'."\n";
 }
 if ( defined($options{'help'}) ){
 	usage(); exit 0;
@@ -41,6 +43,7 @@ if( defined($options{'description'}) ){
 		'	OPTIONAL:'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".
 		'		-d, --description : Display the descriptiont.(type=boolean)'."\n";
+		'               -b, --base        : BaseDN of the School'."\n";
 	exit 0;
 }
 
@@ -49,6 +52,13 @@ my $resp    = undef;
 my $errs    = undef;
 
 my $oss     = oss_base->new({withIMAP => 1});
+if ( defined($options{'base'}) ){
+        $oss->destroy();
+        $oss = oss_base->new({sDN=>$options{'base'}, withIMAP => 1});
+        if( defined $oss->{ERROR}->{text} ) {
+          print "Error: ".$oss->{ERROR}->{text}."\n";
+        }
+}
 
 $mess = $oss->{LDAP}->search(
                         base    => $oss->{SYSCONFIG}->{GROUP_BASE},

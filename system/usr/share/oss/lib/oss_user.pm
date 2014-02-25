@@ -647,6 +647,19 @@ sub modify
 	    }
 	    next;
 	}
+	if( $i =~ /^susedeliverytofolder$/i )
+	{
+	    my $val = "no";
+	    $val = "yes" if $user->{$i};
+	    if( $old->exists($i) ) {
+	       $old->replace( $i => $val );
+	    }
+	    else
+	    {
+	       $old->add( $i => $val );
+	    }
+	    next;
+	}
 	if( $i =~ /^new(.*Address)$/i )
 	{
 	    my $newattr = $1;
