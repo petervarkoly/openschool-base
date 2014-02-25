@@ -5148,6 +5148,7 @@ sub create_vendor_object
     {
 	    $this->{LDAP}->modify( $kbase, add    => { description => $description } );
     }
+    return $kbase;
 }
 #-----------------------------------------------------------------------
 
@@ -5326,12 +5327,13 @@ sub add_value_to_vendor_object($$$$)
 	}
 	if( ! $this->exists_dn($kbase) )
 	{
-		$this->create_vendor_object($dn,$vendor,$key,$value);
+		return $this->create_vendor_object($dn,$vendor,$key,$value);
 	}
 	else
 	{
 		$this->{LDAP}->modify( $kbase, add => { configurationvalue => $value } );
 	}
+	return $kbase;
 }
 #-----------------------------------------------------------------------
   
