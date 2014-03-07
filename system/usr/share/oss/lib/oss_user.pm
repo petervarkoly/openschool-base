@@ -603,15 +603,10 @@ sub modify
 
     my $o_sn = $old->get_value('sn');
     my $o_givenname = $old->get_value('givenname');
+    Encode::_utf8_on($o_sn); Encode::_utf8_on($o_givenname);
     if( ( defined $user->{sn} && defined $user->{givenname} ) and ( ($o_sn ne $user->{sn}) or ($o_givenname ne $user->{givenname})) )
     {
 	$this->create_cn($user);
-	my $old_susemailacceptaddress = $this->get_attributes($user->{dn}, ['suseMailAcceptAddress']);
-	my $uid = $old->get_value('uid');
-	foreach my $item ( @{$old_susemailacceptaddress->{suseMailAcceptAddress}} )
-	{
-	    push @{$user->{susemailacceptaddress}}, $item if(($item !~ /^$uid@(.*)/) and !(grep {$_ eq $item} @{$user->{susemailacceptaddress}}));
-	}
     }
 
     foreach my $i ( keys %{$user} )
@@ -748,6 +743,7 @@ sub modify
 		next;
 	    }
 	    my $tmp = $old->get_value($i);
+	    Encode::_utf8_on($tmp);
 	    if( $tmp ne $user->{$i} )
 	    {
 	        $old->replace( $i => $user->{$i} );
