@@ -22,43 +22,43 @@ install:
 
 	#Install the contents of the share directory
 	( cd share/oss ; \
-	  for i in `find -type d -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type d `; do \
 	    install -d -m 755 $(SHARE)/$$i; \
 	  done; \
 	)
 	#Install the contents of the tools directory
 	( cd share/oss/tools ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 755 $$i $(SHARE)/tools/$$i; \
 	  done; \
 	)
 	#Install the contents of the share directory
 	( cd share/oss/lib ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 644 $$i $(SHARE)/lib/$$i; \
 	  done; \
 	)
 	#Install the contents of the templates directory
 	( cd share/oss/templates ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 644 $$i $(SHARE)/templates/$$i; \
 	  done; \
 	)
 	#Install the contents of the plugins directory
 	( cd share/oss/plugins ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 755 $$i $(SHARE)/plugins/$$i; \
 	  done; \
 	)
 	#Install the content of the software directory
 	( cd share/oss/software ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 755 $$i $(SHARE)/software/$$i; \
 	  done; \
 	)
 	#Install the content of the cups drivers directory
 	( cd share/cups/drivers ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -m 644 $$i $(DESTDIR)/usr/share/cups/drivers/$$i; \
 	  done; \
 	)
@@ -74,43 +74,43 @@ backupinstall:
 	)
 	#Install the contents of the share directory
 	( cd share/oss ; \
-	  for i in `find -type d -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type d `; do \
 	    install -b -d -m 755 $(SHARE)/$$i; \
 	  done; \
 	)
 	#Install the contents of the tools directory
 	( cd share/oss/tools ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 755 $$i $(SHARE)/tools/$$i; \
 	  done; \
 	)
 	#Install the contents of the share directory
 	( cd share/oss/lib ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 644 $$i $(SHARE)/lib/$$i; \
 	  done; \
 	)
 	#Install the contents of the templates directory
 	( cd share/oss/templates ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 644 $$i $(SHARE)/templates/$$i; \
 	  done; \
 	)
 	#Install the contents of the plugins directory
 	( cd share/oss/plugins ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 755 $$i $(SHARE)/plugins/$$i; \
 	  done; \
 	)
 	#Install the content of the software directory
 	( cd share/oss/software ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 755 $$i $(SHARE)/software/$$i; \
 	  done; \
 	)
 	#Install the content of the cups drivers directory
 	( cd share/cups/drivers ; \
-	  for i in `find -type f -not -regex "^.*\.git.*" -not -regex "^.*\.svn.*"`; do \
+	  for i in `find -type f `; do \
 	    install -b -m 644 $$i $(DESTDIR)/usr/share/cups/drivers/$$i; \
 	  done; \
 	)
@@ -158,3 +158,49 @@ restore:
 	    mv $$file `echo "$$file" | sed 's/~//'`; \
 	  done; \
 	)
+
+state:
+	#Check the executables	
+	( cd sbin; \
+	  for i in oss_* ; do \
+	     diff -u $$i $(SBINDIR)/$$i; \
+	  done; \
+	)
+
+	#Check the contents of the tools directory
+	( cd share/oss/tools ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(SHARE)/tools/$$i; \
+	  done; \
+	)
+	#Check the contents of the share directory
+	( cd share/oss/lib ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(SHARE)/lib/$$i; \
+	  done; \
+	)
+	#Check the contents of the templates directory
+	( cd share/oss/templates ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(SHARE)/templates/$$i; \
+	  done; \
+	)
+	#Check the contents of the plugins directory
+	( cd share/oss/plugins ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(SHARE)/plugins/$$i; \
+	  done; \
+	)
+	#Check the content of the software directory
+	( cd share/oss/software ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(SHARE)/software/$$i; \
+	  done; \
+	)
+	#Check the content of the cups drivers directory
+	( cd share/cups/drivers ; \
+	  for i in `find -type f `; do \
+	    diff -u $$i $(DESTDIR)/usr/share/cups/drivers/$$i; \
+	  done; \
+	)
+
