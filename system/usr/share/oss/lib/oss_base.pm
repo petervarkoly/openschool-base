@@ -4794,7 +4794,7 @@ Returns the .
 
 EXAMPLE:
 
-  my $newHW = $oss->add_new_HW('Very good new Workstations');
+  my $newHW = $oss->add_new_HW('Very good new Workstations',"FatClient");
 
 =cut
 
@@ -4802,6 +4802,7 @@ sub add_new_HW()
 {
     my $this    = shift;
     my $desc    = shift;
+    my $type    = shift || 'FatClient' ;
    
     if( ! $desc ) 
     {
@@ -4817,7 +4818,7 @@ sub add_new_HW()
                          objectClass        => [ 'top' , 'SchoolConfiguration' ],
                          configurationKey   => $key,
                          configurationValue => 'TYPE=HW',
-                         configurationValue => 'WSType=FatClient',
+                         configurationValue => "WSType=$type",
                          description        => $desc
                       ]
               );
