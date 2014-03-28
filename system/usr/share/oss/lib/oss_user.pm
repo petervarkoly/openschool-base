@@ -362,6 +362,13 @@ sub add($)
 		    'chmod -R 700 '.$USER->{profiledir}.";\n".
             	    'setfacl -dm u::rwx '.$USER->{profiledir}.";\n".
         	    'rsync -a '.$skel.'/ '.$USER->{homedirectory}."/\n";
+	#If the user have cloud access create CLOUD directory
+        if(defined $USER->{cloud_access}){
+            $this->create_vendor_object( $USER->{dn}, 'EXTIS', 'CloudAccess', $USER->{cloud_access} );
+	    if( $USER->{cloud_access} ) {
+	        $command .= 'mkdir '.$USER->{homedirectory}."/CLOUD\n";
+	    }
+        }
         if( $USER->{role} eq 'workstations' || ($USER->{role} eq 'students' &&  $this->{SYSCONFIG}->{SCHOOL_TEACHER_OBSERV_HOME} eq 'yes' ))
         {
                 $command .= 'chown -R '.$USER->{uidnumber}.':teachers '.$USER->{homedirectory}.";\n".
@@ -615,6 +622,17 @@ sub modify
 	    $this->make_delete_user_webdavshare( "$user->{dn}", "$user->{webdav_access}" );
 	    next;
 	}
+        if( $i eq 'cloud_access'){
+            $this->create_vendor_object( $user->{dn}, 'EXTIS', 'CloudAccess', $user->{cloud_access} );
+	    my $dir =  $old->get_value('homedirectory').'/CLOUD';
+	    if( $user->{cloud_access} ) {
+	        system('mkdir '.$dir.'; chown '.$old->get_value('uidnumber').' '.$dir);
+	    }
+	    else
+	    {
+	    	system("test -d $dir && mv $dir $dir-INACTIV");
+	    }
+        }
 	#Handle some special attributes.
 	if( $i eq 'quota' )
 	{
