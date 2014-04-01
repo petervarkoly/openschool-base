@@ -5940,7 +5940,6 @@ sub get_software_info
         my %hash;
 
 	my $h = $this->get_config_values($sw_dn, "", "HASH");
-	my %hash;
 	delete $h->{description};
 	foreach my $item ( sort keys %{$h}){
 		$hash{lc($item)} = $h->{$item}->[0];
