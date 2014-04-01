@@ -252,6 +252,9 @@ sub add($)
 	if($GROUP->{webdav_access}){
 	    $this->make_delete_group_webdavshare( "$GROUP->{dn}", "$GROUP->{webdav_access}" );
 	}
+	if(defined $GROUP->{cloud_access}){
+	    $this->create_vendor_object( $GROUP->{dn}, 'EXTIS', 'CloudAccess', $GROUP->{cloud_access} );
+	}
 
 	if ( ! $this->create_mbox($GROUP->{dn},$GROUP) )
 	{
@@ -396,6 +399,10 @@ sub modify
 		$this->make_delete_group_webdavshare( "$group->{dn}", "$group->{webdav_access}" );
                 next;
 	}
+	if($i eq "cloud_access" ){
+	    $this->create_vendor_object( $group->{dn}, 'EXTIS', 'CloudAccess', $group->{cloud_access} );
+	}
+
         #Handle some special attributes.
         if( $i eq 'quota' )
         {

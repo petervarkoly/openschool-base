@@ -76,3 +76,10 @@ restore:
 	    cd .. ;\
 	done
 
+state:
+	for i in $(SUBDIRS); do \
+	    cd $$i; \
+	    make state DESTDIR=$(DESTDIR) SHARE=$(SHARE) PRODNAME=$(PRODNAME); \
+	    cd .. ;\
+	done
+

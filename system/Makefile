@@ -112,3 +112,7 @@ restore:
 	)
 	#Restore the contents of the usr directory
 	cd usr; make restore;
+
+
+state:
+	cd usr; make state;
