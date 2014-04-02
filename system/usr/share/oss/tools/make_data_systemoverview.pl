@@ -135,17 +135,7 @@ if( $line_sys[0] =~ /(.*) \((.*)\)$/){
 $this->add_value_to_vendor_object( "$school_dn", 'extis', 'SystemOverview', "software#;#systemversion#=#$system_version $sys_bit#;#help#=#$help_Kernel_SLES_sdk");
 
 #Last Update
-my $lastupdate = "";
-foreach my $f ( sort ( glob "/var/log/OSS-UPDATE*" ) ){
-	if($f =~ /^\/var\/log\/OSS-UPDATE-(.*)/){
-		my @date_time = split("-",$1);
-		if(($language eq "DE") or ($language eq "RO")){
-			$lastupdate = "$date_time[2].$date_time[1].$date_time[0]";
-		}elsif($language eq "HU"){
-			$lastupdate = "$date_time[0].$date_time[1].$date_time[2]";
-		}
-	}
-}
+my $lastupdate = `oss_convert_time.pl \$( rpm -qa --qf "%{INSTALLTIME}\\n" | sort -n | tail  -n 1 )`;
 if($lastupdate eq ''){
 	$lastupdate = __("It has not been updated yet");
 }
