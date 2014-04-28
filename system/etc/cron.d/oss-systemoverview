@@ -1,2 +1,0 @@
-# Creates data for the SystemOverview module
--0 * * * * root /usr/share/oss/tools/make_data_systemoverview.pl

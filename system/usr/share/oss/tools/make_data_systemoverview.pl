@@ -21,6 +21,7 @@ use URI::Escape;
 use Getopt::Long;
 my %options    = ();
 my $result = GetOptions(\%options,
+			"sleep",
 			"help",
 			"description",
                       );
@@ -34,6 +35,7 @@ sub usage
 		'Optional parameters: '."\n".
 		'	-h, --help         Display this help.'."\n".
 		'	-d, --description  Display the descriptiont.'."\n";
+		'	-s, --sleep        Sleep randomly amounts of seconds befor connect license server.'."\n";
 }
 if ( defined($options{'help'}) ){
 	usage(); exit 0;
@@ -49,6 +51,7 @@ if( defined($options{'description'}) ){
 		'	OPTIONAL:'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".
 		'		-d, --description : Display the descriptiont.(type=boolean)'."\n";
+		'		-s, --sleep       : Sleep random accounts seconds befor connect license server.'."\n";
 	exit 0;
 }
 
@@ -135,17 +138,7 @@ if( $line_sys[0] =~ /(.*) \((.*)\)$/){
 $this->add_value_to_vendor_object( "$school_dn", 'extis', 'SystemOverview', "software#;#systemversion#=#$system_version $sys_bit#;#help#=#$help_Kernel_SLES_sdk");
 
 #Last Update
-my $lastupdate = "";
-foreach my $f ( sort ( glob "/var/log/OSS-UPDATE*" ) ){
-	if($f =~ /^\/var\/log\/OSS-UPDATE-(.*)/){
-		my @date_time = split("-",$1);
-		if(($language eq "DE") or ($language eq "RO")){
-			$lastupdate = "$date_time[2].$date_time[1].$date_time[0]";
-		}elsif($language eq "HU"){
-			$lastupdate = "$date_time[0].$date_time[1].$date_time[2]";
-		}
-	}
-}
+my $lastupdate = `oss_convert_time.pl \$( rpm -qa --qf "%{INSTALLTIME}\\n" | sort -n | tail  -n 1 )`;
 if($lastupdate eq ''){
 	$lastupdate = __("It has not been updated yet");
 }
@@ -162,19 +155,21 @@ if(defined($this->{SYSCONFIG}->{SCHOOL_REG_CODE})){
 $this->add_value_to_vendor_object( "$school_dn", 'extis', 'SystemOverview', "software#;#school_regcode#=#$school_regcode");
 
 #Licence-Information
-#my $licenceinformation = __('The site is not accessible :'). "http://repo.openschoolserver.net/cgi-bin/validate-regcode.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}";
 my $licenceinformation = __('Problem with internet access. The license and support status can not be determined.');
 my $fqhn = `hostname -f`; chomp $fqhn;
-my $URL = "http://repo.openschoolserver.net/cgi-bin/validate-regcode.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}&fqhn=$fqhn";
-system("wget -O /tmp/url.txt '$URL'");
+my $URL = "http://repo.openschoolserver.net/cgi-bin/validate-regcode1.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}&fqhn=$fqhn";
+system('sleep $((RANDOM%300))') if( defined $options{sleep} );
+system("/etc/profile.d/profile.sh; wget -O /tmp/url.txt '$URL'");
 open(INFILE, "/tmp/url.txt") || die "Cannot open $URL";
 while (<INFILE>) {
-	if ($_ =~ /<h[0-9]>(.*)<\/h[0-9]>/) {
+	if ($_ =~ /<h1>VALID:(.*)<\/h1>/) {
 		my @date_time = split("-",$1);
-		if(($language eq "DE") or ($language eq "RO")){
-			$licenceinformation = "$date_time[2].$date_time[1].$date_time[0]";
-		}elsif($language eq "HU"){
+		if($language eq "HU"){
 			$licenceinformation = "$date_time[0].$date_time[1].$date_time[2]";
+		}
+		else
+		{
+			$licenceinformation = "$date_time[2].$date_time[1].$date_time[0]";
 		}
 		if($date_time[0] !~ /(.*)[0-9]/){
 			$licenceinformation = __("None, invalid or expired registration code");
