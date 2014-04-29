@@ -35,7 +35,7 @@
 
 SMBD_BIN="/usr/sbin/smbd"
 SMB_CONF="/etc/samba/printserver.conf"
-PID_FILE="/var/run/samba/printserver/smbd-printserver.conf.pid"
+PID_FILE="/var/run/samba/printserver/smbd.pid"
 
 . /etc/rc.status
 rc_reset

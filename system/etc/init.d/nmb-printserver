@@ -35,7 +35,7 @@
 
 NMBD_BIN="/usr/sbin/nmbd"
 SMB_CONF="/etc/samba/printserver.conf"
-PID_FILE="/var/run/samba/printserver/nmbd-printserver.conf.pid"
+PID_FILE="/var/run/samba/printserver/nmbd.pid"
 
 . /etc/rc.status
 rc_reset
