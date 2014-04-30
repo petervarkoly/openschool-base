@@ -5891,18 +5891,18 @@ sub prodkey_allocation($$)
 }
 #-----------------------------------------------------------------------
 
-=item B<get_sofware_category([CATEGORY])>
+=item B<get_software_category([CATEGORY])>
 
 Returns an hash result of a software caategory ;
 
 EXAMPLE:
 
-    my $obj = $oss->get_sofware_category();
+    my $obj = $oss->get_software_category();
     print Dumper($obj);
 
 =cut
 
-sub get_sofware_category
+sub get_software_category
 {
 	my $this     = shift;
 	my $category = shift || undef;
