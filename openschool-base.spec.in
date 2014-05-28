@@ -60,8 +60,10 @@ then
 	UV=$( echo %{version} | sed -r 's/(...)../\1/' )
     	for i in /usr/share/oss/setup/update-$UV-*
     	do
+	    if [ -e $i ]; then
     		b=$(basename $i)
     		$i &> /var/log/oss-update/$b 
+	    fi
     	done
     	rsync -av /usr/share/oss/software/oss/ /home/software/oss/
 	/usr/share/oss/tools/make_scripts_list.pl
