@@ -150,13 +150,13 @@ no-auto-rehash
 #safe-updates
 
 [isamchk]
-key_buffer = 20M
+key_buffer_size = 20M
 sort_buffer_size = 20M
 read_buffer = 2M
 write_buffer = 2M
 
 [myisamchk]
-key_buffer = 20M
+key_buffer_size = 20M
 sort_buffer_size = 20M
 read_buffer = 2M
 write_buffer = 2M
