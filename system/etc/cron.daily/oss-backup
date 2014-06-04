@@ -267,6 +267,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 		cp $BACKUP_DIR/joomla.gz $SCHOOL_BACKUP_FULL_DIR/joomla.gz
 	  fi
 	fi
+        mysqldump $MYSQLDUMP_OPTIONS lmd | gzip > $BACKUP_DIR/lmd.gz    
     fi
 
     if [ "$SCHOOL_BACKUP_MOODLE" = "yes" ]; then
