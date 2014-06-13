@@ -159,7 +159,7 @@ my $licenceinformation = __('Problem with internet access. The license and suppo
 my $fqhn = `hostname -f`; chomp $fqhn;
 my $URL = "http://repo.openschoolserver.net/cgi-bin/validate-regcode1.pl?regcode=$this->{SYSCONFIG}->{SCHOOL_REG_CODE}&fqhn=$fqhn";
 system('sleep $((RANDOM%300))') if( defined $options{sleep} );
-system("/etc/profile.d/profile.sh; wget -O /tmp/url.txt '$URL'");
+system(". /etc/profile.d/profile.sh; wget -O /tmp/url.txt '$URL'");
 open(INFILE, "/tmp/url.txt") || die "Cannot open $URL";
 while (<INFILE>) {
 	if ($_ =~ /<h1>VALID:(.*)<\/h1>/) {
