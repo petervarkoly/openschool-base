@@ -1,0 +1,36 @@
+#!/bin/bash
+# Copyright (c) 2013 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+
+if [ -e /var/adm/oss/update-3.4-2 ]
+then
+echo "Patch 3.4-2 already installed"
+        exit 0
+fi
+
+. /etc/sysconfig/ldap
+. /etc/sysconfig/schoolserver
+DATE=$( /usr/share/oss/tools/oss_date.sh )
+SCHOOL_LDAPBASE=`echo $BASE_CONFIG_DN | sed s/ou=ldapconfig,//`
+
+
+#Adapt smb.conf
+perl -e 'use strict;
+use Config::IniFiles;
+
+my $m = new Config::IniFiles( -file => "/etc/samba/smb.conf" );
+$m->ReadConfig;
+if( ! $m->val("profiles","root preexec") )
+{
+        $m->newval("profiles","root preexec","/usr/share/oss/tools/check_profil.sh %u %a %m");
+}
+my $ivu = $m->val("itool","valid users");
+if( $ivu !~ /register/ )
+{
+	$m->setval("itool","valid users",$ivu.", register");
+}
+$m->RewriteConfig();
+'
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-2
+

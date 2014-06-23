@@ -6285,7 +6285,7 @@ sub get_requiremente_sw
 			my @sw_pkg_req = split(";", $this->get_config_value($sw_dnf,'PKG_REQUIREMENTE'));
 			my @new = ();
 			foreach my $sw_n ( sort @sw_pkg_req ){
-				my $sw_dnss = $this->search_vendor_object('osssoftware', "$sw_n*", "*");
+				my $sw_dnss = $this->search_vendor_object('osssoftware', "$sw_n", "*");
 				my @sw_dns = reverse(sort(@$sw_dnss));
 				my $fl = 0;
 				foreach my $i ( @sw_dns ){

@@ -41,7 +41,7 @@
    path = /srv/itool
    root preexec = /usr/share/oss/tools/remove_pxe_autostart.pl %u %I %a
    inherit permissions = Yes
-   valid users = @teachers, @sysadmins, @workstations, root
+   valid users = @teachers, @sysadmins, @workstations, root, register
    write list = @sysadmins,root
    force group = sysadmins
    browseable = no
