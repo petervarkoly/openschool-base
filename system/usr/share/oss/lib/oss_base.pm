@@ -1745,6 +1745,7 @@ sub delete_user_from_group($$)
     # Not needed if the memberOf overlay is loaded
     # $this->{LDAP}->modify($udn, delete=> { memberOf  => $gdn });
     # TODO What happends with shared mailboxes???
+    return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
     $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} );
 }
 #-----------------------------------------------------------------------
@@ -3219,15 +3220,18 @@ sub delete_school($)
     my $homebase    = $this->get_school_config('SCHOOL_HOME_BASE',$dn);
     my $domain      = $this->get_school_config('SCHOOL_DOMAIN',$dn);
 
-    foreach my $udn ( @{$this->get_school_users('*',$dn)} )
+    if( ! defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} || $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'no' ) 
     {
-      my $uid = get_name_of_dn($udn);
-      $this->{IMAP}->delete("user/$uid");
-    }
-    foreach my $gdn ( @{$this->get_school_groups('*',$dn)} )
-    {
-      my $cn = get_name_of_dn($gdn);
-      $this->{IMAP}->delete("$cn");
+        foreach my $udn ( @{$this->get_school_users('*',$dn)} )
+        {
+          my $uid = get_name_of_dn($udn);
+          $this->{IMAP}->delete("user/$uid");
+        }
+        foreach my $gdn ( @{$this->get_school_groups('*',$dn)} )
+        {
+          my $cn = get_name_of_dn($gdn);
+          $this->{IMAP}->delete("$cn");
+        }
     }
 
     if( $homebase && $homebase =~ /^\/home/ )
