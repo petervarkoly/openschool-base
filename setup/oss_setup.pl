@@ -1159,7 +1159,6 @@ grep -q "syntax on" /root/.exrc || echo "syntax on" >> /root/.exrc
 #####################
 # setup lmd
 #####################
-cp /etc/my.cnf.in /etc/my.cnf
 rcmysql status || rcmysql start
 sleep 5
 cd /usr/share/lmd/sql
@@ -1176,10 +1175,10 @@ host=localhost
 user=root
 password=$password" > /root/.my.cnf
 chmod 600 /root/.my.cnf
-echo "set mysql root pwd 2"
-mysqladmin -p$password -u root -h `cat /etc/HOSTNAME` password $password
-echo "set mysql root pwd 3"
-mysqladmin -p$password -u root -h localhost password $password
+#echo "set mysql root pwd 2"
+#mysqladmin -p$password -u root -h `cat /etc/HOSTNAME` password $password
+#echo "set mysql root pwd 3"
+#mysqladmin -p$password -u root -h localhost password $password
 ######################
 #Only root and admin may make ssh connection to the server
 ######################
