@@ -30,5 +30,5 @@ then
         exit
 fi
 mkdir -p /tmp/VIRUS /var/log/virus_scan_logs
-/usr/bin/clamscan --move=/tmp/VIRUS -r /home | grep 'FOUND\|OK' > /var/log/virus_scan_logs/$(date +%Y-%m-%d_%T).log
+/usr/bin/clamscan --scan-swf=no --move=/tmp/VIRUS -r /home | grep 'FOUND\|OK' > /var/log/virus_scan_logs/$(date +%Y-%m-%d_%T).log
 
