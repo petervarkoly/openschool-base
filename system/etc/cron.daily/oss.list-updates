@@ -3,3 +3,6 @@
 
 /usr/bin/zypper --no-gpg-checks -n ref &> /dev/null
 /usr/bin/zypper --no-gpg-checks -n lu 2> /dev/null | grep -v 'Abort' | grep -v 'Warning' > /var/adm/OSS-Updates
+/usr/bin/sed -i /sle-sdk/d /var/adm/OSS-Updates
+/usr/bin/sed -i /SUSE_SLES/d /var/adm/OSS-Updates
+
