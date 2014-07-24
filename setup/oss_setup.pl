@@ -416,7 +416,7 @@ sub PreSetup
    system("cd /root
 /bin/mkdir .ssh
 /usr/bin/ssh-keygen -t dsa -N '' -f .ssh/id_dsa
-cp /root/.ssh/id_dsa.pub /root/.ssh/authorized_keys
+cat /root/.ssh/id_dsa.pub >> /root/.ssh/authorized_keys
 /bin/chmod 600 /root/.ssh/authorized_keys
 echo 'stricthostkeychecking no' > /root/.ssh/config
 ");
