@@ -1,0 +1,33 @@
+#!/bin/bash
+# Copyright (c) 2013 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+
+if [ -e /var/adm/oss/update-3.4-3 ]
+then
+echo "Patch 3.4-3 already installed"
+        exit 0
+fi
+
+. /etc/sysconfig/ldap
+. /etc/sysconfig/schoolserver
+DATE=$( /usr/share/oss/tools/oss_date.sh )
+SCHOOL_LDAPBASE=`echo $BASE_CONFIG_DN | sed s/ou=ldapconfig,//`
+
+#Add new system variables
+echo "SCHOOL_BACKUP_DAYS
+1234567
+On which day make backup from the OSS.
+string
+1234567
+Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+echo "SCHOOL_BACKUP_WARNING_LIMIT
+80
+Is the backup medium more filled in percent admin will get a warning mail.
+integer
+80
+Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-3
+
