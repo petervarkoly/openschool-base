@@ -27,6 +27,13 @@ integer
 80
 Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
+echo "SCHOOL_BACKUP_WITH_HARDLINK
+yes
+Is the backup medium more filled in percent admin will get a warning mail.
+integer
+yesno
+Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
 /usr/sbin/oss_ldap_to_sysconfig.pl
 #Mark this patch as installed
 mkdir -p /var/adm/oss
