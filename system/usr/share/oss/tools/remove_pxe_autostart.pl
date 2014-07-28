@@ -22,4 +22,8 @@ if ( -e "/srv/tftp/pxelinux.cfg/$mac" )
 {
    unlink "/srv/tftp/pxelinux.cfg/$mac"
 }
+if ( -e '/srv/tftp/'.uc($mac).'.conf' )
+{
+   unlink '/srv/tftp/'.uc($mac).'.conf'
+}
 $oss->destroy;
