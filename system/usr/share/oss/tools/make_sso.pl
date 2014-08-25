@@ -60,7 +60,7 @@ if( $role =~ /students/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_STUDENTS_MULTIPLE_LO
 {
    $oss->{LDAP}->modify( $dn ,     add    => { sambaUserWorkstations => $name } );
 }
-elsif( $role !~ /workstations/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_MULTIPLE_LOGIN} ne "yes" )
+elsif( $role !~ /workstations|sysadmins/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_MULTIPLE_LOGIN} ne "yes" )
 {
    $oss->{LDAP}->modify( $dn ,     add    => { sambaUserWorkstations => $name } );
 }
