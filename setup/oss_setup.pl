@@ -773,6 +773,7 @@ cn: Room$i
 dhcpNetMask: $room_nm
 dhcpRange: $roomnet
 ";
+      $i = $i+1;
     }
     $d = $d + $ws_in_room;
     if( $d > 255)
@@ -785,7 +786,6 @@ dhcpRange: $roomnet
           $b = $b + 1;
        }
     }
-    $i = $i+1;
   }
   open OUT, ">$baseldif";
   print OUT $dhcpldif;
