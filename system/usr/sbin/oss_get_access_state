@@ -14,7 +14,7 @@ case "$2" in
         export DEST=$SCHOOL_NET_GATEWAY
         ;;
    internet|proxy)
-	if [ "SCHOOL_USE_TFK" = "yes" ]; then
+	if [ "$SCHOOL_USE_TFK" = "yes" ]; then
 		echo -n '1'
 		exit 0
 	fi

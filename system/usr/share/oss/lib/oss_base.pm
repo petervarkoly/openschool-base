@@ -3601,7 +3601,7 @@ sub get_school_groups
 
 #-----------------------------------------------------------------------
 
-=item B<get_school_groups_to_search([UserDN])>
+=item B<get_school_groups_to_search([UserDN,writer])>
 
 Delivers the lists of the groups of a school with theier descriptions.
 
@@ -3612,12 +3612,18 @@ the user is member.
 
    my ($primaries, $classes, $workgroups) = $oss->get_school_groups_to_search('uid=varkpete,ou=people,dc=extis,dc=de');
 
+Delivers the lists of the those groups of a school with theier descriptions in which
+the user is member and can modify it.
+
+   my ($primaries, $classes, $workgroups) = $oss->get_school_groups_to_search('uid=varkpete,ou=people,dc=extis,dc=de',1);
+
 =cut
 
 sub get_school_groups_to_search
 {
     my $this        = shift;
     my $uDN         = shift || undef;
+    my $writer      = shift || 0;
 
     my @primary     = ();
     my @class       = ();
@@ -3643,7 +3649,7 @@ sub get_school_groups_to_search
     {
 	my $desc = $this->get_attribute($p,'description') || $this->get_attribute($p,'cn');
 	my $writerDN = $this->get_attribute($p,'writerDN');
-	next if( defined $uDN && ( defined $writerDN && $writerDN ne $uDN ) );
+	next if( defined $uDN && ( defined $writerDN && $writer && $writerDN ne $uDN ) );
 	$gro{$desc} = $p;
     }
     foreach my $desc ( sort {uc($a) cmp uc($b)} keys %pri )
