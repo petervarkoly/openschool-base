@@ -760,7 +760,7 @@ serviceAccesControl: 06:00:1111111:1 DEFAULT
         #TODO Save it in LDAP
         last;
     }
-    if( $anon_dhcp_firs ne $roomnet )
+    if( $anon_dhcp_first ne $roomnet )
     { #If the anon_dhcp is one of the rooms do not create it again.
 
       $dhcpldif .= "
