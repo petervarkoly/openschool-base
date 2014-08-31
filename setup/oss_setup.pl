@@ -644,9 +644,10 @@ sub SetupDHCP
 
    if( $globals->{USE_DHCP} ne 'no' ) 
    {
-	my @blocks = range2cidrlist($anon_dhcp_first,$anon_dhcp_last);
-      	$block = new Net::Netmask($blocks[0]);
+	my @blocks       = range2cidrlist($anon_dhcp_first,$anon_dhcp_last);
+	$block           = new Net::Netmask($blocks[0]);
 	$anon_dhcp_first = $block->base();
+	$anon_dhcp_nm    = $block->bits();
    }
 
    my $baseldif = '/var/lib/ldap/LDAP_DHCP.ldif';
@@ -759,7 +760,10 @@ serviceAccesControl: 06:00:1111111:1 DEFAULT
         #TODO Save it in LDAP
         last;
     }
-    $dhcpldif .= "
+    if( $anon_dhcp_firs ne $roomnet )
+    { #If the anon_dhcp is one of the rooms do not create it again.
+
+      $dhcpldif .= "
 dn: cn=Room$i,cn=$network,cn=config1,cn=$hostname,ou=DHCP,$ldapbase
 objectClass: top
 objectClass: dhcpOptions
@@ -769,18 +773,19 @@ cn: Room$i
 dhcpNetMask: $room_nm
 dhcpRange: $roomnet
 ";
-      $d = $d + $ws_in_room;
-      if( $d > 255)
-      {
-         $d = 0;
-         $c = $c + 1;
-         if( $c > 255 )
-	 {
-            $c = 0;
-            $b = $b + 1;
-         }
-      }
-      $i = $i+1;
+    }
+    $d = $d + $ws_in_room;
+    if( $d > 255)
+    {
+       $d = 0;
+       $c = $c + 1;
+       if( $c > 255 )
+       {
+          $c = 0;
+          $b = $b + 1;
+       }
+    }
+    $i = $i+1;
   }
   open OUT, ">$baseldif";
   print OUT $dhcpldif;
