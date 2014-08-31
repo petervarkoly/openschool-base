@@ -588,13 +588,13 @@ relativeDomainName: dhcp$i
 zoneName: $globals->{DOMAIN}
 dhcpPoolDN: $PoolDN
 
-dn: relativeDomainName=$i,zoneName=$REVZONE.IN-ADDR.ARPA,ou=DNS,$ldapbase
+dn: relativeDomainName=$anon_dhcp_revnet.'.'.$i,zoneName=$REVZONE.IN-ADDR.ARPA,ou=DNS,$ldapbase
 objectClass: dNSZone
 objectClass: DHCPEntry
 dNSClass: IN
 dNSTTL: 604800
 pTRRecord: dhcp$i.$globals->{DOMAIN}.
-relativeDomainName: $i
+relativeDomainName: $anon_dhcp_revnet.'.'.$i
 zoneName: $REVZONE.IN-ADDR.ARPA
 dhcpPoolDN: $PoolDN
 ";
