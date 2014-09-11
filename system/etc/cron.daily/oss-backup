@@ -241,7 +241,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     	LOG "Syncing itool"  
     	mkdir -p $SCHOOL_BACKUP_FULL_DIR/srv/itool
     	mkdir -p $BACKUP_DIR/srv/itool
-    	rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/itool /srv/itool $SCHOOL_BACKUP_FULL_DIR/srv/itool
+    	rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/itool/ /srv/itool/ $SCHOOL_BACKUP_FULL_DIR/srv/itool/
     fi
     
     if [ "$SCHOOL_BACKUP_DB" = "yes" ]; then

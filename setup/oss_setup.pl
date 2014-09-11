@@ -588,13 +588,13 @@ relativeDomainName: dhcp$i
 zoneName: $globals->{DOMAIN}
 dhcpPoolDN: $PoolDN
 
-dn: relativeDomainName=$i,zoneName=$REVZONE.IN-ADDR.ARPA,ou=DNS,$ldapbase
+dn: relativeDomainName=$anon_dhcp_revnet.'.'.$i,zoneName=$REVZONE.IN-ADDR.ARPA,ou=DNS,$ldapbase
 objectClass: dNSZone
 objectClass: DHCPEntry
 dNSClass: IN
 dNSTTL: 604800
 pTRRecord: dhcp$i.$globals->{DOMAIN}.
-relativeDomainName: $i
+relativeDomainName: $anon_dhcp_revnet.'.'.$i
 zoneName: $REVZONE.IN-ADDR.ARPA
 dhcpPoolDN: $PoolDN
 ";
@@ -760,7 +760,7 @@ serviceAccesControl: 06:00:1111111:1 DEFAULT
         #TODO Save it in LDAP
         last;
     }
-    if( $anon_dhcp_firs ne $roomnet )
+    if( $anon_dhcp_first ne $roomnet )
     { #If the anon_dhcp is one of the rooms do not create it again.
 
       $dhcpldif .= "
