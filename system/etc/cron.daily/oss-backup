@@ -153,12 +153,10 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     # save LDAP database
     if [ "$SCHOOL_BACKUP_LDAP" = "yes" ]; then
 	LOG "Syncing LDAP Database" 
-        rcldap stop 1>/dev/null;
 	if [ -e $SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz ]; then
 		mv $SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz $BACKUP_DIR/SLAPCAT.gz
 	fi
         slapcat | gzip > $SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz
-        rcldap start 1>/dev/null;
     fi
 
     # copy sysconfig file schoolconf to the base for simple recovery
