@@ -14,7 +14,7 @@ my %options    = ();
 my $result = GetOptions(\%options,
 			"help",
 			"description",
-			"all=s",
+			"all",
 		);
 sub usage
 {
@@ -26,7 +26,7 @@ sub usage
 		'Optional parameters: '."\n".
 		'	-h,  --help                 Display this help.'."\n".
 		'	-d,  --description          Display the descriptiont.'."\n".
-		'	     --all                  All class.'."\n";
+		'	     --all                  Put all teachers in all classes not only which has ou=all.'."\n";
 }
 
 if ( defined($options{'help'}) ){
@@ -43,12 +43,12 @@ if( defined($options{'description'}) ){
 		'	OPTIONAL:'."\n".
 		'		-h,  --help                : Display this help.(type=boolean)'."\n".
 		'		-d,  --description         : Display the descriptiont.(type=boolean)'."\n".
-		'		     --all                 : All class.(type=boolean)'."\n";
+		'		     --all                 :  Put all teachers in all classes not only which has ou=all.(type=boolean)'."\n";
 	exit 0;
 }
 my $all = 0;
 if( defined($options{'all'}) ){
-	$all = $options{'all'};
+	$all = 1;
 }
 
 my $oss   = oss_base->new ({ withIMAP => 1 });
@@ -66,7 +66,7 @@ foreach my $entry ( $mess->entries ) {
 
 if( $all )
 {
-$mess = $oss->{LDAP}->search(
+	$mess = $oss->{LDAP}->search(
                         base    => $oss->{SYSCONFIG}->{USER_BASE},
                         scope   => 'one',
                         filter  => '(role=teachers)',
@@ -75,7 +75,7 @@ $mess = $oss->{LDAP}->search(
 }
 else
 {
-$mess = $oss->{LDAP}->search(
+	$mess = $oss->{LDAP}->search(
                         base    => $oss->{SYSCONFIG}->{USER_BASE},
                         scope   => 'one',
                         filter  => '(ou=all)',
