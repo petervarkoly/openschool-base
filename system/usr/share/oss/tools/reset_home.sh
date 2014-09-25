@@ -100,11 +100,16 @@ then
 	    gid=`/usr/sbin/oss_get_gid $cn`
 	    if [ "$gid" ] 
 	    then
-		/bin/chmod -R 2771 $i
 		chgrp -R $gid  $i
-		/usr/bin/setfacl -b $i
-		/usr/bin/setfacl -d -m g::rwx $i
-		/usr/bin/setfacl -P -R -m g::rwx $i
+		/usr/bin/setfacl -P -R -b $i
+		if [ $i = "SYSADMINS" ]
+		then
+			/bin/chmod -R 2770 $i
+		else
+			/bin/chmod -R 2771 $i
+			/usr/bin/setfacl -d -m g::rwx $i
+			/usr/bin/setfacl -P -R -m g::rwx $i
+		fi
 		echo "Repairing $i"
 	    else
 	    	echo "Group $cn do not exists. Can not repair $i"
@@ -118,8 +123,6 @@ then
 	    /bin/chmod -R 700 $i
 	    /bin/chown -R $uid  $i
 	    /usr/bin/setfacl -P -R -b $i
-	    /usr/bin/setfacl -d -m u::rwx $i
-	    /usr/bin/setfacl -P -R -m u::rwx $i
 	    echo "Repairing $i"
 	done
 
