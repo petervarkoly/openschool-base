@@ -543,7 +543,7 @@ sub delete($)
     my $home_base   = '/home';
     if( $school_base ne $this->{LDAP_BASE} )
     {
-      $home_base = $this->get_school_config('SCHOOL_HOME_BASE',$school_base);
+      $home_base = $this->get_school_config('SCHOOL_HOME_BASE',$school_base) || '/home';
     }  
     #First we start the plugins:
     my @attrs = @userAttributes;
