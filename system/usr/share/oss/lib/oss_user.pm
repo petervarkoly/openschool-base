@@ -459,7 +459,7 @@ sub add($)
 
 	#set students "MAY_NOT_CHANGE_PASSWORD"  "MayNotChangePassword"
 	if( $USER->{role} eq 'students' ){
-		my $not_change_password = $this->get_school_config('SCHOOL_MAY_NOT_CHANGE_PASSWORD');
+		my $not_change_password = $this->get_school_config('SCHOOL_MAY_NOT_CHANGE_PASSWORD') || 0;
 		$this->create_vendor_object( "$USER->{dn}", 'EXTIS', 'MayNotChangePassword', "$not_change_password" );
 	}
 	
