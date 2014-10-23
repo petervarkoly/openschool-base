@@ -29,9 +29,9 @@ Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
 echo "SCHOOL_BACKUP_WITH_HARDLINK
 yes
-Is the backup medium more filled in percent admin will get a warning mail.
-integer
+Should create backup with hardlinks. It is possible only if SCHOOL_BACKUP_FULL_DIR and SCHOOL_BACKUP_INC_DIR are the same.
 yesno
+no
 Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
 /usr/sbin/oss_ldap_to_sysconfig.pl
