@@ -29,19 +29,10 @@ dn: nisMapName=auto.master,ou=autofs,#LDAPBASE#
 nisMapName: auto.master
 objectClass: nisMap
 
-dn: nisMapName=auto.master,ou=autofs,#LDAPBASE#
-nisMapName: auto.master
-objectClass: nisMap
-
 dn: cn=/home,nisMapName=auto.master,ou=autofs,#LDAPBASE#
 cn: /home
-nisMapEntry: ldap ldap:nisMapName=auto.home,ou=autofs,#LDAPBASE#
-nisMapName: auto.master
+nisMapEntry: auto.home 
 objectClass: nisObject
-
-dn: nisMapName=auto.home,ou=autofs,#LDAPBASE#
-nisMapName: auto.home
-objectClass: nisMap
 
 dn: nisMapName=auto.home,ou=autofs,#LDAPBASE#
 nisMapName: auto.home

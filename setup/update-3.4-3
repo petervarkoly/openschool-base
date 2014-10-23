@@ -31,7 +31,7 @@ echo "SCHOOL_BACKUP_WITH_HARDLINK
 yes
 Should create backup with hardlinks. It is possible only if SCHOOL_BACKUP_FULL_DIR and SCHOOL_BACKUP_INC_DIR are the same.
 yesno
-no
+yes
 Backup" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
 /usr/sbin/oss_ldap_to_sysconfig.pl

@@ -8,7 +8,7 @@ ftp_list_width 45
 ftp_user Squid@#DOMAIN#
 visible_hostname admin.#DOMAIN#
 append_domain .#DOMAIN#
-redirect_program /usr/sbin/squidGuard -c /etc/squid/squidguard.conf -l #LDAPBASE# 
+redirect_program /usr/sbin/squidGuard -c /etc/squid/squidguard.conf -l #LDAPBASE# -s
 redirect_children 10
 auth_param basic children 5
 auth_param basic credentialsttl 10 minutes
