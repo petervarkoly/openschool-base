@@ -5629,7 +5629,7 @@ sub get_user_dn
     
     $mesg = $this->{LDAP}->search( base   => $school_base,
     			 	   scope  => 'sub',
-          		           filter => "(&(uid=$uid)(objectClass=SchoolAccount))",
+				   filter => "(&(uid=$uid)(objectClass=posixAccount))",
           		           attrs  => [ 'dn' ]
           		);
     if( $mesg->code() || $mesg->count() != 1 )
