@@ -2660,6 +2660,11 @@ sub login
       push @{$result->{$dn}->{'SESSIONID'}}, $ID;
    }
 
+   # Set LOGGED_ON for SSO
+   if( $remote ) {
+       $this->{LDAP}->modify( $dn, add => { configurationValue => "LOGGED_ON=$remote" } );
+   }
+
    #Now we search  for the users group
    push @{$result->{$dn}->{'group'}},@{$this->get_groups_of_user($dn)};
    push @{$result->{$dn}->{'primarygroup'}},$this->get_primary_group_of_user($dn);
