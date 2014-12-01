@@ -38,7 +38,7 @@ my $TEXT      = { 'EN' => { 'Username' => 'Username',
 
 my $cgi=new CGI;
 
-my $loginpath = 'https://192.168.2.20/cgi-bin/login.pl';
+my $loginpath = 'https://admin/cgi-bin/login.pl';
 
 my $user    = $cgi->param("uid");
 my $pass    = $cgi->param("passwd");
