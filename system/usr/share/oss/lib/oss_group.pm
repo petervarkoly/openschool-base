@@ -545,8 +545,10 @@ sub make_delete_group_webdavshare
 	if( $webdav_access )
 	{
 		my $group_cn_lc = lc("$group_cn");
-		system("setfacl -PRm  u:wwwrun:rwx $groupDir");
-		system("setfacl -PRdm u:wwwrun:rwx $groupDir");
+                system("find /home/groups/$group_cn/ -type f -exec setfacl -m  u:wwwrun:rw {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -m  u:wwwrun:rwx {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm g::rwx {} \\;");
 		my $file_content = "Alias /webdav/g/$group_cn_lc \"$groupDir\"\n".
 				"<IfModule mod_dav_fs.c>\n".
 				"        DAVLockDB /var/lib/dav/lockdb\n".

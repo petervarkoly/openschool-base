@@ -56,8 +56,10 @@ foreach my $dn ( sort keys %{$user} )
 	if( $webdav_access_value->[0] ){
 		print $this->get_attribute( $dn, 'uid' )."\n";
 		my $user_homeDirectory = $this->get_attribute( $dn, 'homeDirectory' );
-		system("setfacl -RPm u:wwwrun:rwx $user_homeDirectory/");
-		system("setfacl -RdPm u:wwwrun:rwx $user_homeDirectory/");
+                system("find $user_homeDirectory/ -type f -exec setfacl -m u:wwwrun:rw {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -m u:wwwrun:rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u::rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 	}
 }
 
@@ -78,8 +80,10 @@ foreach my $group_dn ( @groups ){
 	if( $webdav_access_value->[0] ){
 		print $this->get_attribute( $group_dn, 'cn')."\n";
 		my $group_cn = $this->get_attribute( $group_dn, 'cn' );
-		system("setfacl -RPm u:wwwrun:rwx /home/groups/$group_cn/");
-		system("setfacl -RdPm u:wwwrun:rwx /home/groups/$group_cn/");
+                system("find /home/groups/$group_cn/ -type f -exec setfacl -m u:wwwrun:rw {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -m u:wwwrun:rwx {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm g::rwx {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 	}
 
 }

@@ -821,9 +821,11 @@ sub make_delete_user_webdavshare
 	if( $webdav_access )
 	{
 		my $user_uid_lc = lc("$user_uid");
-		system("setfacl -PRm  u:wwwrun:rwx $user_homeDirectory/");
-		system("setfacl -PRdm u:wwwrun:rwx $user_homeDirectory/");
-		system("setfacl -PRdm u:$user_uid:rwx $user_homeDirectory/");
+
+                system("find $user_homeDirectory/ -type f -exec setfacl -m  u:wwwrun:rw {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u::rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -m  u:wwwrun:rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 		my $file_content = "Alias /webdav/u/$user_uid_lc \"$user_homeDirectory/\"\n".
 				"<IfModule mod_dav_fs.c>\n".
 				"        DAVLockDB /var/lib/dav/lockdb\n".

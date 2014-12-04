@@ -150,7 +150,7 @@ exit 0
 /etc/init.d/*mb-printserver
 /var/lib/support/oss.include
 /usr/sbin/*
-/srv/www/cgi-bin/*.cgi
+/srv/www/cgi-bin/*
 
 %defattr(644,root,root,755)
 %doc docs/*
