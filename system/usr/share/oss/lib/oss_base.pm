@@ -5070,7 +5070,7 @@ sub get_ip_of_host($)
 #-----------------------------------------------------------------------
 =item B<get_host(Address)>
 
-Returns the DN of a host. The argument can be the IP or the MAC address
+Returns the DN of a host. The argument can be the IP or the MAC address or the name
 
 =cut
 
@@ -5082,7 +5082,7 @@ sub get_host($)
     my $result = $this->{LDAP}->search(
                         base    => $this->{SYSCONFIG}->{DHCP_BASE},
                         scope   => 'sub',
-                        filter  => "(&(objectclass=dhcpHost)(|(dhcpHWAddress=ethernet $add)(dhcpStatements=fixed-address $add)))",
+                        filter  => "(&(objectclass=dhcpHost)(|(dhcpHWAddress=ethernet $add)(dhcpStatements=fixed-address $add)(cn=$add)))",
                         attrs   => ['dn']
     );
     if( !$result->code && $result->count )
