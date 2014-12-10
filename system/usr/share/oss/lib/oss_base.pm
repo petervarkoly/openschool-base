@@ -1746,7 +1746,7 @@ sub delete_user_from_group($$)
     # $this->{LDAP}->modify($udn, delete=> { memberOf  => $gdn });
     # TODO What happends with shared mailboxes???
     return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
-    $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} );
+    $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} && defined $this->{IMAP} );
 }
 #-----------------------------------------------------------------------
 
