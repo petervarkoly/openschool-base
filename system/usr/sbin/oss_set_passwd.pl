@@ -175,6 +175,10 @@ if( $dn eq "" )
   {
     $dn  = $oss->get_user_dn($uid);
   }
+  if( !defined $dn  && $uid eq "root" )
+  {
+     $dn = "uid=root,".$oss->{SYSCONFIG}->{USER_BASE};
+  }
 }
 $oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech);
 

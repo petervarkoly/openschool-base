@@ -2696,24 +2696,25 @@ sub set_password($$$$$)
     my $time            = timelocal(localtime());
     my $days_since_1970 = int($time / 3600 / 24);
     my ( $lm, $nt ) = ntlmgen $password;
-    my @mod_op;
-    my @mod_op_1;
-    my @mod_op_2;
+    my @mod_op   = ();
+    my @mod_op_s = ();
+    my @mod_op_1 = ();
+    my @mod_op_2 = ();
     my $entry     = $this->get_entry( $dn, 1);
-    push @mod_op, "replace", [ "sambaLMPassword", "$lm" ];
-    push @mod_op, "replace", [ "sambaNTPassword", "$nt" ];
-    push @mod_op, "replace", [ "userpassword", "$crypt_password" ];
+    push @mod_op_s, "replace", [ "sambaLMPassword", "$lm" ];
+    push @mod_op_s, "replace", [ "sambaNTPassword", "$nt" ];
+    push @mod_op,   "replace", [ "userpassword", "$crypt_password" ];
     if( $mustchange )
     {
-        push @mod_op, "replace", [ "shadowlastchange", "0" ];
-        push @mod_op, "replace", [ "sambaPwdMustChange", "0" ];
-        push @mod_op, "replace", [ "sambapwdlastset", "0" ];
+        push @mod_op,   "replace", [ "shadowlastchange", "0" ];
+        push @mod_op_s, "replace", [ "sambaPwdMustChange", "0" ];
+        push @mod_op_s, "replace", [ "sambapwdlastset", "0" ];
     }
     else
     {
         push @mod_op,   "replace", [ "shadowlastchange", "$days_since_1970" ];
         push @mod_op_1, "replace", [ "sambaPwdMustChange" , -1];
-        push @mod_op,   "replace", [ "sambapwdlastset", $time ];
+        push @mod_op_s, "replace", [ "sambapwdlastset", $time ];
     }
     if( $sso )
     {
@@ -2735,7 +2736,12 @@ sub set_password($$$$$)
 	}
     }
     
-    my $mesg = $this->{LDAP}->modify( $dn, changes => \@mod_op );
+    my $mesg = $this->{LDAP}->modify( $dn, changes => \@mod_op_s );
+    if( $mesg->code() ){
+       $this->ldap_error($mesg);
+       return 0;
+    }
+    $mesg = $this->{LDAP}->modify( $dn, changes => \@mod_op );
     if( $mesg->code() ){
        $this->ldap_error($mesg);
        return 0;
