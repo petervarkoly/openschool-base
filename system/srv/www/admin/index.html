@@ -9,7 +9,15 @@
     <p align="center"><font size="+1"><b>Kérem kapcsolja be böngészõjében a JavaScript támogatását!</b></font></p>
   </noscript>
   <script>
-    {self.location.href="/ossadmin/?login";}
+    {
+        if (window.location.protocol != "https") {
+                self.location.href="https://admin/ossadmin/?login";
+        }
+        else
+        {
+                self.location.href="/ossadmin/?login";
+        }
+    }
   </script>
 </body>
 </html>
