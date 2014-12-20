@@ -24,8 +24,9 @@ my $oss = oss_base->new();
 
 
 my $room     = $oss->get_room_of_ip($IP);
-my $dprint   = $oss->get_vendor_object($room,'EXTIS','DEFAULT_PRINTER');
-my $prints   = $oss->get_vendor_object($room,'EXTIS','AVAILABLE_PRINTER');
+my $wdn      = $oss->get_workstation($IP);
+my $dprint   = $oss->get_vendor_object($wdn,'EXTIS','DEFAULT_PRINTER')   || $oss->get_vendor_object($room,'EXTIS','DEFAULT_PRINTER');
+my $prints   = $oss->get_vendor_object($wdn,'EXTIS','AVAILABLE_PRINTER') || $oss->get_vendor_object($room,'EXTIS','AVAILABLE_PRINTER');
 
 if( $UID !~ /^root|administrator$/i )
 {
