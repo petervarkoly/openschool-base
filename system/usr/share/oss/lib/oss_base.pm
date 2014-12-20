@@ -1746,7 +1746,7 @@ sub delete_user_from_group($$)
     # $this->{LDAP}->modify($udn, delete=> { memberOf  => $gdn });
     # TODO What happends with shared mailboxes???
     return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
-    $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} );
+    $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} && defined $this->{IMAP} );
 }
 #-----------------------------------------------------------------------
 
@@ -2658,6 +2658,11 @@ sub login
       print $SOCK "add: $timestamp $timeout $ID $authdata $frozen\0";
       $SOCK->flush();
       push @{$result->{$dn}->{'SESSIONID'}}, $ID;
+   }
+
+   # Set LOGGED_ON for SSO
+   if( $remote ) {
+       $this->{LDAP}->modify( $dn, add => { configurationValue => "LOGGED_ON=$remote" } );
    }
 
    #Now we search  for the users group
@@ -5076,7 +5081,7 @@ sub get_ip_of_host($)
 #-----------------------------------------------------------------------
 =item B<get_host(Address)>
 
-Returns the DN of a host. The argument can be the IP or the MAC address
+Returns the DN of a host. The argument can be the IP or the MAC address or the name
 
 =cut
 
@@ -5088,7 +5093,7 @@ sub get_host($)
     my $result = $this->{LDAP}->search(
                         base    => $this->{SYSCONFIG}->{DHCP_BASE},
                         scope   => 'sub',
-                        filter  => "(&(objectclass=dhcpHost)(|(dhcpHWAddress=ethernet $add)(dhcpStatements=fixed-address $add)))",
+                        filter  => "(&(objectclass=dhcpHost)(|(dhcpHWAddress=ethernet $add)(dhcpStatements=fixed-address $add)(cn=$add)))",
                         attrs   => ['dn']
     );
     if( !$result->code && $result->count )
