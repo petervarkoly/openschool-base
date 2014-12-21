@@ -347,6 +347,9 @@ sub connect_ldap
     my $type     = shift || 'admin';
     my $dn       = shift || '';
     my $password = shift || '';
+    my $LDAP_BASE   = $this->{LDAP_BASE}   || undef;
+    my $LDAP_SERVER = $this->{LDAP_SERVER} || undef;
+    my $LDAP_PORT   = $this->{LDAP_PORT}   || undef;
 
     if( defined $this->{LDAP} )
     {
@@ -354,17 +357,19 @@ sub connect_ldap
       return -1;
     }
 
-    # Searching for LDAP-Server settings
-    my ($LDAP_BASE, $LDAP_SERVER, $LDAP_PORT) = parse_file($this->{LDAP_CONF}, "BASE", "HOST", "PORT");
-    $LDAP_BASE =~ s/\s*?^(.*)\s*$/$1/i;
-    if($LDAP_BASE eq "")
-    {
-        $this->{ERROR}->{text} = "ERROR Unable to parse ldap.conf or baseDN was not found!\n";
-	return 0;
-    }
-    if($LDAP_SERVER eq "")
-    {
-        $LDAP_SERVER = "localhost";
+    if( !defined $LDAP_SERVER && !defined $LDAP_BASE )
+    { # Searching for LDAP-Server settings if not defined
+	    ($LDAP_BASE, $LDAP_SERVER, $LDAP_PORT) = parse_file($this->{LDAP_CONF}, "BASE", "HOST", "PORT");
+	    $LDAP_BASE =~ s/\s*?^(.*)\s*$/$1/i;
+	    if($LDAP_BASE eq "")
+	    {
+		$this->{ERROR}->{text} = "ERROR Unable to parse ldap.conf or baseDN was not found!\n";
+		return 0;
+	    }
+	    if($LDAP_SERVER eq "")
+	    {
+		$LDAP_SERVER = "localhost";
+	    }
     }
     if($LDAP_PORT eq "") 
     {
