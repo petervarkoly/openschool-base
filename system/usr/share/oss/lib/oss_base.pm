@@ -4108,7 +4108,7 @@ sub add_room($$$)
     	return 0;
     }
     # We have to check if the room name is uniqe
-    if( ! $this->is_unique('room',$desc) )
+    if( ! $this->is_unique($desc,'room') )
     {
         $this->{ERROR}->{code} = 'ROOM_NAME_USED_ALLREADY';
         $this->{ERROR}->{text} = 'The room name is used allready.';

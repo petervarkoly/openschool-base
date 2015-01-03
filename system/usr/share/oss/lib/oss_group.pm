@@ -195,6 +195,12 @@ sub add($)
 	    $this->{ERROR}->{text} = 'The group description exists already.';
 	    return 0;
     }
+    if( ! $this->is_unique($GROUP->{cn},'uid'))
+    {
+	    $this->{ERROR}->{code} = 'GROUP-NAME-ALREADY-USED';
+	    $this->{ERROR}->{text} = 'The group name is already used by an user.';
+	    return 0;
+    }
 
     print "GROUP: ".Dumper($GROUP) if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
     print "GROUPEntry: ".Dumper($GROUPEntry) if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );

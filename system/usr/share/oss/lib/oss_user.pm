@@ -144,6 +144,21 @@ sub add($)
     # We take care that uids are every time lower case
     $USER->{uid} = lc($USER->{uid});
 
+    #Now we test if the uid is unique
+    if( !$this->is_unique($USER->{uid},'uid') )
+    {
+        $this->{ERROR}->{text}  = 'The uid:'.$USER->{uid}.' is used by an other user.';
+        $this->{ERROR}->{code}  = 'USER-UID-NOT-UNIQUE';
+        return undef;
+    }
+
+    #Now we test if there no exists a group with the same cn as the users uid.
+    if( !$this->is_unique($USER->{uid},'cn') )
+    {
+        $this->{ERROR}->{text}  = 'The uid:'.$USER->{uid}.' is used by a group.';
+        $this->{ERROR}->{code}  = 'USER-UID-NOT-UNIQUE';
+        return undef;
+    }
     # Create the DN of the user entry
     $USER->{prefix} = '' if ( !defined $USER->{prefix} );
     if( $USER->{role} eq 'machine' )
