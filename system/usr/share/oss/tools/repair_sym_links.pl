@@ -73,6 +73,9 @@ else
 	system("mkdir -m 750 /home/classes");
 }
 system("chown root:teachers /home/classes");
+system("chown root:teachers /home/students");
+system("setfacl -b /home/classes");
+system("chmod 751 /home/classes");
 
 foreach my $entry ( $mess->entries ) {
         my $cn = $entry->get_value('cn');
@@ -101,10 +104,12 @@ foreach my $entry ( $mess->entries ) {
 		  if( -d $home )
 		  {
 			  system("ln -s $home /home/classes/$cn/$uid");
-                          system("setfacl -RPb $home; chgrp -PR teachers $home; chmod 2771 $home;");
+                          system("chgrp teachers $home; chmod 2770 $home;");
+                          system("find $home ".'-type f -exec setfacl -b {} \\;');
+                          system("find $home ".'-type d -exec setfacl -b {} \\;');
                           system("find $home ".'-type f -exec chmod g+rw {} \\;');
-                          system("find $home ".'-type d -exec chmod 2771 {} \\;');
-                          system("find $home ".'-type d -exec setfacl -dm g:teachers:rwx {} \\;');
+                          system("find $home ".'-type d -exec chmod 2770 {} \\;');
+			  system("setfacl -m u:wwwrun:x $home;");
 			  system("mkdir -p $home/public_html; chmod 755 $home/public_html; chown $uid $home/public_html;");
 		  }
 		  else
