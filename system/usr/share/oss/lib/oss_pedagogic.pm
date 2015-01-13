@@ -102,7 +102,16 @@ sub post_file
 	{
 	    system("test -e $Export && rm -rf $Export; test -e $Import && rm -rf $Import;")
 	}
-	system("mkdir -p $Export $Import; cp -a '$file' $Import; chown -R ".$attributes->{uidnumber}->[0].':'.$attributes->{gidnumber}->[0]." $Export $Import;" );
+        my $gid = 0;
+        if( $this->{SYSCONFIG}->{SCHOOL_TEACHER_OBSERV_HOME} eq 'yes'  )
+        {
+           $gid = 502;
+        }
+        system("mkdir -p -m 770 $Export $Import; cp -a '$file' $Import; chown -R ".$attributes->{uidnumber}->[0].':'.$gid." $Export $Import;" );
+        if( $this->check_vendor_object($dn,'EXTIS','WebDavAccess','1' ) )
+        {
+            system("chmod -R 770 $Export $Import; setfacl -Rm u:wwwrun:rwx $Export $Import");
+        }
     }
 }
 #-----------------------------------------------------------------------
