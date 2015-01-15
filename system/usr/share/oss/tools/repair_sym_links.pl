@@ -95,6 +95,16 @@ $mess = $oss->{LDAP}->search(
 foreach my $entry ( $mess->entries ) {
         my $uid  = $entry->get_value('uid');
         my $home = $entry->get_value('homedirectory');
+	if( -d $home )
+	{
+                system("chgrp -R teachers $home; chmod 2770 $home;");
+                system("find $home ".'-type f -exec setfacl -b {} \\;');
+                system("find $home ".'-type d -exec setfacl -b {} \\;');
+                system("find $home ".'-type f -exec chmod g+rw {} \\;');
+                system("find $home ".'-type d -exec chmod 2770 {} \\;');
+	        system("setfacl -m u:wwwrun:x $home;");
+	        system("mkdir -p $home/public_html; chmod 755 $home/public_html; chown $uid $home/public_html;");
+	}
         my $submessage = $oss->{LDAP}->search( base =>  'ou=group,'.$oss->{LDAP_BASE},
                            scope => 'one',
                            filter => "(&(groupType=class)(memberuid=$uid))",
@@ -104,13 +114,6 @@ foreach my $entry ( $mess->entries ) {
 		  if( -d $home )
 		  {
 			  system("ln -s $home /home/classes/$cn/$uid");
-                          system("chgrp teachers $home; chmod 2770 $home;");
-                          system("find $home ".'-type f -exec setfacl -b {} \\;');
-                          system("find $home ".'-type d -exec setfacl -b {} \\;');
-                          system("find $home ".'-type f -exec chmod g+rw {} \\;');
-                          system("find $home ".'-type d -exec chmod 2770 {} \\;');
-			  system("setfacl -m u:wwwrun:x $home;");
-			  system("mkdir -p $home/public_html; chmod 755 $home/public_html; chown $uid $home/public_html;");
 		  }
 		  else
 		  {
