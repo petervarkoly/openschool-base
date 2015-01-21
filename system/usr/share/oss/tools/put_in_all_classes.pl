@@ -69,7 +69,7 @@ if( $all )
 	$mess = $oss->{LDAP}->search(
                         base    => $oss->{SYSCONFIG}->{USER_BASE},
                         scope   => 'one',
-                        filter  => '(role=teachers)',
+                        filter  => '(role=teachers*)',
                         attrs   => ['dn','uid']
                      );
 }
@@ -78,7 +78,7 @@ else
 	$mess = $oss->{LDAP}->search(
                         base    => $oss->{SYSCONFIG}->{USER_BASE},
                         scope   => 'one',
-                        filter  => '(ou=all)',
+                        filter  => '(&(ou=all)(role=teachers*))',
                         attrs   => ['dn','uid']
                      );
 }
