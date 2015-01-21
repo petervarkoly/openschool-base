@@ -160,6 +160,12 @@ sub collect_file
 	print $command if ( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
     }
     system('chown   -R '.$attributes->{uidnumber}->[0].':'.$attributes->{gidnumber}->[0]." '$target' ;");
+    if( $this->check_vendor_object($this->{aDN},'EXTIS','WebDavAccess','1' ) )
+    {
+	system('setfacl -Rm u:wwwrun:rwx '.$attributes->{homedirectory}->[0].'/Import/' );
+        system('setfacl -Rm mask::rwx '.$attributes->{homedirectory}->[0].'/Import/' );
+    }
+
 }
 #-----------------------------------------------------------------------
 
