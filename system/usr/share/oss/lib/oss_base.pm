@@ -555,6 +555,7 @@ sub create_mbox($$)
     }
     if( ! defined $this->{IMAP} )
     {
+            print STDERR xml_time()." Imap server not runing. create_mbox $mbox $acl $quota\n";
 	    $this->{ERROR}->{code} = "IMAP-NOT-CONNECTED";
 	    $this->{ERROR}->{text} = "The imap server is not connected";
 	    return 0;
@@ -1651,6 +1652,11 @@ sub add_user_to_group($$)
 
     if( $this->is_teacher($udn) && $this->is_class($gdn) )
     {
+        if( !defined $this->{IMAP} )
+	{
+	    print STDERR xml_time."ERROR IMAP not running: add_user_to_group $udn $gdn\n";
+	    return 2;
+	}
         $this->{IMAP}->setacl(get_name_of_dn($gdn),$uid,"lrswipte");
     }
     return 1;
@@ -1749,9 +1755,16 @@ sub delete_user_from_group($$)
     $this->{LDAP}->modify($udn, delete=> { OXGroupID => $gidnumber });
     # Not needed if the memberOf overlay is loaded
     # $this->{LDAP}->modify($udn, delete=> { memberOf  => $gdn });
-    # TODO What happends with shared mailboxes???
     return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
-    $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid) if( $this->{withIMAP} && defined $this->{IMAP} );
+    if( $this->{withIMAP} )
+    {
+        if( !defined $this->{IMAP} )
+       {
+           print STDERR xml_time." ERROR IMAP not running: delete_user_from_group $udn $gdn\n";
+           return;
+       }
+       $this->{IMAP}->deleteacl(get_name_of_dn($gdn),$uid);
+    }
 }
 #-----------------------------------------------------------------------
 
@@ -1924,6 +1937,11 @@ sub get_mbox_acl($)
     # Zarafa do not need IMAP
     # TODO What happends with shared mailboxes???
     return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
+    if( !defined $this->{IMAP} )
+    {
+       print STDERR xml_time." IMAP not running get_mbox_acl $mbox\n";
+       return {};
+    }
 
     my %acls = ();
 
@@ -1980,8 +1998,11 @@ sub get_quota($)
     }
     else
     {
-	    return ($q_val,$q_used) if ( ! defined $this->{IMAP} );
-
+            if( !defined $this->{IMAP} )
+            {
+               print STDERR xml_time." IMAP not running: get_quota $dn\n";
+               return ($q_val,$q_used);
+            }
 	    my $uid = get_name_of_dn($dn);
 
 	    my $anf = sub
@@ -2836,6 +2857,11 @@ sub set_quota
     }
     else
     {
+	    if( !defined $this->{IMAP} )
+	    {
+	       print STDERR xml_time." IMAP not running: set_quota $dn $quota\n";
+	       return;
+	    }
 	    my @qarray = ();
 	    if( $quota )
 	    {
@@ -3032,6 +3058,11 @@ sub get_quota_group($)
 	$q_val  = $q_val/1024;
 	$q_used = $q_used/1024;
     };
+    if( !defined $this->{IMAP} )
+    {
+       print STDERR xml_time." IMAP not running: get_quota $dn\n";
+       return ($q_val,$q_used);
+    }
 
     $this->{IMAP}->set_untagged_callback('quota', $anf);
 
