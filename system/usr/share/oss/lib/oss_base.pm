@@ -555,7 +555,7 @@ sub create_mbox($$)
     }
     if( ! defined $this->{IMAP} )
     {
-            print STDERR xml_time()." Imap server not runing. create_mbox $mbox $acl $quota\n";
+            print STDERR xml_time()." ERROR Imap server not runing. create_mbox $mbox $acl $quota\n";
 	    $this->{ERROR}->{code} = "IMAP-NOT-CONNECTED";
 	    $this->{ERROR}->{text} = "The imap server is not connected";
 	    return 0;
@@ -1654,7 +1654,7 @@ sub add_user_to_group($$)
     {
         if( !defined $this->{IMAP} )
 	{
-	    print STDERR xml_time."ERROR IMAP not running: add_user_to_group $udn $gdn\n";
+	    print STDERR xml_time." ERROR IMAP not running: add_user_to_group $udn $gdn\n";
 	    return 2;
 	}
         $this->{IMAP}->setacl(get_name_of_dn($gdn),$uid,"lrswipte");
@@ -1939,7 +1939,7 @@ sub get_mbox_acl($)
     return if( defined $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} && $this->{SYSCONFIG}->{SCHOOL_USE_ZARAFA} eq 'yes' );
     if( !defined $this->{IMAP} )
     {
-       print STDERR xml_time." IMAP not running get_mbox_acl $mbox\n";
+       print STDERR xml_time." ERROR IMAP not running get_mbox_acl $mbox\n";
        return {};
     }
 
@@ -2000,7 +2000,7 @@ sub get_quota($)
     {
             if( !defined $this->{IMAP} )
             {
-               print STDERR xml_time." IMAP not running: get_quota $dn\n";
+               print STDERR xml_time." ERROR IMAP not running: get_quota $dn\n";
                return ($q_val,$q_used);
             }
 	    my $uid = get_name_of_dn($dn);
@@ -2859,7 +2859,7 @@ sub set_quota
     {
 	    if( !defined $this->{IMAP} )
 	    {
-	       print STDERR xml_time." IMAP not running: set_quota $dn $quota\n";
+	       print STDERR xml_time." ERROR IMAP not running: set_quota $dn $quota\n";
 	       return;
 	    }
 	    my @qarray = ();
@@ -3060,7 +3060,7 @@ sub get_quota_group($)
     };
     if( !defined $this->{IMAP} )
     {
-       print STDERR xml_time." IMAP not running: get_quota $dn\n";
+       print STDERR xml_time." ERROR IMAP not running: get_quota $dn\n";
        return ($q_val,$q_used);
     }
 
