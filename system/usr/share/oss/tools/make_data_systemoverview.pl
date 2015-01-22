@@ -138,7 +138,7 @@ if( $line_sys[0] =~ /(.*) \((.*)\)$/){
 $this->add_value_to_vendor_object( "$school_dn", 'extis', 'SystemOverview', "software#;#systemversion#=#$system_version $sys_bit#;#help#=#$help_Kernel_SLES_sdk");
 
 #Last Update
-my $lastupdate = `oss_convert_time.pl \$( rpm -qa --qf "%{INSTALLTIME}\\n" | sort -n | tail  -n 1 )`;
+my $lastupdate = `/usr/sbin/oss_convert_time.pl \$( rpm -qa --qf "%{INSTALLTIME}\\n" | sort -n | tail  -n 1 )`;
 if($lastupdate eq ''){
 	$lastupdate = __("It has not been updated yet");
 }
