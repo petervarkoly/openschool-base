@@ -135,12 +135,14 @@ if( $mode eq 'report' )
 	$mbody ="\$uid;\$ulist{\$uid}{limit};\$ulist{\$uid}{used};\$ulist{\$uid}{pused}%
 ";
 }
+
+my $report = "Benutzer;Quota KB;benuzt KB;benuzt %\n";
 foreach my $uid (keys %ulist) {
   
     if( $mode eq 'report' )
     {
 	my $eval = eval "sprintf \"%s\", \"$mbody\"";
-	print $eval;
+	$report .= $eval;
 	next;
     }
     if( $ulist{$uid}{pused} > $ulist{$uid}{warn} ) {
@@ -153,4 +155,19 @@ foreach my $uid (keys %ulist) {
     }
 }
 
+if( $mode eq 'report' )
+{
+	if( ! open(OUT, "| /usr/lib/cyrus/bin/deliver -q -r mailadmin -a cyrus admin") ) {
+	    print STDERR "ERROR sending quota warning to admin: $!\n";
+	}
+	print OUT "To: admin
+From: mailadmin
+Subject: Automatischer Quota Report
+Reply-To: mailadmin
+Date: $date
+
+$report";
+
+	close(OUT);
+}
 1;
