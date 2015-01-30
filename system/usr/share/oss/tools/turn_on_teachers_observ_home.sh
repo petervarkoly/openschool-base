@@ -61,11 +61,11 @@ then
 	echo '[classes]
 browseable = yes
 comment = Folder to Observ the Students Home Directories
-valid users = \@teachers
+valid users = @teachers
 guest ok = no
 path = /home/classes
 writable = yes
-' >> /etc/samba/$SCHOOL_NETBIOSNAME.in
+' >> /etc/samba/smb.conf
 	sed -i 's/^REM (.*classes)/\$1/' /var/lib/samba/netlogon/teachers.bat
 	/usr/share/oss/tools/repair_sym_links.pl --access=$ACCESS
 else
