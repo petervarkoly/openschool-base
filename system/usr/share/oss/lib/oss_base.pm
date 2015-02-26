@@ -5904,19 +5904,27 @@ sub get_logged_users
 {
 	my $this    = shift;
 	my $room_dn = shift;
+	if( $room_dn !~ /^cn=Room/ )
+	{
+	        $room_dn = $this->get_room_by_name($room_dn);
+	}
 	my %hash;
 
 	foreach my $dn (sort @{$this->get_workstations_of_room($room_dn)} )
 	{
-		my @ws = $this->get_attribute($dn,'configurationValue');
-		foreach my $conf_value (@ws){
-			if( $conf_value =~ /^LOGGED_ON=(.*)$/){
-				$hash{$dn}->{host_name} = $this->get_attribute($dn,'cn');
-				$hash{$dn}->{user_name} = $1;
-				$hash{$dn}->{user_cn}   = $this->get_attribute($this->get_user_dn("$1"), 'cn');
-				last;
-			}
-		}
+		my $ip   = $this->get_ip_of_host($dn);
+		next if !defined $ip;
+                my $mesg = $this->{LDAP}->search( base    => $this->{SYSCONFIG}->{USER_BASE},
+                                          scope   => 'sub',
+                                          attrs   => ['uid','cn'],
+                                          filter  => "(configurationValue=LOGGED_ON=$ip)"
+                );
+                foreach my $e ( $mesg->entries )
+                {
+			$hash{$dn}->{host_name} = $this->get_attribute($dn,'cn');
+			$hash{$dn}->{user_name} = $e->get_value('uid');
+			$hash{$dn}->{user_cn}   = $e->get_value('cn');
+                }
 	}
 
 	return \%hash;

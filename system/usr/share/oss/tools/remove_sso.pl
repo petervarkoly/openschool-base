@@ -50,10 +50,6 @@ elsif( $role !~ /workstations/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_MULTIPLE_LOGI
 {
    $oss->{LDAP}->modify( $dn ,  delete => [ 'sambaUserWorkstations' ] );
 }
-my $host     = $oss->get_workstation($IP);
-if( defined $host ) {
-	   $oss->{LDAP}->modify( $host, delete => { configurationValue => "LOGGED_ON=$uid" } );
-}
 
 unlink("$home/OSS-Admin.url") if( -e "$home/OSS-Admin.url" );
 unlink("$home/Groupware.url") if( -e "$home/Groupware.url" );

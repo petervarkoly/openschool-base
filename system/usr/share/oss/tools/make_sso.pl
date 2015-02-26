@@ -64,17 +64,6 @@ elsif( $role !~ /workstations|sysadmins/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_MUL
 {
    $oss->{LDAP}->modify( $dn ,     add    => { sambaUserWorkstations => $name } );
 }
-my $host     = $oss->get_workstation($IP);
-if( defined $host ) {
-   my @ws = $oss->get_attribute($host,'configurationValue');
-   foreach my $conf_value (@ws){
-	if( $conf_value =~ /^LOGGED_ON=(.*)$/){
-	     $oss->{LDAP}->modify( $host, delete => { configurationValue => "LOGGED_ON=$1" } );
-	}
-   }
-   $oss->{LDAP}->modify( $host, add => { configurationValue => "LOGGED_ON=$uid" } );
-}
-
 if(!defined $LANG){
    $LANG=substr($ENV{LANG},3,2);
    if( length($LANG) != 2)
