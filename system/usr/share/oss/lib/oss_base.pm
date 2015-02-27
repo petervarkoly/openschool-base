@@ -5908,7 +5908,7 @@ sub get_logged_users
 	{
 	        $room_dn = $this->get_room_by_name($room_dn);
 	}
-	my %hash;
+	my @hash;
 
 	foreach my $dn (sort @{$this->get_workstations_of_room($room_dn)} )
 	{
@@ -5921,13 +5921,17 @@ sub get_logged_users
                 );
                 foreach my $e ( $mesg->entries )
                 {
-			$hash{$dn}->{host_name} = $this->get_attribute($dn,'cn');
-			$hash{$dn}->{user_name} = $e->get_value('uid');
-			$hash{$dn}->{user_cn}   = $e->get_value('cn');
+			push @hash, {
+				dn        => $dn,
+				host_name => $this->get_attribute($dn,'cn'),
+				user_name => $e->get_value('uid'),
+				user_cn   => $e->get_value('cn'),
+				user_dn   => $e->dn
+			}
                 }
 	}
 
-	return \%hash;
+	return \@hash;
 }
 
 sub prodkey_allocation($$)
