@@ -84,8 +84,8 @@ use vars qw(
 	&xml_time
 	&check_domain_name_for_proxy
 	&date_format_convert
-	&insert_host_to_wpkghostsxml
-	&install_software_now
+	&makeInstallationNow
+	&installOssClient
 );
 $VERSION = '3.4.0';
 # Debug only
@@ -1165,56 +1165,51 @@ sub date_format_convert
         return $new_date;
 }
 
-=item B<$oss->insert_host_to_wpkghostsxml("PCname")>
-
-EXAMPLE :  $oss->insert_host_to_wpkghostsxml("edv-pc01");
-
-=cut
-
-sub insert_host_to_wpkghostsxml($)
+sub makeInstallationNow
 {
-	my $host_name = shift;
-	my $xml       = XML::Simple->new(KeepRoot => 1, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>');
-	my $hosts_xml = '/srv/itool/swrepository/wpkg/hosts.xml';
-	my $xmlData   = $xml->XMLin($hosts_xml);
-
-	if( !exists($xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'})){
-		if( exists($xmlData->{'hosts:wpkg'}->{host}->{'name'}) ){
-			my $pcname = $xmlData->{'hosts:wpkg'}->{host}->{'name'};
-			$xmlData->{'hosts:wpkg'}->{host}->{$pcname}->{'profile-id'} = 'all_packages';
-			delete $xmlData->{'hosts:wpkg'}->{host}->{'name'};
-			delete $xmlData->{'hosts:wpkg'}->{host}->{'profile-id'};
-		}
-		$xmlData->{'hosts:wpkg'}->{host}->{$host_name}->{'profile-id'} = 'all_packages';
-		my $new_hosts_xml = $xml->XMLout($xmlData);
-		write_file( $hosts_xml, $new_hosts_xml);
-	}
-}
-
-sub install_software_now
-{
-	my $this    = shift;
-	my $pcs     = shift || undef;
-	my $pcnames = '';
-	my $cmd     = 'for i in PCNAMES
+#       makeInstallationNow(\@wsList);
+	my $pcs  = shift;
+	my $cmd  = 'for i in PCNAMES
 do
     /usr/sbin/oss_control_client.pl --client="$i" --cmd=WOLCmd
-    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=cscript.exe --execworkdir="C:\Windows\System32" --execarg="C:\Windows\System32\GroupPolicy\Machine\Scripts\Startup\sw_installing.vbs" &
+    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=cscript.exe --execworkdir="C:\Windows\System32" --execarg="C:\Windows\System32\GroupPolicy\Machine\Scripts\Startup\InstallSoftware.vbs" &
 done';
 
-	if( !$pcs ){
-		return 0;
-	}elsif( ref($pcs) eq 'ARRAY'){
+	if( defined $pcs ){
+		my $wsNames = '';
 		foreach my $pcn ( sort @$pcs ){
-			$pcnames .= $pcn." ";
+			$wsNames .= $pcn." ";
 		}
-	}else{
-		$pcnames .= $pcs;
-	}
 
-	$cmd =~ s/PCNAMES/$pcnames/;
-	create_job($cmd, "Start sw_installing script on: $pcnames", 'now');
-	return 1;
+		$cmd =~ s/PCNAMES/$wsNames/;
+		create_job($cmd, "Start sw_installing script on: $wsNames", 'now');
+		return 1;
+	}
+	return 0;
 }
+
+sub installOssClient
+{
+	my $pcs  = shift;
+        my $cmd  = 'for i in PCNAMES
+do
+    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=wget.exe --execworkdir="C:\windows\System32" --execarg="-O C:\windows\OssClientSetup.exe http://admin/OssClientSetup.exe" 
+    /bin/sleep 10
+    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=OssClientSetup.exe --execworkdir="C:\windows" --execarg="/VERYSILENT /LOG=C:\windows\OssClientSetup_inst.log /TASKS=allowprinterdriversinstall,enableschoolproxy" &
+done';
+
+	if( defined $pcs ){
+		my $wsNames = '';
+		foreach my $pcn ( sort @$pcs ){
+			$wsNames .= $pcn." ";
+		}
+
+		$cmd =~ s/PCNAMES/$wsNames/;
+		create_job($cmd, "Start OssClientSetup installation on: $wsNames", 'now');
+		return 1;
+	}
+	return 0;
+}
+
 
 1;

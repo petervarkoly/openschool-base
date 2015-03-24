@@ -5934,506 +5934,630 @@ sub get_logged_users
 	return \@hash;
 }
 
-sub prodkey_allocation($$)
-{
-	my $this  = shift;
-	my $sw_dn = shift;
-	my $pcn   = shift;
-	my $obj   = $this->search_vendor_object_for_vendor( 'productkeys', $sw_dn);
-	if( defined $obj->[0] ){
-		foreach my $pk_dn ( sort @$obj ){
-			my $pk_CKey = $this->get_attribute($pk_dn, 'configurationKey');
-			my $number_of_pieces = $this->get_config_value($pk_dn, 'NUMBER_OF_PIECES');
-			my $used = $this->get_vendor_object( $sw_dn, 'productkeys', "$pk_CKey");
-			my $free_nop = $number_of_pieces - (scalar(@$used) - 2);
-			if( $this->check_vendor_object( $sw_dn, 'productkeys', "$pk_CKey", "USED=$pcn") ){
-				return 1;
-			}
-			if( $free_nop ){
-				$this->add_value_to_vendor_object( $sw_dn, 'productkeys', "$pk_CKey", "USED=$pcn");
-				return 1;
-			}
-		}
-	}
 
-	return 0;
-}
+
+####### NEW
 #-----------------------------------------------------------------------
-
-=item B<get_software_category([CATEGORY])>
-
-Returns an hash result of a software caategory ;
-
-EXAMPLE:
-
-    my $obj = $oss->get_software_category();
-    print Dumper($obj);
+=item <getPackageCategory('CategoryName')>
 
 =cut
 
-sub get_software_category
+sub getPackageCategory
 {
 	my $this     = shift;
-	my $category = shift || undef;
-	my $all_software = $this->search_vendor_object_for_vendor( 'osssoftware', "ou=Computers,$this->{LDAP_BASE}");
-	my %hash;
+	my $category = shift;
 
-	foreach my $sw_dn ( sort @$all_software ){
-		my $sw_name     = $this->get_attribute($sw_dn, 'configurationKey');
-		my $sw_category = $this->get_config_value($sw_dn, 'CATEGORIE');
-		my @categories = split(";", $sw_category);
-		$hash{EMPTY_CATEGORY}->{$sw_dn} = $sw_name if(!$sw_category);
-		foreach my $item ( sort @categories ){
+	my %ret;
+	my $tmpPackages = $this->getAllPackage(1);
+	foreach my $pkgDn ( sort keys %{$tmpPackages} ){
+		my @pkgCategory = split(";", $this->get_config_value($pkgDn, 'pkgCategory'));
+		foreach my $item ( sort @pkgCategory ){
 			next if( $category and ($category ne $item) );
-			$hash{$item}->{$sw_dn} = $sw_name;
+			push @{$ret{$item}->{pkgDn}},   $pkgDn;
+			push @{$ret{$item}->{pkgName}}, $tmpPackages->{$pkgDn}->{pkgName};
 		}
+		push @{$ret{all}->{pkgDn}},   $pkgDn;
+		push @{$ret{all}->{pkgName}}, $tmpPackages->{$pkgDn}->{pkgName};
 	}
-	return \%hash;
-}
-#-----------------------------------------------------------------------
-
-=item B<get_software_info(software_dn)>
-
-Returns an hash result of a software information ;
-
-EXAMPLE:
-
-    my $obj = $oss->get_software_info($sw_dn);
-    print Dumper($obj);
-
-=cut
-
-sub get_software_info
-{
-        my $this  = shift;
-        my $sw_dn = shift;
-        my %hash;
-
-	my $h = $this->get_config_values($sw_dn, "", "HASH");
-	delete $h->{description};
-	foreach my $item ( sort keys %{$h}){
-		$hash{lc($item)} = $h->{$item}->[0];
-	}
-        $hash{setup_files} = "";
-        $hash{be_installed} = 0;
-
-        if( ($hash{type} eq "MSI") or ($hash{type} eq "WPKG") ){
-                my $obj = $this->search_vendor_object_for_vendor( 'productkeys', $sw_dn);
-                if( defined $obj->[0] ){
-                        $hash{isprodkey} = 1;
-                }
-        }
-
-	if( $hash{file_requiremente} ){
-                if( $hash{type} eq "MSI" ){
-                        my $msi_file = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/*.msi");
-                        chomp $msi_file; $hash{setup_files} = "$msi_file";
-                        if( -e "$msi_file"){
-                                $hash{be_installed} = 1;
-                        }else{
-                                $hash{warning} = main::__('Missing the msi file!').'<BR>'.sprintf(main::__('Please copy the msi software to the "/srv/itool/swrepository/%s/" directory.'), $hash{name});
-                        }
-                }elsif( $hash{type} eq "DISKDIFF" ){
-                        my $files_diff  = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/files_diff/*.zip"); chomp $files_diff;
-                        my $reg_diff = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/registry_diff/*.reg"); chomp $reg_diff;
-                        if( (-e "$files_diff") and (-e "$reg_diff")){
-                                $hash{be_installed} = 1;
-                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
-                        }elsif( (!-e "$files_diff") and (!-e "$reg_diff")){
-                                $hash{warning} = main::__('Missing the file diff files!').'<BR>'.main::__('Missing the registry diff file!');
-                        }elsif( !-e "$files_diff" ){
-                                $hash{warning} = main::__('Missing the file diff files!').'<BR>';
-                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
-                        }elsif( !-e "$reg_diff" ){
-                                $hash{warning} .= main::__('Missing the registry diff file!');
-                                $hash{setup_files} = $files_diff."<BR>".$reg_diff;
-                        }
-                }elsif( $hash{type} eq "WPKG" ){
-                        my $files = cmd_pipe("ls /srv/itool/swrepository/$hash{name}/* | grep -E ^\\/\\.*exe\\|^\\/\\.*vbs\\|^\\/\\.*bat\\|^\\/\\.*jar\\|^\\/\\.*msi\\|^\\/\\.*EXE\\|^\\/\\.*VBS\\|^\\/\\.*BAT\\|^\\/\\.*JAR\\|^\\/\\.*MSI"); chomp $files;
-                        my $wpkg_xml_file = cmd_pipe("ls /srv/itool/swrepository/wpkg/packages/".$hash{name}.".xml"); chomp $wpkg_xml_file;
-			my @file_size = split("\n", $files);
-			if( ($files and (-e "$wpkg_xml_file")) and scalar(@file_size) < $hash{file_requiremente} ){
-				$hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} );
-                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
-                        }elsif( $files and (-e "$wpkg_xml_file")){
-                                $files =~ s/\n/<BR>/g;
-                                $hash{be_installed} = 1;
-                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
-                        }elsif( (!$files) and (!-e "$wpkg_xml_file")){
-                                $hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.
-                                sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} )."<BR>".
-                                main::__('Missing the xml file!')."<BR>".
-                                sprintf(main::__('Please make the %s.xml file the "/srv/itool/swrepository/wpkg/packages/" directory.'), $hash{name});
-                        }elsif( !$files ){
-                                $hash{warning} = main::__('Missing the .exe (or .bat or .vbs) file!').'<BR>'.sprintf(main::__('Please copy the exe package (or .bat, .vbs, etc file) to the "/srv/itool/swrepository/%s/" directory.'), $hash{name} );
-                                $hash{setup_files} = $files."<BR>".$wpkg_xml_file;
-                        }elsif( !-e "$wpkg_xml_file" ){
-                                $hash{warning} = main::__('Missing the xml file!')."<BR>".sprintf(main::__('Please make the %s.xml file the "/srv/itool/swrepository/wpkg/packages/" directory.'), $hash{name});
-				$hash{setup_files} = $files."<BR>".$wpkg_xml_file;
-                        }
-
-                }
-        }else{
-                $hash{be_installed} = 1;
-                $hash{setup_files}  = '-';
-        }
-
-        return \%hash;
+	return \%ret;
 }
 
 #-----------------------------------------------------------------------
-
-=item B<software_install_cmd(workstation_dns, software_list, install_now [, others])>
-
-Make windows software install cmd and start;
-
-EXAMPLE:
-
-    my $result = $oss->software_install_cmd(\@ws_dns, \@sw_name_list, 1, $reply);
+=item <getAllPackage([1|0])>
 
 =cut
 
-sub software_install_cmd
+sub getAllPackage
 {
-	my $this   = shift;
-	my $ws_dns = shift;
-	my $sw_name_list   = shift;
-	my $sw_install_now = shift || 0;
-	my $reply          = shift;
-	my @pcs;
+	my $this = shift;
+	my $details = shift || 0;
+	my $allPackage = $this->search_vendor_object_for_vendor( 'osssoftware', "ou=Computers,$this->{LDAP_BASE}");
+
+	if( $details ){
+		my %ret;
+		foreach my $item ( sort @$allPackage ){
+			$ret{$item} = $this->getPkgInfo($item);
+		}
+		return \%ret;
+	}else{
+		my @ret;
+		foreach my $item ( sort @$allPackage ){
+			my $pkgName = $this->get_attribute($item, 'configurationKey');
+			push @ret, [ $item, $pkgName ];
+		}
+		return \@ret;
+	}
+}
+
+#-----------------------------------------------------------------------
+=item <getPkgInfo($pkgDn)>
+
+EXAMPLE:
+	my $hash = $this->getPkgInfo( 'configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de' )
+=cut
+
+sub getPkgInfo
+{
+	my $this  = shift;
+	my $pkgDn = shift;
 	my %ret;
 
-#	print "\n\nold software list\n\n";
-#	print Dumper($sw_name_list);
-	my $sw_result = $this->get_requiremente_sw($sw_name_list);
-#	print "\n\nnew software list\n\n";
-#	print Dumper($sw_result);
-#	exit;
+	#get base info
+	my @pkgSrc = '';
+	my $h = $this->get_config_values($pkgDn, "", "HASH");
+	foreach my $i ( sort keys %{$h}){
+		if( $i =~ /^pkgCategory|pkgCompatible|pkgRequirements$/ ){
+			$h->{$i}->[0] =~ s/;/\n/g
+		}
+		$ret{$i} = $h->{$i}->[0];
+	}
 
-	my $missing_sw_list = '';
-	foreach my $sw_name ( @{$sw_result->{missing_sw_list}} )
+	#get wpkg xml
+	$ret{pkgWpkgXmlError} = '';
+	$ret{pkgWpkgXml} = "/srv/itool/swrepository/wpkg/packages/".$ret{pkgName}.".xml";
+	if( !-e "$ret{pkgWpkgXml}" ){
+		$ret{pkgWpkgXmlError} = sprintf(main::__('Please make the necessary "%s" '), $ret{pkgWpkgXml})."! <BR>";
+	}
+
+	#get install sources
+	$ret{pkgInstSrcError} = '';
+	my $fileL = '';
+	my @pkgSrcTmp = split(";",$ret{pkgInstSrc});
+	if( $ret{pkgType} eq 'MSI' and !scalar(@pkgSrcTmp) )
 	{
-		$missing_sw_list .= $sw_name."... ; ";
+		$ret{pkgInstSrcError} = sprintf(main::__('Please copy one msi installer to the "%s" directory and/or given one correct msi installer path (pkgInstSrc)!'), '\\\\install\\itool\\swrepository\\'.$ret{pkgName} )."<BR>";
 	}
-
-	$ret{missing_sw_list}   = $missing_sw_list if( $missing_sw_list );
-	$ret{selected_computer} = "";
-	$ret{selected_software} = join(", ", @$sw_name_list);
-	foreach my $ws_user_dn ( sort @$ws_dns ){
-		$ws_user_dn =~ s/o=oss,//;
-		my $ws_name = $this->get_attribute($ws_user_dn, 'uid');
-		push @pcs, $ws_name;
-		$ret{selected_computer} .= $ws_name.", ";
-		my $vbase = 'o=oss,'.$ws_user_dn;
-		if( !$this->exists_dn($vbase) )
-		{
-			my $result = $this->{LDAP}->add( dn =>  $vbase,
-					     attr => [
-						objectclass => [ 'top', 'organization' ],
-						o           => 'oss'
-					     ]);
-			if( $result->code )
-			{
-				$this->ldap_error($result);
-				print STDERR "Error by creating $vbase\n";
-				print STDERR $this->{ERROR}->{code}."\n";
-				print STDERR $this->{ERROR}->{text}."\n";
-			}
+	elsif( $ret{pkgType} eq 'MSI' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] !~ /(.*)\.msi|MSI$/ )
+	{
+		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
+		$ret{pkgInstSrcError} = sprintf(main::__('Please copy one msi installer to the "%s" directory and/or given one correct msi installer path (pkgInstSrc)!'), '\\\\install\\itool\\swrepository\\'.$ret{pkgName} )."<BR>";
+	}
+	elsif( $ret{pkgType} eq 'MSI' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.msi|MSI$/ )
+	{
+		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
+		$fileL = '';
+		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
+			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
 		}
-
-		foreach my $sw_dn ( @{$sw_result->{sorted_sw_list}} ){ # It is important not to sorted.
-			my $sw_name = $this->get_attribute($sw_dn, 'configurationKey');
-			my $values = $this->get_vendor_object( $vbase, 'osssoftware', "$sw_name");
-			cmd_pipe("chmod -R 777 /srv/itool/swrepository/$sw_name/");
-			if( !$values->[0] ){
-				my $allocationtype = $this->get_config_value($sw_dn, 'LICENSALLOCATIONTYPE');
-				my $pkgtype = $this->get_config_value($sw_dn, 'TYPE');
-				my $status = 0;
-				if( ($allocationtype eq "NO_LICENSE_KEY") or ($pkgtype eq "DISKDIFF") )
-				{
-					$status = 1;
-					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
-				}
-				elsif( !$this->exists_dn("o=productkeys,".$sw_dn) and ($allocationtype ne "NO_LICENSE_KEY"))
-				{
-					$status = 0;
-					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '0';
-				}
-				else
-				{
-					$status = $this->prodkey_allocation($sw_dn, $ws_name);
-					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1' if($status eq 1);
-					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '0' if($status eq 0);
-				}
-				if($status){
-					$this->create_vendor_object( $vbase, 'osssoftware', "$sw_name", "installation_scheduled");
-					$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
-					$ret{deinstallation_scheduled}->{$ws_name} = $this->remove_old_version_software($vbase, $sw_dn, $ws_name);
-				}
-			}elsif( $values->[0] and exists($reply->{det_try_again}) and !('installed' eq $values->[0]) ){
-				$this->modify_vendor_object( $vbase, 'osssoftware', "$sw_name", "installation_scheduled");
-				$ret{installation_scheduled}->{$ws_name}->{$sw_name} = '1';
-				$ret{deinstallation_scheduled}->{$ws_name} = $this->remove_old_version_software($vbase, $sw_dn, $ws_name);
-			}else{
-				$ret{exists_status}->{$ws_name}->{$sw_name} = "$values->[0]";
-			}
-		}
-
-		foreach my $i (sort @{$this->search_vendor_object_for_vendor( 'osssoftware', $ws_user_dn)}){
-			my $sw_name = $this->get_attribute($i, 'configurationKey');
-			my $status  = $this->get_attribute($i, 'configurationValue');
-#			if( !exists($ret{exists_status}->{$ws_name}->{$sw_name}) ){
-			if(('deinstallation_scheduled' eq $status) and (exists($ret{deinstallation_scheduled}->{$ws_name}->{$sw_name}))){
-				delete($ret{exists_status}->{$ws_name}->{$sw_name});
-			}
-			if(('deinstallation_scheduled' eq $status) and (!exists($ret{deinstallation_scheduled}->{$ws_name}->{$sw_name}))){
-				$ret{exists_status}->{$ws_name}->{$sw_name} = "deinstallation_scheduled";
-			}
-			if(('installation_scheduled' eq $status) and (!exists($ret{installation_scheduled}->{$ws_name}->{$sw_name}))){
-				$ret{exists_status}->{$ws_name}->{$sw_name} = "installation_scheduled";
-			}
-#			}
-		}
-
-		insert_host_to_wpkghostsxml($ws_name);
-		if( !-e "/srv/itool/swrepository/logs/$ws_name/" ){
-			cmd_pipe("mkdir /srv/itool/swrepository/logs/$ws_name/");
-			cmd_pipe("chmod -R 777 /srv/itool/swrepository/logs/$ws_name/");
+		if( !-e "$fileL"){
+			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" msi installer! Please copy the msi installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
 		}
 	}
-
-	if( $sw_install_now ){
-		$this->install_software_now(\@pcs);
+	elsif( $ret{pkgType} eq 'MSI' and scalar(@pkgSrcTmp) > 1 )
+	{
+		$ret{pkgInstSrcError} = main::__('Please give only one msi installer to the (pkgInstSrc)!')."<BR>";
 	}
-
+	elsif( $ret{pkgType} eq 'WPKG' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] !~ /(.*)\.exe|EXE|vbs|VBS|bat|BAT|msi|MSI|jar|JAR$/ )
+	{
+		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
+		$ret{pkgInstSrcError} = sprintf(main::__('Please copy installer to the "%s" directory and/or given the correct installer path (pkgInstSrc)!'), '\\\\install\\itool\\swrepository\\'.$ret{pkgName}  )."<BR>";
+	}
+	elsif( $ret{pkgType} eq 'WPKG' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.exe|EXE|vbs|VBS|bat|BAT|msi|MSI|jar|JAR$/ )
+	{
+		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
+		$fileL = '';
+		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
+			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
+		}
+		if( !-e "$fileL"){
+			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
+		}
+	}
+	elsif( $ret{pkgType} eq 'WPKG' and scalar(@pkgSrcTmp) > 1 )
+	{
+		foreach my $i (@pkgSrcTmp){
+			$i =~ s/#PKGNAME#/$ret{pkgName}/g;
+			$fileL = '';
+			if( $i =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
+				$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
+			}
+			if( !-e "$fileL"){
+				$ret{pkgInstSrcError} .= sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)'), $i  )."<BR>";
+			}
+		}
+	}
 	return \%ret;
+}
+	
+#-----------------------------------------------------------------------
+=item <get_wsuser_pkg_status($wsUserDn, $pkgName)>
+
+EXAMPLE:
+	my $status = $this->getPkgInfo( 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'FirefoxV26.0.DE' );
+=cut
+
+sub get_wsuser_pkg_status
+{
+	my $this     = shift;
+	my $wsUserDn = shift;
+	my $pkgName  = shift;
+
+	my $msg = $this->{LDAP}->search(
+				base   => "o=osssoftware,o=oss,$wsUserDn",
+				scope  => 'one',
+				filter => "cKey=$pkgName",
+				attrs  => ['dn' ]
+			);
+	my $pkgStatus = '';
+	if( $msg->code() || $msg->count() != 1 )
+	{
+		return $pkgStatus;
+	}
+	my $statusPkgUserDn = $msg->entry(0)->dn();
+
+#	my $values = $this->get_config_values( $statusPkgUserDn, '', 'HASH');
+	$pkgStatus = $this->get_config_value( $statusPkgUserDn, 'pkgStatus');
+	return $pkgStatus;
 }
 
 #-----------------------------------------------------------------------
-
-=item B<software_deinstall_cmd(workstation_dns, software_list, install_now [, others])>
-
-Make windows software deinstall cmd and start;
+=item <get_wsuser_pkg_run($wsUserDn, $pkgName)>
 
 EXAMPLE:
-
-    my $result = $oss->software_deinstall_cmd(\@ws_dns, \@sw_name_list, 1, $reply);
-
+        my $status = $this->get_wsuser_pkg_run( 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'FirefoxV26.0.DE' );
 =cut
 
-sub software_deinstall_cmd
+sub get_wsuser_pkg_run
 {
-	my $this   = shift;
-	my $ws_dns = shift;
-	my $sw_name_list   = shift;
-        my $sw_install_now = shift || 0;
-        my $reply          = shift;
-        my @pcs;
-        my %ret;
+	my $this     = shift;
+	my $wsUserDn = shift;
+	my $pkgName  = shift;
 
-	$ret{selected_computer} = "";
-        $ret{selected_software} = join(", ", @$sw_name_list);
-        foreach my $ws_user_dn ( sort @$ws_dns ){
-                $ws_user_dn =~ s/o=oss,//;
-                my $ws_name = $this->get_attribute($ws_user_dn, 'uid');
-                push @pcs, $ws_name;
-                $ret{selected_computer} .= $ws_name.", ";
-                my $vbase = 'o=oss,'.$ws_user_dn;
-                if( !$this->exists_dn($vbase) )
-                {
-                        my $result = $this->{LDAP}->add( dn =>  $vbase,
-                                             attr => [
-                                                objectclass => [ 'top', 'organization' ],
-                                                o           => 'oss'
-                                             ]);
-                        if( $result->code )
-                        {
-                                $this->ldap_error($result);
-                                print STDERR "Error by creating $vbase\n";
-                                print STDERR $this->{ERROR}->{code}."\n";
-                                print STDERR $this->{ERROR}->{text}."\n";
-                        }
-                }
-
-                foreach my $sw_name ( @$sw_name_list ){
-			my $values = $this->get_vendor_object( $vbase, 'osssoftware', "$sw_name");
-			my $sw_dn = "configurationKey=$sw_name,o=osssoftware,".$this->{SYSCONFIG}->{COMPUTERS_BASE};
-                        if( $values->[0] ){
-                                $this->modify_vendor_object( $vbase, 'osssoftware', "$sw_name", "deinstallation_scheduled");
-				$ret{deinstallation_scheduled}->{$ws_name}->{$sw_name} = '1';
-                        }else{
-				$ret{deinstallation_scheduled}->{$ws_name}->{$sw_name} = '0';
-                        }
-                }
-        }
-
-	if( $sw_install_now ){
-		$this->install_software_now(\@pcs);
+	my $msg = $this->{LDAP}->search(
+                                base   => "o=osssoftware,o=oss,$wsUserDn",
+                                scope  => 'one',
+                                filter => "cKey=$pkgName",
+                                attrs  => ['dn' ]
+			);
+	my $runStatus = '';
+	if( $msg->code() || $msg->count() != 1 )
+	{
+		return $runStatus;
 	}
+	my $statusPkgUserDn = $msg->entry(0)->dn();
 
-	return \%ret;
+#       my $values = $this->get_config_values( $statusPkgUserDn, '', 'HASH');
+	$runStatus = $this->get_config_value( $statusPkgUserDn, 'runStatus');
+	return $runStatus;
 }
 
+#-----------------------------------------------------------------------
+=item <makeInstallDeinstallCmd($cmd, \@selectedWs, \@selectedPkgs )>
 
-sub remove_old_version_software
+EXAMPLE:
+        my $hash = $this->makeInstallDeinstallCmd( 'install', ['uid=edv-pc03,ou=people,dc=EXTIS191,dc=de'], [configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de] );
+=cut
+
+sub makeInstallDeinstallCmd
 {
-        my $this       = shift;
-        my $ws_user_dn = shift;
-	my $sw_dn      = shift;
-        my $ws_name    = shift;
-        my $updatetype = $this->get_config_value($sw_dn, 'UPDATETYPE');
-	my %change_status;
+	my $this   = shift;
+	my $cmd    = shift;
+	my $wsDns  = shift;
+	my $pkgDns = shift;
 
-        if( 'module' eq $updatetype )
-        {
-            my $previuspackages = $this->get_config_value($sw_dn, 'PREVIUS_PACKAGES');
-            my @prevpackages    = split(";",$previuspackages);
-            my $sw_name = $this->get_attribute( $sw_dn, 'configurationKey');
-            my $obj     = $this->search_vendor_object_for_vendor( 'osssoftware', "$ws_user_dn");
-            foreach my $item ( sort @$obj ){
-                my $cKeyName = $this->get_attribute( $item, 'configurationKey');
-                next if( $cKeyName eq $sw_name );
-                foreach my $prevpackage ( sort @prevpackages ){
-                        if( $cKeyName =~ /$prevpackage*/ ){
-                                my $values = $this->get_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName");
-                                if( $values->[0] eq 'installed' ){
-                                        $this->modify_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName", "deinstallation_scheduled");
-					$change_status{$cKeyName} = '1';
-                                }elsif( $values->[0] eq 'installation_scheduled' ){
-                                        $this->delete_vendor_object( $ws_user_dn, 'osssoftware', $cKeyName );
-                                }elsif( $values->[0] eq 'installation_failed' ){
-                                        $this->delete_vendor_object( $ws_user_dn, 'osssoftware', $cKeyName );
-                                }elsif( $values->[0] eq 'deinstallation_failed' ){
-                                        $this->modify_vendor_object( $ws_user_dn, 'osssoftware', "$cKeyName", "deinstallation_scheduled");
-					$change_status{$cKeyName} = '1';
+	if( !defined $wsDns or ! defined $pkgDns ){
+		return undef;
+	}
+	my @selectedWs = @$wsDns;
+	my @selectedPkgs = @$pkgDns;
+
+	my %h;
+	my @wsList = ();
+	my @installOssClientForWsUser = ();
+	foreach my $wsUidDn (sort @selectedWs){
+		my $wsName = $this->get_attribute($wsUidDn, 'uid');
+		foreach my $pkgDn ( @selectedPkgs ){
+			my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+			my $currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
+			if( $cmd eq 'install' and $pkgName =~ /^OssClient(.*)/){
+				my $OssClientSrc  = '/srv/itool/swrepository/'.$pkgName.'/OssClientSetup.exe';
+				my $OssClientDest = '/srv/www/admin/OssClientSetup.exe';
+				if( -f "/srv/www/admin/OssClientSetup.exe" ){
+					my $md5sum1 = cmd_pipe('md5sum /srv/itool/swrepository/'.$pkgName.'/OssClientSetup.exe');
+					my $md5sum2 = cmd_pipe('md5sum /srv/www/admin/OssClientSetup.exe');
+					cmd_pipe("cp $OssClientSrc $OssClientDest") if( "$md5sum1" ne "$md5sum2" );
+				}else{
+					cmd_pipe("cp $OssClientSrc $OssClientDest");
+				}
+				push @installOssClientForWsUser, $wsName;
+				$this->delete_vendor_object( "o=oss,$wsUidDn", 'osssoftware', $pkgName );
+				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1;
+			}
+
+			my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+			my $currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
+			if($cmd eq 'install'){
+				if( $currentStatus =~ /^installed$/ ){
+					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installed';
+					next;
+				}elsif($currentStatus =~ /^installation_scheduled$/ ){
+					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installation_scheduled';
+					next;
+				}
+
+				# check is installed this software (other version)
+				my @isOtherVersion = @{$this->removeOldPkg($wsUidDn, $pkgDn)};
+#                               $h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = $this->removeOldPkg($wsUidDn, $pkgDn);
+				if( scalar(@isOtherVersion) > 0 ){
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 0;
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{removefirst} = \@isOtherVersion;
+				}else{
+					my $licenseToHost = $this->assignLicenseToHost($cmd, $wsUidDn, $pkgDn);
+					my $hostsFileXml  = $this->makeHostsFileXml($cmd, $wsUidDn, $pkgDn);
+					my $profileXml    = $this->makeProfileFileXml($cmd, $wsUidDn, $pkgDn);
+					my $installStatus = $this->makeInstallationStatus($cmd, $wsUidDn, $pkgDn);
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 0;
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1 if( $licenseToHost and $hostsFileXml and $profileXml and $installStatus);
+				}
+			}
+			if($cmd eq 'deinstall'){
+				if( $currentStatus =~ /^deinstallation_scheduled$/ ){
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{exist} = 'deinstallation_scheduled';
+					next;
+				}elsif( $currentStatus eq undef ){
+					$h{$wsUidDn}->{$cmd}->{$pkgDn}->{exist} = 'deinstalled';
+					next;
+				}
+				my $hostsFileXml  = $this->makeHostsFileXml($cmd, $wsUidDn, $pkgDn);
+				my $profileXml    = $this->makeProfileFileXml($cmd, $wsUidDn, $pkgDn);
+				my $installStatus = $this->makeInstallationStatus($cmd, $wsUidDn, $pkgDn);
+
+				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 0;
+				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1 if( $hostsFileXml and $profileXml and $installStatus);
+			}
+		}
+	}
+	if( scalar(@installOssClientForWsUser) ){
+		installOssClient(\@installOssClientForWsUser);
+	}
+	return \%h
+}
+
+#-----------------------------------------------------------------------
+=item <assignLicenseToHost($cmd, $wsUserDn, $pkgDn)>
+
+EXAMPLE:
+        my $status = $this->assignLicenseToHost( 'install', 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de' );
+=cut
+
+sub assignLicenseToHost
+{
+        my $this  = shift;
+        my $cmd   = shift;
+        my $wsUidDn = shift;
+        my $pkgDn   = shift;
+        my $wsName  = get_name_of_dn($wsUidDn);
+        my $pkgLicenseAllocationType = $this->get_config_value($pkgDn, 'pkgLicenseAllocationType');
+
+        if( $pkgLicenseAllocationType ne 'NO_LICENSE_KEY' ){
+                my $obj = $this->search_vendor_object_for_vendor( 'productkeys', $pkgDn);
+                if( defined $obj->[0] ){
+                        foreach my $licenseKeyDn ( sort @$obj ){
+                                # get number of pieces
+                                my $numberOfPieces = $this->get_config_value($licenseKeyDn, 'NUMBER_OF_PIECES');
+                                chomp $numberOfPieces;
+
+                                # get used license key number of pieces
+                                my $licenseCKey = $this->get_attribute($licenseKeyDn, 'configurationKey');
+                                my @used = @{$this->get_vendor_object( $pkgDn, 'productkeys', "$licenseCKey")};
+                                my $numberOfPiecesFree = $numberOfPieces - (scalar(@used) - 2);
+
+                                # check wsName for license key 
+                                if( $this->check_vendor_object( $pkgDn, 'productkeys', "$licenseCKey", "USED=$wsName") ){
+                                        return 1;
+                                }
+                                # set wsName for license key
+                                if( $numberOfPiecesFree ){
+                                        $this->add_value_to_vendor_object( $pkgDn, 'productkeys', "$licenseCKey", "USED=$wsName");
+                                        return 1;
                                 }
                         }
                 }
-            }
+                return 0;
         }
-	return \%change_status;
+        return 1;
 }
 
 #-----------------------------------------------------------------------
-
-=item B<get_requiremente_sw(sw_name_list)>
-
-Get requiremente software for installation;
+=item <makeHostsFileXml($cmd, $wsUserDn)>
 
 EXAMPLE:
-
-    my $result = $oss->get_requiremente_sw(\%sw_name_list);
-
-$VAR1 = {
-          'missing_sw_list' => [
-                                 'JRE'
-                               ],
-          'sorted_sw_list' => [
-                                'configurationKey=FirefoxV22.0.DE,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro',
-                                'configurationKey=FirefoxV24.0.DE,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro',
-                                'configurationKey=GeonextV1.74,o=osssoftware,ou=Computers,dc=EXTIS1,dc=ro'
-                              ]
-        };
+        my $status = $this->makeHostsFileXml( 'install', 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de' );
 =cut
-sub get_requiremente_sw
+
+sub makeHostsFileXml
 {
-	my $this    = shift;
-	my $sw_list = shift;
-	my $ws_list = shift;
-	my $status  = shift;
-	my %ret  = ();
-	my %hash = ();
-	my %data = ();
-	my %missing_sw_list = ();
-
-	foreach my $sw_name ( @$sw_list ){
-		my $sw_dn = "configurationKey=$sw_name,o=osssoftware,".$this->{SYSCONFIG}->{COMPUTERS_BASE};
-		my $func1;
-		$func1 = sub {
-			my $sw_dnf     = shift;
-			my @sw_pkg_req = split(";", $this->get_config_value($sw_dnf,'PKG_REQUIREMENTE'));
-			my @new = ();
-			foreach my $sw_n ( sort @sw_pkg_req ){
-				my $sw_dnss = $this->search_vendor_object('osssoftware', "$sw_n", "*");
-				my @sw_dns = reverse(sort(@$sw_dnss));
-				my $fl = 0;
-				foreach my $i ( @sw_dns ){
-					if( $i =~ /(.*),o=osssoftware,ou=Computers,(.*)/){
-						push @new, $i;
-						$fl = 1;
-						last;
-					}
-				}
-				$missing_sw_list{$sw_n} = 0 if( !$fl );
-			}
-
-			$data{$sw_dnf} = \@new;
-			my %h;
-			if( scalar(@new) > 0 ){
-				foreach my $sw_dn_t ( sort @new){
-					my $sw_dns = $func1->($sw_dn_t);
-					$h{$sw_dn_t} = $sw_dns;
-				}
-			}
-			return \%h ;
-		};
-		$func1->($sw_dn);
-	}
-	#print "\n\ndata\n\n";
-	#print Dumper(\%data);
-
-	map { %{$hash{$_}} = map { $_ => {}; } @{$data{$_}}; } keys %data;
-	#print "\n\nhash\n\n";
-	#print Dumper(\%hash);
-
-	my $func2;
-	$func2 = sub
-	{
-		my $h = shift;
-		my $id = shift;
-		my %newh = ();
-		foreach my $i ( sort keys %{$h} ){
-			if( ! keys %{$h->{$i}} ){
-				$newh{$id}->{$i} = 1;
-			}else{
-				$newh{$i} = $h->{$i};
-			}
-		}
-		foreach my $i ( sort keys %{$h} ){
-			foreach my $j (sort keys %{$h->{$i}} ){
-				if( exists($newh{$id}->{$j}) ){
-					delete $newh{$i}->{$j};
-				}
-			}
-		}
-
-		my $fl = 1;
-		foreach my $i ( sort keys %newh ){
-			$fl = 0 if($i !~ /^[0-9]{1,4}$/);
-		}
-
-		if($fl){
-			return \%newh;
-		}else{
-			$id++;
-			$func2->(\%newh, $id);
-		}
-	};
-
-	my $new_sw_list = $func2->(\%hash, 1);
-	foreach my $item (sort keys %{$new_sw_list}){
-		foreach my $swdn ( sort keys %{$new_sw_list->{$item}}){
-			push @{$ret{sorted_sw_list}}, $swdn;
-		}
-	}
-
-	foreach my $item ( keys %missing_sw_list ){
-		push @{$ret{missing_sw_list}}, $item;
-	}
-#print Dumper(%ret); exit;
-
-	return \%ret;
+        my $this  = shift;
+        my $cmd   = shift;
+        my $wsUidDn = shift;
+        my $wsUid = $this->get_attribute($wsUidDn, 'uid');
+        my $hostXml = "/srv/itool/swrepository/wpkg/hosts/$wsUid.xml";
+        if( !-e "$hostXml" ){
+                my $xmlContent = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+                $xmlContent .= '<wpkg>'."\n";
+                $xmlContent .= "\t".'<host name="'.$wsUid.'" profile-id="'.$wsUid.'" />'."\n";
+                $xmlContent .= '</wpkg>'."\n";
+                write_file( $hostXml, $xmlContent);
+                cmd_pipe("chmod 755 $hostXml");
+        }
+        if( -e "$hostXml" ){
+                return 1;
+        }else{
+                return 0;
+        }
 }
 
+#-----------------------------------------------------------------------
+=item <makeProfileFileXml($cmd, $wsUserDn, $pkgDn)>
+
+EXAMPLE:
+        my $status = $this->makeProfileFileXml( 'install', 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de' );
+=cut
+
+sub makeProfileFileXml
+{
+#       $this->makeProfileFileXml($cmd, $wsUidDn, $pkgDn);
+        my $this    = shift;
+        my $cmd     = shift;
+        my $wsUidDn = shift;
+        my $pkgDn   = shift;
+        my $wsUid   = $this->get_attribute($wsUidDn, 'uid');
+        my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+        my $profileXml = "/srv/itool/swrepository/wpkg/profiles/$wsUid.xml";
+
+        if( -e "$profileXml" ){
+                my $xml     = XML::Simple->new(RootName => 'profiles', XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', KeyAttr => { profile => "id" }, ForceArray => 1);
+                my $xmlData = $xml->XMLin($profileXml);
+                if( $cmd eq 'install' ){
+                        my $f = 1;
+                        foreach my $pkg ( @{$xmlData->{profile}->{"$wsUid"}->{package}}){
+                                $f = 0 if( $pkg->{'package-id'} eq $pkgName );
+                        }
+                        push @{$xmlData->{profile}->{"$wsUid"}->{package}}, { 'package-id' => $pkgName} if($f);
+                }elsif($cmd eq 'deinstall'){
+                        my @array = ();
+                        foreach my $pkg ( @{$xmlData->{profile}->{"$wsUid"}->{package}} ){
+                                push @array, $pkg if( $pkg->{'package-id'} ne $pkgName );
+                        }
+                        $xmlData->{profile}->{"$wsUid"}->{package} = \@array;
+                }
+                my $xmlContent = $xml->XMLout($xmlData);
+                write_file( $profileXml, $xmlContent);
+                cmd_pipe("chmod 755 $profileXml");
+        }else{
+                my $xmlContent = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+                $xmlContent .= '<profiles>'."\n";
+                $xmlContent .= "\t".'<profile id="'.$wsUid.'">'."\n";
+                $xmlContent .= "\t\t".'<package package-id="'.$pkgName.'" />'."\n" if( $cmd eq 'install' );
+                $xmlContent .= "\t".'</profile>'."\n";
+                $xmlContent .= '</profiles>'."\n";
+                write_file( $profileXml, $xmlContent);
+                cmd_pipe("chmod 755 $profileXml");
+        }
+
+        if( -e "$profileXml" ){
+                my $xml     = XML::Simple->new(RootName => 'profiles', XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', KeyAttr => { profile => "id" }, ForceArray => 1);
+                my $xmlData = $xml->XMLin($profileXml);
+                if( $cmd eq 'install' ){
+                        foreach my $pkg ( @{$xmlData->{profile}->{"$wsUid"}->{package}} ){
+                                return 1 if( $pkg->{'package-id'} eq $pkgName );
+                        }
+                        return 0;
+                }elsif($cmd eq 'deinstall'){
+                        foreach my $pkg ( @{$xmlData->{profile}->{"$wsUid"}->{package}} ){
+                                return 0 if( $pkg->{'package-id'} eq $pkgName );
+                        }
+                        return 1;
+                }
+        }else{
+                return 0;
+        }
+}
+
+#-----------------------------------------------------------------------
+=item <makeInstallationStatus($cmd, $wsUserDn, $pkgDn)>
+
+EXAMPLE:
+        my $status = $this->makeInstallationStatus( 'install', 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de' );
+=cut
+
+sub makeInstallationStatus
+{
+#	$this->makeInstallationStatus($cmd, $wsUidDn, $pkgDn);
+	my $this = shift;
+	my $cmd  = shift;    # install|deinstall
+	my $wsUidDn = shift;
+	my $pkgDn   = shift;
+
+	# make ws uid software install status ldap base
+	my $vbase = 'o=oss,'.$wsUidDn;
+        if( !$this->exists_dn($vbase) )
+        {
+		my $result = $this->{LDAP}->add( dn =>  $vbase,
+						 attr => [
+						 objectclass => [ 'top', 'organization' ],
+						 o           => 'oss'
+				]);
+		if( $result->code )
+		{
+			$this->ldap_error($result);
+			print STDERR "Error by creating $vbase\n";
+			print STDERR $this->{ERROR}->{code}."\n";
+			print STDERR $this->{ERROR}->{text}."\n";
+			return 0;
+		}
+        }
+
+	# get package name
+	my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+
+	# get software current install status
+	my $currentStatus = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
+
+	# set status
+	my $status = '';
+	$status = 'installation_scheduled'   if( ($cmd =~ /^install$/)   and ($currentStatus =~ /^(installation_failed|deinstalled_manual)$/ or !$currentStatus) );
+        $status = 'deinstallation_scheduled' if( ($cmd =~ /^deinstall$/) and ($currentStatus =~ /^(deinstallation_failed|installed)$/) );
+        $status = 'installed'                if( ($cmd =~ /^installed$/) );
+
+	# create/modify installation status
+	if( !$currentStatus ){
+		$this->create_vendor_object( $vbase, 'osssoftware', "$pkgName", "pkgStatus=$status");
+	}else{
+		$this->modify_vendor_object( $vbase, 'osssoftware', "$pkgName", "pkgStatus=$status");
+	}
+
+	if($this->check_vendor_object( $vbase, 'osssoftware', "$pkgName", "pkgStatus=$status")){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+#-----------------------------------------------------------------------
+=item <removeOldPkg($cmd, $wsUserDn, $pkgDn)>
+
+EXAMPLE:
+        my $status = $this->removeOldPkg( 'uid=edv-pc03,ou=people,dc=EXTIS191,dc=de', 'configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de' );
+=cut
+
+sub removeOldPkg
+{
+        my $this = shift;
+        my $wsUidDn = shift;
+        my $pkgDn   = shift;
+        my %hash;
+
+        my @ret = ();
+        my $pkgPreviouspackages = $this->get_config_value( $pkgDn, 'pkgPreviouspackages');
+        my @pkgPrevPkgs = split(";", $pkgPreviouspackages);
+        foreach my $pkgPrev ( sort @pkgPrevPkgs ){
+                print $pkgPrev."\n";
+                my $obj = $this->search_vendor_object_for_vendor( 'osssoftware', $wsUidDn );
+                if( defined $obj){
+                        foreach my $otherWsUidDn ( sort @$obj ){
+                                if( $otherWsUidDn =~ /^configurationKey=($pkgPrev.*),o=osssoftware,o=oss,$wsUidDn$/ ){
+                                        my $otherPkgName = $this->get_attribute($otherWsUidDn, 'configurationKey');
+                                        my $status = $this->get_wsuser_pkg_status($wsUidDn,$otherPkgName);
+                                        if( $status =~ /^(installed|installation_scheduled|deinstallation_failed)$/ ){
+                                                push @ret, $otherPkgName;
+                                        }
+                                }
+                        }
+                }
+        }
+        return \@ret;
+}
+
+#-----------------------------------------------------------------------
+=item <sortPkg(\@selectedPkg)>
+
+EXAMPLE:
+        my $hash = $this->sortPkg( ['configurationKey=FirefoxV26.0.DE,o=osssoftware,ou=Computers,dc=EXTIS191,dc=de'] );
+=cut
+
+sub sortPkg
+{
+        my $this = shift;
+        my $selectedPkg = shift;
+        my %hash = ();
+        my %data = ();
+#print "\n\n\n";
+
+        foreach my $pkgDn ( @$selectedPkg ){
+#               print $pkgDn."\n";
+                my $func1;
+                $func1 = sub {
+                        my $pkgDnf = shift;
+                        my @pkgRequirements = split(";", $this->get_config_value($pkgDnf, 'pkgRequirements'));
+                        my @new = ();
+                        foreach my $pkgReqDn ( sort @pkgRequirements ){
+                                push @new, $pkgReqDn if( $this->exists_dn($pkgReqDn) );
+                        }
+                        $data{$pkgDnf} = \@new;
+                        my %h;
+                        if( scalar(@new) > 0 ){
+                                foreach my $pkgReqDn ( sort @new){
+                                        my $pkgDns = $func1->($pkgReqDn);
+                                        $h{$pkgReqDn} = $pkgDns;
+                                }
+                        }
+                        return \%h;
+                };
+                $func1->($pkgDn);
+        }
+
+        #print "\n\ndata\n\n";
+        #print Dumper(\%data);
+        map { %{$hash{$_}} = map { $_ => {}; } @{$data{$_}}; } keys %data;
+        #print "\n\nhash\n\n";
+        #print Dumper(\%hash);
+        #exit;
+
+        my $func2;
+        $func2 = sub
+        {
+                my $h = shift;
+                my $id = shift;
+                my %newh = ();
+                foreach my $i ( sort keys %{$h} ){
+                        if( ! keys %{$h->{$i}} ){
+                                $newh{$id}->{$i} = 1;
+                        }else{
+                                $newh{$i} = $h->{$i};
+                        }
+                }
+                foreach my $i ( sort keys %{$h} ){
+                        foreach my $j (sort keys %{$h->{$i}} ){
+                                if( exists($newh{$id}->{$j}) ){
+                                        delete $newh{$i}->{$j};
+                                }
+                        }
+                }
+
+		my $fl = 1;
+                foreach my $i ( sort keys %newh ){
+                        $fl = 0 if($i !~ /^[0-9]{1,4}$/);
+                }
+
+                if($fl){
+                        return \%newh;
+                }else{
+                        $id++;
+                        $func2->(\%newh, $id);
+                }
+        };
+        my $new_sw_list = $func2->(\%hash, 1);
+
+        my @ret;
+        foreach my $item (sort keys %{$new_sw_list}){
+                foreach my $swdn ( sort keys %{$new_sw_list->{$item}}){
+                        push @ret, $swdn;
+                }
+        }
+
+#print Dumper(\@ret);
+        return \@ret;
+}
 
 1;
