@@ -2593,6 +2593,32 @@ sub is_guest($)
 }
 #-----------------------------------------------------------------------
 
+=item B<is_user_in_group(udn,gdn)>
+
+Returns 1 if the user is in group.
+
+=cut
+
+sub is_user_in_group($)
+{
+    my $this   = shift;
+    my $udn    = shift;
+    my $gdn    = shift;
+
+    my $result = $this->{LDAP}->search(
+                        base    => $gdn,
+                        scope   => 'base',
+                        filter  => "(member=$udn)",
+                        attrs   => ['dn']
+    );
+    if( defined $result && $result->count ==1 )
+    {
+      return 1;
+    }
+    return 0;
+}
+#-----------------------------------------------------------------------
+
 =item B<login(dn,password,remote-IP,session)>
 
 Check the login parameter of the user, and returns his attributes.

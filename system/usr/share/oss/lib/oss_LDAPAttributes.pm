@@ -848,15 +848,15 @@ sub check_group_ldap_attributes($)
     {
         $group->{role} = lc($group->{cn});
     }
-    if( length $group->{cn} < 2 )
+    if( length $group->{cn} < 1 )
     {
-    	return "Group name must conain at last 2 characters";
+    	return "Group name must conain at last 1 characters";
     }
     if( $group->{cn} =~ / |\t/ )
     {
     	return "Group name must not contains white spaces!";
     }
-    if( $group->{cn} !~ /^[a-zA-Z0-9][a-zA-Z0-9_\.\-]{0,28}[a-zA-Z0-9]$/ ){
+    if( $group->{cn} !~ /^[a-zA-Z0-9][a-zA-Z0-9_\.\-]{0,28}[a-zA-Z0-9]{0,28}$/ ){
 	$error .= "Invalid group name: ".$group->{cn}."\n";
 	$error .= "Please don\'t use special characters when entering the GroupName  ( ex. special charakter: á, ú, ű, é, ß, ä ).";
     	return $error;
