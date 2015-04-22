@@ -1190,12 +1190,24 @@ done';
 
 sub installOssClient
 {
+	my $pkgName = shift;
+	my $sambaDomain = shift;
 	my $pcs  = shift;
-        my $cmd  = 'for i in PCNAMES
-do
-    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=wget.exe --execworkdir="C:\windows\System32" --execarg="-O C:\windows\OssClientSetup.exe http://admin/OssClientSetup.exe" 
-    /bin/sleep 10
-    /usr/sbin/oss_control_client.pl --client="$i" --cmd=ExecuteCommandCmd --execfilename=OssClientSetup.exe --execworkdir="C:\windows" --execarg="/VERYSILENT /LOG=C:\windows\OssClientSetup_inst.log /TASKS=allowprinterdriversinstall,enableschoolproxy" &
+
+	my $cmd = 'for i in PCNAMES
+do';
+	$cmd .= ' /usr/sbin/oss_control_client.pl';
+	$cmd .= ' --client="$i"';
+	$cmd .= ' --cmd=ExecuteCommandCmd';
+	$cmd .= ' --execfilename=cmd.exe';
+	$cmd .= ' --execworkdir="C:\Windows\System32"';
+	$cmd .= ' --execarg="/c';
+	$cmd .= ' net use W: \\\\\install\\itool /user:'.$sambaDomain.'\\\$i $i';
+	$cmd .= ' &amp;&amp;';
+	$cmd .= ' \\\\\install\\itool\\swrepository\\'.$pkgName.'\OssClientSetup.exe /VERYSILENT /LOG=C:\windows\OssClientSetup_inst.log /TASKS=allowprinterdriversinstall,enableschoolproxy';
+	$cmd .= ' &amp;&amp;';
+	$cmd .= ' net use W: /DELETE"';
+	$cmd .= ' &
 done';
 
 	if( defined $pcs ){

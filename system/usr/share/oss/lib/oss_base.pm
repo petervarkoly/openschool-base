@@ -6190,21 +6190,14 @@ sub makeInstallDeinstallCmd
 	my %h;
 	my @wsList = ();
 	my @installOssClientForWsUser = ();
+	my $ossClientPkgName = '';
 	foreach my $wsUidDn (sort @selectedWs){
 		my $wsName = $this->get_attribute($wsUidDn, 'uid');
 		foreach my $pkgDn ( @selectedPkgs ){
 			my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
 			my $currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
 			if( $cmd eq 'install' and $pkgName =~ /^OssClient(.*)/){
-				my $OssClientSrc  = '/srv/itool/swrepository/'.$pkgName.'/OssClientSetup.exe';
-				my $OssClientDest = '/srv/www/admin/OssClientSetup.exe';
-				if( -f "/srv/www/admin/OssClientSetup.exe" ){
-					my $md5sum1 = cmd_pipe('md5sum /srv/itool/swrepository/'.$pkgName.'/OssClientSetup.exe');
-					my $md5sum2 = cmd_pipe('md5sum /srv/www/admin/OssClientSetup.exe');
-					cmd_pipe("cp $OssClientSrc $OssClientDest") if( "$md5sum1" ne "$md5sum2" );
-				}else{
-					cmd_pipe("cp $OssClientSrc $OssClientDest");
-				}
+				$ossClientPkgName = $pkgName;
 				push @installOssClientForWsUser, $wsName;
 				$this->delete_vendor_object( "o=oss,$wsUidDn", 'osssoftware', $pkgName );
 				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1;
@@ -6216,8 +6209,11 @@ sub makeInstallDeinstallCmd
 				if( $currentStatus =~ /^installed$/ ){
 					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installed';
 					next;
-				}elsif($currentStatus =~ /^installation_scheduled$/ ){
+				}elsif( $currentStatus =~ /^installation_scheduled$/ ){
 					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installation_scheduled';
+					next;
+				}elsif( $currentStatus =~ /^deinstallation_scheduled$/ ){
+					$h{$wsUidDn}->{$pkgDn}->{exist} = 'deinstallation_scheduled';
 					next;
 				}
 
@@ -6254,7 +6250,7 @@ sub makeInstallDeinstallCmd
 		}
 	}
 	if( scalar(@installOssClientForWsUser) ){
-		installOssClient(\@installOssClientForWsUser);
+		installOssClient( "$ossClientPkgName", "$this->{SYSCONFIG}->{SCHOOL_WORKGROUP}", \@installOssClientForWsUser);
 	}
 	return \%h
 }
