@@ -117,8 +117,12 @@ sub daemonize
   if ( ! $debug )
   {
     open STDIN,"/dev/null";
-    open STDOUT,">>$LOGDIR"."/import_user-$date.log";
-    open STDERR,">>$LOGDIR"."/import_user-$date.err";
+    my $logfile = $LOGDIR."/import_user-$date.log";
+    my $errfile = $LOGDIR."/import_user-$date.err";
+    system("touch $logfile; chmod 600 $logfile");
+    system("touch $errfile; chmod 600 $errfile");
+    open STDOUT,">>$logfile";
+    open STDERR,">>$errfile";
     chdir "/";
     fork && exit 0;
     print STDERR "\n\n----------------------------------------\n";
