@@ -44,8 +44,9 @@ my $mustchange   = 0;
 my $alias        = 0;
 my $notest       = 0;
 my $message     = {};
+my @attr_ext      = ();
+my $attr_ext_name = {};
    
-my $q            = new CGI; 
 my $admin_user   = `oss_get_uid admin`;
 my $admin_group  = `oss_get_gid sysadmins`;
 my $admin_home   = `oss_get_home admin`;
@@ -278,11 +279,15 @@ if( ! -e '/usr/share/lmd/lang/base_'.$lang.'.ini' )
 # Setup the messages
 my $allmessages = new Config::IniFiles( -file => '/usr/share/lmd/lang/base_'.$lang.'.ini' );
 my @parameters = $allmessages->Parameters('IMPORT_USER');
-foreach(@parameters)
+foreach my $attr (@parameters)
 {
-    my $value = $allmessages->val('IMPORT_USER', $_);
-#    $message->{lc($_)} = decode("utf8",$value);
-    $message->{lc($_)} = $value;
+    my @values = split /;/,$allmessages->val('IMPORT_USER', $attr);
+    $message->{lc($attr)} = $values[0];
+    foreach my $name (@values)
+    {
+        $attr_ext_name->{uc($name)} = lc($attr);
+	push @attr_ext, uc($name);
+    }
 }
 
 # Setup the header
@@ -310,8 +315,6 @@ sub add_user
     my $ret        = '';
 
     # Variable to handle the file header
-    my @attr_ext      = ();
-    my $attr_ext_name = {};
     my $sep           = "";
     my $header        = {};
     
@@ -351,9 +354,7 @@ sub add_user
     foreach my $attr (@userAttributes, @additionalUserAttributes)
     {
 	$attr = lc($attr);
-	my $name  = uc(__($attr));
-        push @attr_ext, $name;
-	$attr_ext_name->{$name} = $attr;
+	$attr_ext_name->{$attr} = uc($attr);
     }
     my $muster = "";
     foreach my $i (@attr_ext)
