@@ -13,5 +13,9 @@ SCHOOL_LDAPBASE=`echo $BASE_CONFIG_DN | sed s/ou=ldapconfig,//`
 #Fix rights on user import files
 chmod 600 /var/log/import_user*
 
+#Configure sshd to use higher ssh port.
+sed -i 's/#Port 22/Port 22\nPort 1022/' /etc/ssh/sshd_config 
+rcsshd restart
+
 touch /var/adm/oss/update-3.4-5
 
