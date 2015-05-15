@@ -1,0 +1,26 @@
+#!/bin/bash
+# Copyright (c) 2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+
+if [ -e /var/adm/oss/update-3.4-6 ]
+then
+echo "Patch 3.4-6 already installed"
+        exit 0
+fi
+
+VERSION=$(rpm -q --qf "%{VERSION}\n" openschool-base)
+#Seting the school Variable SCHOOL_VERSION.
+#This is very important for Cephalix
+echo "SCHOOL_VERSION" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+
+echo "SCHOOL_VERSION
+$VERSION
+OSS Version
+string
+yes
+Basis" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+/usr/sbin/oss_ldap_to_sysconfig.pl
+
+
+touch /var/adm/oss/update-3.4-6
+
