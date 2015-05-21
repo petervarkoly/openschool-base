@@ -4898,8 +4898,19 @@ sub add_new_HW()
         $this->{ERROR}->{code} = "EMPTY-DESCRIPTION";
 	return 0;
     }
+    my $result  = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{COMPUTERS_BASE},
+                                  scope  => 'one',
+                                  filter => "(&(Objectclass=schoolConfiguration)(configurationValue=TYPE=HW)(description=$desc))",
+                                  attrs  => ['configurationKey']
+                                );
+    if( defined $result && $result->count )
+    {
+	$this->{ERROR}->{text} = "The description you have give is already in use.";
+        $this->{ERROR}->{code} = "DESCRIPTION-ALREADY-USED";
+	return 0;
+    }
     my $key     = $this->get_new_HW_id();
-    my $result  = $this->{LDAP}->add(
+    $result  = $this->{LDAP}->add(
                     dn => 'configurationKey='.$key.','.$this->{SYSCONFIG}->{COMPUTERS_BASE},
                     attrs =>
                       [
