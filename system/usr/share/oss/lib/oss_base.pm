@@ -4821,14 +4821,19 @@ sub get_HW_configurations
                                   filter => "(&(Objectclass=schoolConfiguration)(configurationValue=TYPE=HW))",
                                   attrs  => ['configurationKey','description']
                                 );
-    my @hw = ();
+    my @hw     = ();
+    my %confs  = ();
     if( $empty )
     {
       push @hw , [ '-' , '-----' ];
     }
     foreach my $entry ($result->all_entries) {
-	my $desc = $entry->get_value('description') || $entry->get_value('configurationKey');
-	push @hw ,[ $entry->get_value('configurationKey') , $desc ]; 
+        my $desc = $entry->get_value('description') || $entry->get_value('configurationKey');
+        $confs{$desc} = $entry->get_value('configurationKey');
+    }
+    foreach my $desc ( sort keys %confs )
+    {
+        push @hw ,[ $confs{$desc} , $desc ];
     }
     return \@hw;
 }
