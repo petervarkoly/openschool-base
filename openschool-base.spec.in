@@ -89,6 +89,8 @@ else
         j=`basename $i .in`
 	cp $i $j
     done
+    #Configure sshd to use the higher ssh port.
+    sed -i 's/#Port 22/Port 22\nPort 1022/' /etc/ssh/sshd_config
 fi
 
 #Bug clear text password word readable
