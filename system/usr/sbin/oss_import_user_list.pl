@@ -286,10 +286,8 @@ foreach my $attr (@parameters)
     foreach my $name (@values)
     {
         $attr_ext_name->{uc($name)} = lc($attr);
-	push @attr_ext, uc($name);
     }
 }
-
 # Setup the header
 open( OUT, ">>$output");
 print OUT "role=$role,lang=$lang,test=$notest,full=$full,alias=$alias,mustchange=$mustchange,userpassword=$userpassword,mailenabled=$mailenabled\n";
@@ -353,6 +351,7 @@ sub add_user
     # -- building file header attributes
     foreach my $attr (@userAttributes, @additionalUserAttributes)
     {
+	push @attr_ext, __($attr);
 	$attr = lc($attr);
 	$attr_ext_name->{$attr} = uc($attr);
     }
@@ -392,7 +391,7 @@ sub add_user
     #$HEADER =~ s/\s+//g;
     #-- determine the field separator
     #print $HEADER."\n";
-    #print $muster."\n";
+    print "Muster $muster\n";
     $HEADER =~ /($muster)(.+?)($muster)/i;
     if( defined $2 )
     {
