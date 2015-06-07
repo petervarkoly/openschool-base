@@ -4821,14 +4821,19 @@ sub get_HW_configurations
                                   filter => "(&(Objectclass=schoolConfiguration)(configurationValue=TYPE=HW))",
                                   attrs  => ['configurationKey','description']
                                 );
-    my @hw = ();
+    my @hw     = ();
+    my %confs  = ();
     if( $empty )
     {
       push @hw , [ '-' , '-----' ];
     }
     foreach my $entry ($result->all_entries) {
-	my $desc = $entry->get_value('description') || $entry->get_value('configurationKey');
-	push @hw ,[ $entry->get_value('configurationKey') , $desc ]; 
+        my $desc = $entry->get_value('description') || $entry->get_value('configurationKey');
+        $confs{$desc} = $entry->get_value('configurationKey');
+    }
+    foreach my $desc ( sort keys %confs )
+    {
+        push @hw ,[ $confs{$desc} , $desc ];
     }
     return \@hw;
 }
@@ -4893,8 +4898,19 @@ sub add_new_HW()
         $this->{ERROR}->{code} = "EMPTY-DESCRIPTION";
 	return 0;
     }
+    my $result  = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{COMPUTERS_BASE},
+                                  scope  => 'one',
+                                  filter => "(&(Objectclass=schoolConfiguration)(configurationValue=TYPE=HW)(description=$desc))",
+                                  attrs  => ['configurationKey']
+                                );
+    if( defined $result && $result->count )
+    {
+	$this->{ERROR}->{text} = "The description you have give is already in use.";
+        $this->{ERROR}->{code} = "DESCRIPTION-ALREADY-USED";
+	return 0;
+    }
     my $key     = $this->get_new_HW_id();
-    my $result  = $this->{LDAP}->add(
+    $result  = $this->{LDAP}->add(
                     dn => 'configurationKey='.$key.','.$this->{SYSCONFIG}->{COMPUTERS_BASE},
                     attrs =>
                       [
