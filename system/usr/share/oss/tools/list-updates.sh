@@ -12,21 +12,6 @@ usage()
 "
 }
 
-usage()
-{
-	echo 'Usage: /usr/share/oss/tools/archiv_user [OPTION]'
-	echo 'With this script we can list the updates.'
-	echo
-	echo 'Options :'
-	echo 'Mandatory parameters :'
-	echo "		No need for mandatory parameters. (There's no need for parameters for running this script.)"
-	echo 'Optional parameters :'
-	echo '		-h,   --help         Display this help.'
-	echo '		-d,   --description  Display the descriptiont.'
-	echo '		-k                   Do not list kernel updates.'
-	echo '		-r                   List only updates from given repository.(Ex: ./list-updates.sh -r=<reponam>)'
-	exit
-}
 
 description ()
 {
