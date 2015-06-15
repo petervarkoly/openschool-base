@@ -30,7 +30,8 @@ my $file = shift;
 
 sub debug
 {
-    print shift."\n" if $DEBUG;
+    my $out = shift;
+    print $out."\n" if $DEBUG;
 }
 
 sub usage
@@ -46,17 +47,17 @@ sub usage
 		'  * uid 	The uid of the user the WLAN device belongs to. More then one uid must be separated by space.'."\n".
 		'  * room       The name of the room the host must be registered. If the room does not exist this will be created'."\n".
 		'  * wlan       The host is a WLAN device.'."\n".
-		'  * name       The alternate name of the host.'."\n\n".
+		'  * name       The alternate name of the host.'."\n".
 		'  * hwconf     The hardware configuration of the host.'."\n\n".
                 'Options :'."\n".
                 'Mandatory parameters :'."\n".
                 "       No need for mandatory parameters. (There's no need for parameters for running this script.)\n".
                 'Optional parameters : '."\n".
                 '       -h, --help         Display this help.'."\n".
-                '       -d, --debug        Provide debug messages.'."\n";
-                '       -w, --wlan         All hosts are WLAN devices. In this case "uid" is a mandatory field.'."\n";
-                '           --addws        Crete workstation user account for the host.'."\n";
-                '           --addma        Crete windows machine account for the host.'."\n";
+                '       -d, --debug        Provide debug messages.'."\n".
+                '       -w, --wlan         All hosts are WLAN devices. In this case "uid" is a mandatory field.'."\n".
+                '           --addws        Crete workstation user account for the host.'."\n".
+                '           --addma        Crete windows machine account for the host.'."\n\n";
 }
 if ( defined($options{'help'}) ){
         usage(); exit 0;
