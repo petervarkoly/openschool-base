@@ -4035,6 +4035,7 @@ sub delete_host($)
 	}
 	#delete boot file (/srv/tftp/pxelinux.cfg/<MA:CA:DD:RE:SS>)
 	$hwaddress =~ s/:/-/g;
+	my $HW = $hwaddress;
 	$hwaddress = "01-".lc($hwaddress);
 	if( -e "/srv/tftp/pxelinux.cfg/$hwaddress"){
 		system("rm /srv/tftp/pxelinux.cfg/$hwaddress");
@@ -4051,6 +4052,16 @@ sub delete_host($)
 	$this->{LDAP}->delete('uid='.$cn.'$,'.$this->{SYSCONFIG}->{COMPUTERS_BASE});
 	system("rm -rf /srv/itool/hwinfo/$cn") if( -d '/srv/itool/hwinfo/'.$cn );
 	my $udn  = $this->get_user_dn($cn);
+        #We have to delete all rasAccess entries
+        my $result = $this->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
+                                 filter => "(rasAccess=$HW)",
+                                  scope => 'one',
+                                 attr   => []
+                              );
+        foreach my $entry ( $result->entries )
+        {
+                $this->{LDAP}->modify( $entry->dn, delete => { rasAccess => $HW } );
+        }
         if( $this->is_workstation($udn) )
         { #Now we delete the workstation user
                 #Start the plugin
@@ -4089,7 +4100,7 @@ sub get_user_of_workstation($)
     my $dn   = shift;
     my $ip   = $this->get_ip_of_host($dn);
 
-    my $result = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{USER_BASE},
+    my $result = $this->{LDAP}->search( base    => $this->{SYSCONFIG}->{USER_BASE},
                                          filter => "(configurationValue=LOGGED_ON=$ip)",
 	                                  scope => 'one',
 					 attr   => []

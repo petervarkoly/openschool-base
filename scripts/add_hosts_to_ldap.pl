@@ -14,6 +14,7 @@ my $wlan  = 0;
 my $DEBUG = 0;
 my $ADDWS = 0;
 my $ADDMA = 0;
+my $CLEANUP = 0;
 
 #Parse parameter
 use Getopt::Long;
@@ -22,6 +23,7 @@ my $result = GetOptions(\%options,
                         "help",
                         "debug",
                         "wlan",
+			"cleanup",
                         "addws",
                         "addma",
                 );
@@ -96,7 +98,7 @@ while(<IN>)
     chomp;
     s/"//g;
     my @line   = split(/;/,$_);
-    my $MAC    = $line[$attrs{'mac'}];
+    my $MAC    = uc($line[$attrs{'mac'}]);
     my $UDN    = defined $attrs{'uid'}    ? $oss->get_user_dn($line[$attrs{'uid'}])    : "" ;
     my $WLAN   = defined $attrs{'wlan'}   ? $line[$attrs{'wlan'}]   : $wlan ;
     my $HWCONF = defined $attrs{'hwconf'} ? $line[$attrs{'hwconf'}] : undef ;
@@ -237,8 +239,8 @@ sub addHost($)
                 if( $HOST->{other_name} =~ /[^a-zA-Z0-9-]+/ ||
                     $HOST->{other_name} !~ /^[a-zA-Z]/      ||
                     $HOST->{other_name} =~ /-$/             ||
-                    length($HOST->{other_name})<2           ||
-                    length($HOST->{other_name}) > 15  )
+                    length($HOST->{other_name})<2 
+	        )
                 {
                     return { TYPE    => 'ERROR' ,
                              CODE    => 'INVALID_HOST_NAME',
@@ -274,6 +276,16 @@ sub addHost($)
 		debug("Create WLAN access.");
 		my $HW = $HOST->{mac};
 	        $HW =~ s/:/-/g;
+		#First we have to delete all old entries
+		$result = $oss->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
+                                         filter => "(rasAccess=$HW)",
+                                          scope => 'one',
+                                         attr   => []
+                                      );
+		foreach my $entry ( $result->entries )
+		{
+			$oss->{LDAP}->modify( $entry->dn, delete => { rasAccess => $HW } );	
+		}
                 $result = $oss->{LDAP}->modify($HOST->{udn}, add    => { rasAccess => $HW } );
                 if( $result->code )
                 {
