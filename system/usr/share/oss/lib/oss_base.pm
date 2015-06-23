@@ -6061,11 +6061,10 @@ sub getPkgInfo
 	elsif( $ret{pkgType} eq 'MSI' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.msi|MSI$/ )
 	{
 		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
-		$fileL = '';
-		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-		}
-		if( !-e "$fileL"){
+		$pkgSrcTmp[0] =~ s/\\\\/\\/g;
+                $pkgSrcTmp[0] =~ s/\\install\\/\/srv\//g;
+                $pkgSrcTmp[0] =~ s/\\/\//g;
+                if( !-e "$pkgSrcTmp[0]"){
 			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" msi installer! Please copy the msi installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
 		}
 	}
@@ -6081,11 +6080,10 @@ sub getPkgInfo
 	elsif( $ret{pkgType} eq 'WPKG' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.exe|EXE|vbs|VBS|bat|BAT|msi|MSI|jar|JAR$/ )
 	{
 		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
-		$fileL = '';
-		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-		}
-		if( !-e "$fileL"){
+		$pkgSrcTmp[0] =~ s/\\\\/\\/g;
+		$pkgSrcTmp[0] =~ s/\\install\\/\/srv\//g;
+		$pkgSrcTmp[0] =~ s/\\/\//g;
+		if( !-e "$pkgSrcTmp[0]"){
 			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
 		}
 	}
@@ -6093,11 +6091,10 @@ sub getPkgInfo
 	{
 		foreach my $i (@pkgSrcTmp){
 			$i =~ s/#PKGNAME#/$ret{pkgName}/g;
-			$fileL = '';
-			if( $i =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-				$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-			}
-			if( !-e "$fileL"){
+			$i =~ s/\\\\/\\/g;
+		        $i =~ s/\\install\\/\/srv\//g;
+		        $i =~ s/\\/\//g;
+			if( !-e "$i"){
 				$ret{pkgInstSrcError} .= sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)'), $i  )."<BR>";
 			}
 		}
