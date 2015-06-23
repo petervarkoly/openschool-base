@@ -556,6 +556,12 @@ sub delete($)
     my $homedir     = $this->get_attribute($dn,'homedirectory');
     my $school_base = $this->get_school_base($dn);
     my $home_base   = '/home';
+    if( $uid eq "admin" )
+    {
+            $this->{ERROR}->{code} = "USER-MUST-NOT-BE-DELETED";
+            $this->{ERROR}->{text} = "The user must not be deleted.";
+            return 0;
+    }
     if( $school_base ne $this->{LDAP_BASE} )
     {
       $home_base = $this->get_school_config('SCHOOL_HOME_BASE',$school_base) || '/home';
