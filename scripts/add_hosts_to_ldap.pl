@@ -140,6 +140,7 @@ while(<IN>)
 	udn         => $UDN
      }
     );
+    $oss->make_delete_user_webdavshare($UDN,1);
     print Dumper($result);
 }
 
