@@ -6,8 +6,8 @@
 # root postexec = /usr/share/oss/plugins/share_plugin_handler.sh close %S %u %I %a %m 
 # The handler will execute all scripts in the directory
 # /usr/share/oss/plugins/shares/%S/[open|close]/ whith the parameter %u %I %a %m
-TASK=$1
-SHARE=$2
+SHARE=$1
+TASK=$2
 U=$3
 IP=$4
 ARCH=$5
@@ -21,7 +21,7 @@ do
       echo "$(date +%Y-%m-%d-%H:%M:%S) $i $U $IP $ARCH $MACH" >> /var/log/oss-share_plugin_handler.log
       $i $USER $IP $ARCH $MACH >> /var/log/oss-share_plugin_handler.log  2>&1
    else
-      $i $USER $IP $ARCH $MACH &>/dev/null
+      $i $USER $IP $ARCH $MACH
    fi
 done
 
