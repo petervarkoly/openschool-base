@@ -1,0 +1,53 @@
+#!/bin/bash
+# Copyright (c) 2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+# Update Script to make the OSS preexec and postexec scripts in the samba 
+# configuration enhancable
+
+if [ -e /var/adm/oss/update-3.4-7 ]
+then
+echo "Patch 3.4-7 already installed"
+        exit 0
+fi
+
+#Create the neccessary directories:
+mkdir -p /usr/share/oss/plugins/shares/itool/{open,close}
+mkdir -p /usr/share/oss/plugins/shares/netlogon/{open,close}
+mkdir -p /usr/share/oss/plugins/shares/homes/{open,close}
+mkdir -p /usr/share/oss/plugins/shares/groups/{open,close}
+mkdir -p /usr/share/oss/plugins/shares/profiles/{open,close}
+
+#Create the neccessary links
+ln -s /usr/share/oss/tools/remove_pxe_autostart.pl /usr/share/oss/plugins/shares/itool/open/remove_pxe_autostart.pl
+ln -s /usr/share/oss/tools/make_logon_script.pl /usr/share/oss/plugins/shares/netlogon/open/make_logon_script.pl
+ln -s /usr/share/oss/tools/make_sso.pl /usr/share/oss/plugins/shares/homes/open/make_sso.pl
+ln -s /usr/share/oss/tools/remove_sso.pl /usr/share/oss/plugins/shares/homes/close/remove_sso.pl
+ln -s /usr/share/oss/tools/make_sso.pl /usr/share/oss/plugins/shares/groups/open/make_sso.pl
+ln -s /usr/share/oss/tools/remove_sso.pl /usr/share/oss/plugins/shares/groups/close/remove_sso.pl
+ln -s /usr/share/oss/tools/check_profil.sh /usr/share/oss/plugins/shares/profiles/open/check_profil.sh
+
+#Adapt check_profil.sh's interface
+sed -i -e 's/arch=$2/arch=$3/' -e 's/host=$3/host=$4/' /usr/share/oss/tools/check_profil.sh
+
+#Adapt smb.conf
+perl -e 'use strict;
+use Config::IniFiles;
+
+my $m = new Config::IniFiles( -file => "/etc/samba/smb.conf" );
+$m->WriteConfig("/etc/samba/smb.conf-befor-OSS-3.4-7-patch");
+foreach my $section ( $m->Sections )
+{
+    if( $m->val($section,"root preexec") )
+    {
+        $m->setval($section,"root preexec","/usr/share/oss/plugins/share_plugin_handler.sh $section open \%u \%I \%a \%m");
+    }
+    if( $m->val($section,"root postexec") )
+    {
+        $m->setval($section,"root postexec","/usr/share/oss/plugins/share_plugin_handler.sh $section close \%u \%I \%a \%m");
+    }
+}
+$m->RewriteConfig();
+'
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-7
+

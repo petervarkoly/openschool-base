@@ -1,9 +1,8 @@
 #!/bin/bash
-. /etc/sysconfig/schoolserver
 
 user=$1
-arch=$2
-host=$3
+arch=$3
+
 if [ ! -e $SCHOOL_HOME_BASE/profile/$user/$arch ]; then
 	mkdir -m 700 -p $SCHOOL_HOME_BASE/profile/$user/$arch
 	chown $user $SCHOOL_HOME_BASE/profile/$user $SCHOOL_HOME_BASE/profile/$user/$arch

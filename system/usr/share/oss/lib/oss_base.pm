@@ -371,6 +371,11 @@ sub connect_ldap
 		$LDAP_SERVER = "localhost";
 	    }
     }
+    if($LDAP_BASE eq "")
+    {
+        $this->{ERROR}->{text} = "ERROR Unable to parse ldap.conf or baseDN was not found!\n";
+        return 0;
+    }
     if($LDAP_PORT eq "") 
     {
         $LDAP_PORT = 389;
