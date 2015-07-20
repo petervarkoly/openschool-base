@@ -5732,7 +5732,7 @@ sub get_user_dn
       $uid = $pref.$uid;
     }
     
-    $mesg = $this->{LDAP}->search( base   => $school_base,
+    $mesg = $this->{LDAP}->search( base   => "ou=people,$school_base",
     			 	   scope  => 'sub',
 				   filter => "(&(uid=$uid)(objectClass=posixAccount))",
           		           attrs  => [ 'dn' ]
