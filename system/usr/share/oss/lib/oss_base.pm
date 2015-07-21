@@ -3576,7 +3576,7 @@ sub get_schools
 	my $lmdhost = $this->get_vendor_object($dn,'CEPHALIX','LMD_ADRESS' );
 	my $lmdport = $this->get_vendor_object($dn,'CEPHALIX','LMD_PORT' );
 	my $sdn     = $this->get_vendor_object($dn,'CEPHALIX','SDN' );
-        $schools->{$o}->{lmd_address} = $lmdhost->[0] || $LMD_ADDRESS;
+        $schools->{$o}->{lmd_address} = $lmdhost->[0] || get_name_of_dn($dn);
         $schools->{$o}->{lmd_port}    = $lmdport->[0] || $LMD_PORT;
 	$schools->{$o}->{sdn}         = $sdn->[0]     || $dn;
         push @dns, $entry->dn();
@@ -5732,7 +5732,7 @@ sub get_user_dn
       $uid = $pref.$uid;
     }
     
-    $mesg = $this->{LDAP}->search( base   => $school_base,
+    $mesg = $this->{LDAP}->search( base   => "ou=people,$school_base",
     			 	   scope  => 'sub',
 				   filter => "(&(uid=$uid)(objectClass=posixAccount))",
           		           attrs  => [ 'dn' ]
