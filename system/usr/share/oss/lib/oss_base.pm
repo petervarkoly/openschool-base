@@ -6235,8 +6235,8 @@ sub makeInstallDeinstallCmd
 				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1;
 			}
 
-			my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
-			my $currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
+			$pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+			$currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
 			if($cmd eq 'install'){
 				if( $currentStatus =~ /^installed$/ ){
 					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installed';
