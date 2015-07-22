@@ -42,11 +42,11 @@
    root preexec = /usr/share/oss/plugins/share_plugin_handler.sh itool open %u %I %a %m
    inherit permissions = Yes
    valid users = @teachers, @sysadmins, @workstations, root, register
-   write list = @sysadmins,root
    force group = sysadmins
    browseable = no
    guest ok = no
    writable = yes
+   strict locking=no
 
 [netlogon]
    root preexec  = /usr/share/oss/plugins/share_plugin_handler.sh netlogon open %u %I %a %m
