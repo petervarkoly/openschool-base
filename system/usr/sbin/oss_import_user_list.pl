@@ -425,16 +425,16 @@ sub add_user
     my $counter = 0;
     foreach my $i (split /$sep/,$HEADER)
     {
-	if( !defined $attr_ext_name->{uc($i)} )
+	if( is_user_ldap_attribute(lc($attr_ext_name->{uc($i)})) || contains(lc($attr_ext_name->{uc($i)}),\@additionalUserAttributes) || is_user_ldap_attribute(lc($i)) )
+	{
+		$header->{$counter} = $attr_ext_name->{uc($i)} || lc($i) ;
+	} 
+	else
 	{
 		print STDERR "Unknown attribute $i on place $counter in the header.\n";
 		open( OUT, ">>$output");
                 print OUT "---unknown_attr_header<font color='red'>Unknown attribute $i on place $counter in the header</font>\n";
                 close( OUT );
-	} 
-	else
-	{
-		$header->{$counter} = $attr_ext_name->{uc($i)};
 	}
 	$counter++;
     }
@@ -512,7 +512,8 @@ sub add_user
 	     {  #remove white spaces from uid and password
 		$line[$h] =~ s/\s//g;
 	     }
-	     $USER{$header->{$h}}  = $line[$h]  || '';
+	     next if( !$line[$h] );
+	     $USER{$header->{$h}}  = $line[$h];
 	     Encode::_utf8_on($USER{$header->{$h}});
 	  }
     	}
