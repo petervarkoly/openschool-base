@@ -794,7 +794,7 @@ sub add_user
 		else
 		{
 			my $tmp     = check_user_ldap_attributes(\%USER);
-                        if( ! defined $USER{uid} )
+                        if( ! defined $USER{uid} || $USER{uid} eq '' )
                         {
                                 $oss->create_uid(\%USER);
                         }

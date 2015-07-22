@@ -19,9 +19,9 @@ do
    if [ "$SCHOOL_DEBUG" = "yes" ]
    then
       echo "$(date +%Y-%m-%d-%H:%M:%S) $i $U $IP $ARCH $MACH" >> /var/log/oss-share_plugin_handler.log
-      $i $USER $IP $ARCH $MACH >> /var/log/oss-share_plugin_handler.log  2>&1
+      $i $U $IP $ARCH $MACH >> /var/log/oss-share_plugin_handler.log  2>&1
    else
-      $i $USER $IP $ARCH $MACH
+      $i $U $IP $ARCH $MACH
    fi
 done
 
