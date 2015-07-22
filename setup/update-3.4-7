@@ -45,8 +45,6 @@ foreach my $section ( $m->Sections )
         $m->setval($section,"root postexec","/usr/share/oss/plugins/share_plugin_handler.sh $section close \%u \%I \%a \%m");
     }
 }
-$m->delval("itool","write list");
-$m->newval("itool","strict locking","no");
 $m->RewriteConfig();
 '
 #Mark this patch as installed
