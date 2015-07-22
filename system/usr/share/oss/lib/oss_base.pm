@@ -617,6 +617,9 @@ sub delete_ldap_children($)
     if( $mesg->code )
     {
       $this->ldap_error($mesg);
+      print STDERR "Error by deleting $dn\n";
+      print STDERR $this->{ERROR}->{code}."\n";
+      print STDERR $this->{ERROR}->{text}."\n";
       return 0;
     }
     foreach my $entry ($mesg->entries)

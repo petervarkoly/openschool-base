@@ -598,7 +598,16 @@ sub delete($)
 
     #Now we delets the LDAP-entries of the user
     $this->delete_ldap_children($dn);
-    $this->{LDAP}->delete($dn);
+    my $mesg = $this->{LDAP}->delete($dn);
+    if( $mesg->code )
+    {
+      $this->ldap_error($mesg);
+      print STDERR "Error by deleting $dn\n";
+      print STDERR $this->{ERROR}->{code}."\n";
+      print STDERR $this->{ERROR}->{text}."\n";
+      return 0;
+    }
+
 
 }
 #-----------------------------------------------------------------------
