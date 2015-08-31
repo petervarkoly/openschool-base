@@ -556,7 +556,7 @@ sub delete($)
     my $homedir     = $this->get_attribute($dn,'homedirectory');
     my $school_base = $this->get_school_base($dn);
     my $home_base   = '/home';
-    if( $uid eq "admin" )
+    if( $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."admin" )
     {
             $this->{ERROR}->{code} = "USER-MUST-NOT-BE-DELETED";
             $this->{ERROR}->{text} = "The user must not be deleted.";
@@ -598,7 +598,16 @@ sub delete($)
 
     #Now we delets the LDAP-entries of the user
     $this->delete_ldap_children($dn);
-    $this->{LDAP}->delete($dn);
+    my $mesg = $this->{LDAP}->delete($dn);
+    if( $mesg->code )
+    {
+      $this->ldap_error($mesg);
+      print STDERR "Error by deleting $dn\n";
+      print STDERR $this->{ERROR}->{code}."\n";
+      print STDERR $this->{ERROR}->{text}."\n";
+      return 0;
+    }
+
 
 }
 #-----------------------------------------------------------------------

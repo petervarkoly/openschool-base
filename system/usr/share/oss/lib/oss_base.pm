@@ -617,6 +617,9 @@ sub delete_ldap_children($)
     if( $mesg->code )
     {
       $this->ldap_error($mesg);
+      print STDERR "Error by deleting $dn\n";
+      print STDERR $this->{ERROR}->{code}."\n";
+      print STDERR $this->{ERROR}->{text}."\n";
       return 0;
     }
     foreach my $entry ($mesg->entries)
@@ -3576,7 +3579,7 @@ sub get_schools
 	my $lmdhost = $this->get_vendor_object($dn,'CEPHALIX','LMD_ADRESS' );
 	my $lmdport = $this->get_vendor_object($dn,'CEPHALIX','LMD_PORT' );
 	my $sdn     = $this->get_vendor_object($dn,'CEPHALIX','SDN' );
-        $schools->{$o}->{lmd_address} = $lmdhost->[0] || $LMD_ADDRESS;
+        $schools->{$o}->{lmd_address} = $lmdhost->[0] || get_name_of_dn($dn);
         $schools->{$o}->{lmd_port}    = $lmdport->[0] || $LMD_PORT;
 	$schools->{$o}->{sdn}         = $sdn->[0]     || $dn;
         push @dns, $entry->dn();
@@ -5732,7 +5735,7 @@ sub get_user_dn
       $uid = $pref.$uid;
     }
     
-    $mesg = $this->{LDAP}->search( base   => $school_base,
+    $mesg = $this->{LDAP}->search( base   => "ou=people,$school_base",
     			 	   scope  => 'sub',
 				   filter => "(&(uid=$uid)(objectClass=posixAccount))",
           		           attrs  => [ 'dn' ]
@@ -6093,11 +6096,10 @@ sub getPkgInfo
 	elsif( $ret{pkgType} eq 'MSI' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.msi|MSI$/ )
 	{
 		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
-		$fileL = '';
-		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-		}
-		if( !-e "$fileL"){
+		$pkgSrcTmp[0] =~ s/\\\\/\\/g;
+                $pkgSrcTmp[0] =~ s/\\install\\/\/srv\//g;
+                $pkgSrcTmp[0] =~ s/\\/\//g;
+                if( !-e "$pkgSrcTmp[0]"){
 			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" msi installer! Please copy the msi installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
 		}
 	}
@@ -6113,11 +6115,10 @@ sub getPkgInfo
 	elsif( $ret{pkgType} eq 'WPKG' and scalar(@pkgSrcTmp) == 1 and $pkgSrcTmp[0] =~ /(.*)\.exe|EXE|vbs|VBS|bat|BAT|msi|MSI|jar|JAR$/ )
 	{
 		$pkgSrcTmp[0] =~ s/#PKGNAME#/$ret{pkgName}/g;
-		$fileL = '';
-		if( $pkgSrcTmp[0] =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-			$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-		}
-		if( !-e "$fileL"){
+		$pkgSrcTmp[0] =~ s/\\\\/\\/g;
+		$pkgSrcTmp[0] =~ s/\\install\\/\/srv\//g;
+		$pkgSrcTmp[0] =~ s/\\/\//g;
+		if( !-e "$pkgSrcTmp[0]"){
 			$ret{pkgInstSrcError} = sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)!'), $pkgSrcTmp[0] )."<BR>";
 		}
 	}
@@ -6125,11 +6126,10 @@ sub getPkgInfo
 	{
 		foreach my $i (@pkgSrcTmp){
 			$i =~ s/#PKGNAME#/$ret{pkgName}/g;
-			$fileL = '';
-			if( $i =~ /(.*)(\\swrepository\\)(.*)(\\)(.*)$/ ){
-				$fileL = '/srv/itool/swrepository/'.$3.'/'.$5;
-			}
-			if( !-e "$fileL"){
+			$i =~ s/\\\\/\\/g;
+		        $i =~ s/\\install\\/\/srv\//g;
+		        $i =~ s/\\/\//g;
+			if( !-e "$i"){
 				$ret{pkgInstSrcError} .= sprintf(main::__('Does not exist "%s" installer! Please copy the installer or given the correct installer path (pkgInstSrc)'), $i  )."<BR>";
 			}
 		}
@@ -6235,8 +6235,8 @@ sub makeInstallDeinstallCmd
 				$h{$wsUidDn}->{$cmd}->{$pkgDn}->{flag} = 1;
 			}
 
-			my $pkgName = $this->get_attribute($pkgDn, 'configurationKey');
-			my $currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
+			$pkgName = $this->get_attribute($pkgDn, 'configurationKey');
+			$currentStatus  = $this->get_wsuser_pkg_status($wsUidDn, $pkgName);
 			if($cmd eq 'install'){
 				if( $currentStatus =~ /^installed$/ ){
 					$h{$wsUidDn}->{$pkgDn}->{exist} = 'installed';
