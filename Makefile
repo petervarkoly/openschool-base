@@ -1,5 +1,5 @@
-# Copyright (c) 2012 Peter Varkoly Nürnberg, Germany.  All rights reserved.
-# Copyright (c) 2006 Peter Varkoly Fuerth, Germany.  All rights reserved.
+# Copyright (c) 2012-2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+# Copyright (c) 2006-2011 Peter Varkoly Fuerth, Germany.  All rights reserved.
 #
 DESTDIR         = /
 SHARE           = $(DESTDIR)/usr/share/oss/
