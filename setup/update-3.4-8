@@ -1,0 +1,25 @@
+#!/bin/bash
+# Copyright (c) 2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+# Update Script to make the OSS preexec and postexec scripts in the samba 
+# configuration enhancable
+
+if [ -e /var/adm/oss/update-3.4-8 ]
+then
+echo "Patch 3.4-8 already installed"
+        exit 0
+fi
+
+#Adapt smb.conf
+perl -e 'use strict;
+use Config::IniFiles;
+
+my $m = new Config::IniFiles( -file => "/etc/samba/smb.conf" );
+$m->WriteConfig("/etc/samba/smb.conf-befor-OSS-3.4-8-patch");
+$m->delval("itool","write list");
+$m->newval("itool","strict locking","no");
+$m->RewriteConfig();
+'
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-8
+
