@@ -6620,22 +6620,23 @@ EXAMPLE:
         my @list_of_masters = $this->get_masters_of_hwconf( hwconf1 );
 =cut
 
-sub get_masters_of_hwconf($)
+sub get_masters_of_hwconf
 {
         my $this   = shift;
         my $hwconf = shift;
+        my $mydn   = shift || "";
 	my @dns    = ();
 
         my $result = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{DHCP_BASE},
                                            scope   => 'sub',
-                                           filter  => '(&(configurationValue=HW='.$hwconf.')(configurationValue=MASTER=yes))'
+                                           filter  => '(&(configurationValue=HW='.$hwconf.')(configurationValue=MASTER=yes))',
 					   attrs   => [ 'dn' ]
                               );
 	if( defined $result && !$result->code )
 	{
 		foreach my $entry ( $result->entries )
 		{
-			push @dns, $entry->dn;
+			push @dns, $entry->dn if( $mydn ne $entry->dn );
 		}
 		@dns = sort @dns;
 		return \@dns;
