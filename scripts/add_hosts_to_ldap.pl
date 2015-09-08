@@ -278,10 +278,10 @@ sub addHost($)
 		my $HW = $HOST->{mac};
 	        $HW =~ s/:/-/g;
 		#First we have to delete all old entries
-		$result = $oss->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
-                                         filter => "(rasAccess=$HW)",
-                                          scope => 'one',
-                                         attr   => []
+		$result = $oss->{LDAP}->search( base   => $this->{SYSCONFIG}->{USER_BASE},
+                                                filter => "(rasAccess=$HW)",
+                                                 scope => 'one',
+                                                attr   => []
                                       );
 		foreach my $entry ( $result->entries )
 		{
@@ -294,6 +294,16 @@ sub addHost($)
                         print STDERR "Error by creating rassAccess $name for ".$HOST->{udn}."\n";
                         print STDERR $oss->{ERROR}->{code}."\n";
                         print STDERR $oss->{ERROR}->{text}."\n";
+                }
+		#if user $HOST->{udn} has rasAccess=no then delete it
+		$result = $oss->{LDAP}->search( base   => $HOST->{udn},
+                                          filter => "(rasAccess=no)",
+                                           scope => 'base',
+                                          attr   => ['rasAccess']
+                                  );
+                if($result->count() > 0)
+                {
+			$oss->{LDAP}->modify( $HOST->{udn}, delete => { rasAccess => "no" } );
                 }
 	}
 
