@@ -806,6 +806,7 @@ sub add_user
 				$ERRORS .= "<font color='red'> ".$tmp." </font><br>\n";
 			}
 		}
+		$ALLUSER{$key}=$uid;
 	    }
 	    print "After creating\n".Dumper(\%USER);
 	}
