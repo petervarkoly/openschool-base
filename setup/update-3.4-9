@@ -1,0 +1,39 @@
+#!/usr/bin/perl 
+
+BEGIN{ push @INC,"/usr/share/oss/lib/"; }
+
+use strict;
+use oss_base;
+
+my $oss = oss_base->new;
+
+my $res = $oss->{LDAP}->search(
+                                base => $oss->{SYSCONFIG}->{COMPUTERS_BASE},
+                                filter => '(&(ckey=hwconf*)(configurationValue=TYPE=HW))'
+                                );
+
+foreach my $entry ( $res->entries )
+{
+        my @to_delete = ();
+        foreach my $cval ( $entry->get_value('configurationValue') )
+        {
+                next if( $cval !~ /^SWPackage=/ );
+                if( $cval !~ /^SWPackage=configurationKey=/ )
+                {
+                        push @to_delete, $cval;
+                        next;
+                }
+        }
+        if( scalar @to_delete )
+        {
+                $entry->delete( configurationValue => \@to_delete );
+                $entry->update( $oss->{LDAP} );
+        }
+        foreach my $pack ( @to_delete )
+        {
+                $pack =~ /^SWPackage=(.*)/;
+                $entry->add( configurationValue => "SWPackage=configurationKey=$1,o=osssoftware,".$oss->{SYSCONFIG}->{COMPUTERS_BASE} );
+                $entry->update( $oss->{LDAP} );
+        }
+}
+
