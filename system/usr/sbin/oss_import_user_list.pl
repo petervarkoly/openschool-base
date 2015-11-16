@@ -331,7 +331,7 @@ sub add_user
     my $result = $oss->{LDAP}->search (  # perform a search
                            base   => $oss->{SYSCONFIG}->{USER_BASE},
                            scope  => "one",  
-			   filter => "(&(role=$role)(uid=*))",
+			   filter => "(&(role=$role*)(uid=*))",
 			   attrs  => ['uid','sn', 'givenname', 'birthday']
 			  );  
     foreach my $entry ($result->all_entries)
