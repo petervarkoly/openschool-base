@@ -88,6 +88,16 @@ else
 #        $script .= "rundll32 printui.dll,PrintUIEntry /q /dn /n \\\\printserver\\$printer /j\"Default $printer\"\r\n";
 #}
 
+$script .= '(echo strComputer = "."'."\r\n".
+'echo Set objWMIService = GetObject^("winmgmts:\\\" ^& strComputer ^& "\root\cimv2"^)'."\r\n".
+'echo Set colInstalledPrinters =  objWMIService.ExecQuery _'."\r\n".
+'echo ^("Select * from Win32_Printer Where Network = TRUE"^)'."\r\n".
+'echo For Each objPrinter in colInstalledPrinters'."\r\n".
+'echo objPrinter.Delete_'."\r\n".
+'echo Next) > \\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n".
+'\\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n".
+'del /Q /S \\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n";
+
 foreach ( @$dprint )
 {
         $script .= "rundll32 printui.dll,PrintUIEntry /q /in /n \\\\printserver\\$_ /j\"Default $_\"\r\n"; 
