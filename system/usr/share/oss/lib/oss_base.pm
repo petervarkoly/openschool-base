@@ -4779,7 +4779,7 @@ sub update_soa
 
   if( $timenr eq $timenow )
   {
-      $sernr++ if( $sernr < 100 );
+      $sernr++ if( $sernr < 99 );
   }
   else
   {
