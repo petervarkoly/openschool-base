@@ -99,8 +99,8 @@ echo "Filesystem Report for $NAME"
 echo "================================================================"
 echo
 echo "Checking file system quota:"
-NOQUOTA=$( quota $u 2> /dev/null | grep 'none' )
-QUOTA=$( quota $u 2> /dev/null | grep '\*' )
+NOQUOTA=$( quota -w  $u 2> /dev/null | grep 'none' )
+QUOTA=$( quota -w $u 2> /dev/null | grep '\*' )
 if [ "$QUOTA" ]; then
     echo -n "$NAME is over quota: "
     echo $QUOTA | sed 's/\*//' | gawk '{ print "used :", $2/1024, "MB allowed: ", $3/1024, "MB"}'
@@ -108,7 +108,7 @@ elif [ "$NOQUOTA" ]; then
     echo "$NAME has no quota"
 else 
     echo "$NAME is not over quota: "
-    quota $u 2> /dev/null | grep /dev/ | awk '{ print "used :", $2/1024, "MB allowed: ", $3/1024, "MB"}'
+    quota -w $u 2> /dev/null | grep /dev/ | awk '{ print "used :", $2/1024, "MB allowed: ", $3/1024, "MB"}'
 fi
 echo "================================================================="
 echo
