@@ -4779,11 +4779,12 @@ sub update_soa
 
   if( $timenr eq $timenow )
   {
-    $sernr++;
+      $sernr++ if( $sernr < 99 );
   }
   else
   {
     $timenr = $timenow;
+    $sernr  = 10;
   }
 
   $zone_entry->replace( sOARecord =>

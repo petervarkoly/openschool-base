@@ -13,6 +13,7 @@ use strict;
 use Net::LDAP;
 use oss_base;
 use oss_utils;
+my @DAY_FIND_STRING = ( '1......','.1.....','..1....','...1...','....1..','.....1.','......1' );
 
 my $time = shift || `date  +%H:%M`;
 chomp $time;

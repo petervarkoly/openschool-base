@@ -50,8 +50,8 @@ function usage (){
 }
 
 function check_discspace() {
-	if [ "$OSS_BACKUP_WARNING_LIMIT" ]; then
-		LIMIT=$OSS_BACKUP_WARNING_LIMIT
+	if [ "$SCHOOL_BACKUP_WARNING_LIMIT" ]; then
+		LIMIT=$SCHOOL_BACKUP_WARNING_LIMIT
 	fi
 
 	USED=`df $1 | tail -n1 | awk '{ print $(NF-1) }' | sed s/%//`

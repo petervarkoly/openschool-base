@@ -580,7 +580,7 @@ or no template user can determine the defaultUser will be used as template.
 
 %defaultUser =
 (
-	objectclass	    => ['top','shadowAccount','posixAccount','person','inetOrgPerson','SchoolAccount','OXUserObject','phpgwAccount','suseMailRecipient','sambaSamAccount'],
+	objectclass	    => ['top','shadowAccount','posixAccount','person','inetOrgPerson','SchoolAccount','OXUserObject','suseMailRecipient','sambaSamAccount'],
 	c                   => ['DE'],
 	givenname	    => ['System'],
 	homedirectory	    => ['/etc/skel'],
@@ -599,9 +599,6 @@ or no template user can determine the defaultUser will be used as template.
 	oxtimezone          => ['Europe/Berlin'],
 	preferredlanguage   => ['DE'],
 	susedeliverytofolder=> ['1'],
-	phpgwaccounttype    => ['u'],
-	phpgwaccountstatus  => ['A'],
-	phpgwaccountexpires => ['-1'],
 	smtpserver	    => ['mailserver'],
 	sn		    => ['Administrator'],
 	uid                 => ['admin'],
@@ -623,12 +620,6 @@ o
 objectclass
 ou
 owner
-phpgwaccountexpires
-phpgwaccountlastlogin
-phpgwaccountlastloginfrom
-phpgwaccountstatus
-phpgwaccounttype
-phpgwlastpasswdchange
 role
 sambagrouptype
 sambasid
@@ -658,9 +649,6 @@ member
 
 @groupAttributesToInherit = qw (
 objectclass
-phpgwaccounttype
-phpgwaccountstatus
-phpgwaccountexpires
 susedeliverytofolder
 susedeliverytomember
 userpassword
@@ -673,10 +661,7 @@ writerdn
 
 %defaultGroup =
 (
-	objectclass	    => ['top' ,'posixGroup' ,'schoolGroup' ,'phpgwAccount' ,'sambaGroupMapping' ,'groupOfNames' ],
-	phpgwaccounttype    => ['g'],
-	phpgwaccountstatus  => ['A'],
-	phpgwaccountexpires => ['-1'],
+	objectclass	    => ['top','posixGroup','schoolGroup','sambaGroupMapping','groupOfNames' ],
 	userpassword        => ['*'],
 	grouptype	    => ['workgroup'],
 	susedeliverytomember=> [0],
