@@ -4029,71 +4029,82 @@ sub delete_host($)
     my $dn   = shift;
 
     my $entry = $this->get_entry($dn,1);
-    if( $dn =~ /^cn=.*/ )
+    if( $dn !~ /^cn=.*/ )
     {
-	#delete kiwi-ltsp configure files
-	my $hwaddress= $this->get_attribute($dn,'dhcpHWAddress');
-	$hwaddress =~ s/ethernet //i;
-	$hwaddress = uc($hwaddress);
-	if( -e "/srv/tftp/KIWI/config.$hwaddress"){
-		system("rm /srv/tftp/KIWI/config.$hwaddress");
-	}
-	if( -e "/srv/tftp/KIWI/lts.$hwaddress"){
-		system("rm /srv/tftp/KIWI/lts.$hwaddress");
-	}
-	#delete boot file (/srv/tftp/pxelinux.cfg/<MA:CA:DD:RE:SS>)
-	$hwaddress =~ s/:/-/g;
-	my $HW = $hwaddress;
-	$hwaddress = "01-".lc($hwaddress);
-	if( -e "/srv/tftp/pxelinux.cfg/$hwaddress"){
-		system("rm /srv/tftp/pxelinux.cfg/$hwaddress");
-	}
-
-        my $cn  = $entry->get_value('cn');
-	my @dnszonedn = $entry->get_value('dnszonedn');
-        foreach my $dns ( @dnszonedn )
-	{
-	    $this->{LDAP}->delete($dns);
-	}
-	$this->delete_ldap_children($dn);
-	$this->{LDAP}->delete($dn);
-	$this->{LDAP}->delete('uid='.$cn.'$,'.$this->{SYSCONFIG}->{COMPUTERS_BASE});
-	system("rm -rf /srv/itool/hwinfo/$cn") if( -d '/srv/itool/hwinfo/'.$cn );
-	my $udn  = $this->get_user_dn($cn);
-        #We have to delete all rasAccess entries
-        my $result = $this->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
-                                 filter => "(rasAccess=$HW)",
-                                  scope => 'one',
-                                 attr   => []
-                              );
-        foreach my $entry ( $result->entries )
-        {
-                $this->{LDAP}->modify( $entry->dn, delete => { rasAccess => $HW } );
-        }
-        if( $this->is_workstation($udn) )
-        { #Now we delete the workstation user
-                #Start the plugin
-                my $TMP = hash_to_text({ $udn , $this->get_user($udn,[ 'uid', 'cn', 'uidnumber','gidnumber','role' ])});
-                chomp $TMP;
-                my $TMPFILE = write_tmp_file($TMP);
-                system("/usr/share/oss/plugins/plugin_handler.sh del_user $TMPFILE &> /dev/null");
-                #delete home
-                my $home = $this->get_attribute($udn,'homedirectory');
-                if( -d $home && $home =~ /workstations\/$cn$/ )
-                {
-                    system( "rm -r $home" );
-                }
-                #Now we delet the user from the groups.
-                foreach my $group ( @{$this->get_groups_of_user($udn,1)} )
-                {
-                  $this->delete_user_from_group($udn,$group);
-                }
-                $this->delete_ldap_children($udn);
-                $this->{LDAP}->delete($udn);
-        }
-
+	$this->{ERROR}->{code} = "INVALID_HOST_DN";
+	$this->{ERROR}->{text} = "Invalid host dn: $dn";
+        return 0;
     }
-
+    my $hostname = get_name_of_dn($dn);
+    my $wlanDN = $this->get_host($hostname.'-wlan');
+    if( $wlanDN )
+    {
+        $this->delete_host($wlanDN);
+    }
+    
+    #delete kiwi-ltsp configure files
+    my $hwaddress= $this->get_attribute($dn,'dhcpHWAddress');
+    $hwaddress =~ s/ethernet //i;
+    $hwaddress = uc($hwaddress);
+    if( -e "/srv/tftp/KIWI/config.$hwaddress"){
+    	system("rm /srv/tftp/KIWI/config.$hwaddress");
+    }
+    if( -e "/srv/tftp/KIWI/lts.$hwaddress"){
+    	system("rm /srv/tftp/KIWI/lts.$hwaddress");
+    }
+    #delete boot file (/srv/tftp/pxelinux.cfg/<MA:CA:DD:RE:SS>)
+    $hwaddress =~ s/:/-/g;
+    my $HW = $hwaddress;
+    $hwaddress = "01-".lc($hwaddress);
+    if( -e "/srv/tftp/pxelinux.cfg/$hwaddress"){
+    	system("rm /srv/tftp/pxelinux.cfg/$hwaddress");
+    }
+    
+    my $cn  = $entry->get_value('cn');
+    my @dnszonedn = $entry->get_value('dnszonedn');
+    foreach my $dns ( @dnszonedn )
+    {
+        $this->{LDAP}->delete($dns);
+    }
+    $this->delete_ldap_children($dn);
+    $this->{LDAP}->delete($dn);
+    $this->{LDAP}->delete('uid='.$cn.'$,'.$this->{SYSCONFIG}->{COMPUTERS_BASE});
+    system("rm -rf /srv/itool/hwinfo/$cn") if( -d '/srv/itool/hwinfo/'.$cn );
+    my $udn  = $this->get_user_dn($cn);
+    #We have to delete all rasAccess entries
+    my $result = $this->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
+                             filter => "(rasAccess=$HW)",
+                              scope => 'one',
+                             attr   => []
+                          );
+    foreach my $entry ( $result->entries )
+    {
+            $this->{LDAP}->modify( $entry->dn, delete => { rasAccess => $HW } );
+    }
+    if( $this->is_workstation($udn) )
+    { #Now we delete the workstation user
+            #Start the plugin
+            my $TMP = hash_to_text({ $udn , $this->get_user($udn,[ 'uid', 'cn', 'uidnumber','gidnumber','role' ])});
+            chomp $TMP;
+            my $TMPFILE = write_tmp_file($TMP);
+            system("/usr/share/oss/plugins/plugin_handler.sh del_user $TMPFILE &> /dev/null");
+            #delete home
+            my $home = $this->get_attribute($udn,'homedirectory');
+            if( -d $home && $home =~ /workstations\/$cn$/ )
+            {
+                system( "rm -r $home" );
+            }
+            #Now we delet the user from the groups.
+            foreach my $group ( @{$this->get_groups_of_user($udn,1)} )
+            {
+              $this->delete_user_from_group($udn,$group);
+            }
+            $this->delete_ldap_children($udn);
+            $this->{LDAP}->delete($udn);
+    }
+    
+    
+    
 }
 #-----------------------------------------------------------------------
 =item B<get_user_of_workstation([dn])>

@@ -102,6 +102,7 @@ foreach my $entry ( $mess->entries ) {
                 system("find $home ".'-type d -exec setfacl -b {} \\;');
                 system("find $home ".'-type f -exec chmod g+rw {} \\;');
                 system("find $home ".'-type d -exec chmod 2770 {} \\;');
+		system("find $home ".'-type d -exec setfacl -d -m g::rwx {} \\;');
 	        system("setfacl -m u:wwwrun:x $home;");
 	        system("mkdir -p $home/public_html; chmod 755 $home/public_html; chown $uid $home/public_html;");
 	}
