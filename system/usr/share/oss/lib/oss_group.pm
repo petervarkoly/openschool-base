@@ -226,7 +226,7 @@ sub add($)
     if( $GROUP->{grouptype} ne 'application' )
     {
 	my $command = 'mkdir -p '.$GROUP->{shareddir}.'; chgrp '.$GROUP->{gidnumber}.' '.$GROUP->{shareddir}.'; setfacl -d -m g::rwx '.$GROUP->{shareddir}."\n";
-	$command .= 'chmod 2771 '.$GROUP->{shareddir}.'; ';
+	$command .= 'chmod 3771 '.$GROUP->{shareddir}.'; ';
 	if( defined $GROUP->{basedir} )
 	{
 	    $command .= 'mkdir -p -m 751 '.$GROUP->{basedir}.'; chgrp '.$GROUP->{gidnumber}.' '.$GROUP->{basedir}."\n";

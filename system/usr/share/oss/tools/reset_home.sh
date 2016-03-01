@@ -104,9 +104,9 @@ then
 		/usr/bin/setfacl -P -R -b $i
 		if [ $i = "SYSADMINS" ]
 		then
-			/bin/chmod -R 2770 $i
+			/bin/chmod -R 3770 $i
 		else
-			/bin/chmod -R 2771 $i
+			/bin/chmod -R 3771 $i
 			/usr/bin/setfacl -d -m g::rwx $i
 			/usr/bin/setfacl -P -R -m g::rwx $i
 		fi
