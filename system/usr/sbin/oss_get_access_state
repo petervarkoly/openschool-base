@@ -35,6 +35,9 @@ LOCAL=`ip addr | grep "$DEST/"`
 
 case "$2" in
    all)
+#TODO
+#We have to mark not full internet access too.
+#E.m. if only some ports or server are enabled
 	if [ "$LOCAL" ]
 	then
 		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1.*.0.0.0.0"`
