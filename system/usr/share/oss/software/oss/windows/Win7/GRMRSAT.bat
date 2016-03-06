@@ -1,1 +1,0 @@
-start /w pkgmgr /iu:RemoteServerAdministrationTools-Roles-AD-DS-SnapIns;RemoteServerAdministrationTools-Roles-AD-DS;RemoteServerAdministrationTools-Roles-AD;RemoteServerAdministrationTools-Roles;RemoteServerAdministrationTools

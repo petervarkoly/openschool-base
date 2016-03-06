@@ -5,8 +5,8 @@ LDAPBASE=`echo $BIND_DN | sed 's/cn=Administrator,//'`
 PASSWORD=$(mktemp -u XXXXXXXX)
 
 # Check if account already exists:
-EXISTS=$( oss_ldapsearch cn=claxsss )
-if [ $EXISTS ]
+EXISTS=$( oss_ldapsearch cn=claxss )
+if [ "$EXISTS" ]
 then
    exit 1
 fi
