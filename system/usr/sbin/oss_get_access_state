@@ -37,9 +37,9 @@ case "$2" in
    all)
 	if [ "$LOCAL" ]
 	then
-		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1"`
+		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1.*.0.0.0.0"`
 	else
-		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1'"`
+		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1.*.0.0.0.0'"`
 	fi
 	if test "$STATUS"
 	then
