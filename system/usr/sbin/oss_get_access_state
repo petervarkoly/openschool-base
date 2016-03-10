@@ -40,9 +40,9 @@ case "$2" in
 #E.m. if only some ports or server are enabled
 	if [ "$LOCAL" ]
 	then
-		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1.*.0.0.0.0"`
+		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1" | grep -P "0.0.0.0/0|$SCHOOL_NETWORK/"`
 	else
-		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1.*.0.0.0.0'"`
+		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1' | grep -P '0.0.0.0/0|$SCHOOL_NETWORK/'"`
 	fi
 	if test "$STATUS"
 	then
