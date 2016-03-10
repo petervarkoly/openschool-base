@@ -94,9 +94,9 @@ $script .= '(echo strComputer = "."'."\r\n".
 'echo ^("Select * from Win32_Printer Where Network = TRUE"^)'."\r\n".
 'echo For Each objPrinter in colInstalledPrinters'."\r\n".
 'echo objPrinter.Delete_'."\r\n".
-'echo Next) > \\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n".
-'\\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n".
-'del /Q /S \\\pdc-server\\'.$UID.'\RemovePrinters.vbs'."\r\n";
+'echo Next) > \\\admin\\'.$UID.'\RemovePrinters.vbs'."\r\n".
+'\\\admin\\'.$UID.'\RemovePrinters.vbs'."\r\n".
+'del /Q /S \\\admin\\'.$UID.'\RemovePrinters.vbs'."\r\n";
 
 foreach ( @$dprint )
 {
