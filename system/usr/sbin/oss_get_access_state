@@ -35,11 +35,14 @@ LOCAL=`ip addr | grep "$DEST/"`
 
 case "$2" in
    all)
+#TODO
+#We have to mark not full internet access too.
+#E.m. if only some ports or server are enabled
 	if [ "$LOCAL" ]
 	then
-		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1"`
+		STATUS=`/usr/sbin/iptables -L -t nat -v -n | grep "MASQUERADE.*all.*$1" | grep -P "0.0.0.0/0|$SCHOOL_NETWORK/"`
 	else
-		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1'"`
+		STATUS=`ssh $DEST "/usr/sbin/iptables -L -t nat -v -n | grep 'MASQUERADE.*all.*$1' | grep -P '0.0.0.0/0|$SCHOOL_NETWORK/'"`
 	fi
 	if test "$STATUS"
 	then

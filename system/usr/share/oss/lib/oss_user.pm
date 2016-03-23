@@ -107,7 +107,6 @@ sub add($)
     my $ERR      = '';
     my $pwmech   = 'md5';
     my $TEMPLATE = undef;
-    my $uid      = undef;
 
     print "===========START=======addUSER\n".Dumper($USER) if ($this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes');
     # Check if the ldap attributes are OK
@@ -124,28 +123,18 @@ sub add($)
     {
         $this->init_sysconfig($this->get_school_base($USER->{oid}));
     }
-#   I think it is not necessary becouse it will be done by oss_user->new
-#    if( defined $USER->{sDN} )
-#    {
-#        $this->init_sysconfig($USER->{sDN});
-#    }
-#    print Dumper($this->{SYSCONFIG}) if ($this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes');
 
-    # Now we create the uid
+    # Now we create the uid if necessary
     if( ! $USER->{uid} )
     {
 	$this->create_uid($USER);
     }
-    elsif ( defined $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX} )
-    {
-	$uid = lc($USER->{uid});
-        $USER->{uid} = $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}.$USER->{uid};
-    }
     # We take care that uids are every time lower case
     $USER->{uid} = lc($USER->{uid});
+    $USER->{prefix}  = lc($this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}) || '';
 
     #Now we test if the uid is unique
-    if( !$this->is_unique($USER->{uid},'uid') )
+    if( !$this->is_unique($USER->{prefix}.$USER->{uid},'uid') )
     {
         $this->{ERROR}->{text}  = 'The uid:'.$USER->{uid}.' is used by an other user.';
         $this->{ERROR}->{code}  = 'USER-UID-NOT-UNIQUE';
@@ -153,14 +142,13 @@ sub add($)
     }
 
     #Now we test if there no exists a group with the same cn as the users uid.
-    if( !$this->is_unique($USER->{uid},'cn') )
+    if( !$this->is_unique($USER->{prefix}.$USER->{uid},'cn') )
     {
         $this->{ERROR}->{text}  = 'The uid:'.$USER->{uid}.' is used by a group.';
         $this->{ERROR}->{code}  = 'USER-UID-NOT-UNIQUE';
         return undef;
     }
     # Create the DN of the user entry
-    $USER->{prefix} = '' if ( !defined $USER->{prefix} );
     if( $USER->{role} eq 'machine' )
     {
         $USER->{dn} =  'uid='.$USER->{uid}.','.$this->{SYSCONFIG}->{COMPUTERS_BASE};
@@ -276,10 +264,9 @@ sub add($)
 	{
 		$USER->{mail} = $USER->{uid}.'@'.$this->{SYSCONFIG}->{SCHOOL_DOMAIN};
         }
-	if ( defined $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX} and $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX} ne '' )
+	if ( $USER->{prefix} )
 	{
-		$USER->{mail} = $uid.'@'.$this->{SYSCONFIG}->{SCHOOL_DOMAIN};
-		push @{$USER->{susemailacceptaddress}}, $USER->{mail};
+		push @{$USER->{susemailacceptaddress}}, $USER->{prefix}.$USER->{uid}.'@'.$this->{SYSCONFIG}->{SCHOOL_DOMAIN};
 	}
 
     }
@@ -292,6 +279,7 @@ sub add($)
     #Now we set the samba attributes
     if( ! $this->set_samba_attributes($USER) )
     {
+	print STDERR "Failed to set samba attributes\n";
 	print STDERR Dumper($USER);
         return undef;
     }
