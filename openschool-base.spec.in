@@ -169,6 +169,7 @@ exit 0
 
 %config(noreplace) /etc/squid/acl_*
 %config(noreplace) /etc/uucp/*
+%dir /etc/openldap/
 %config /etc/openldap/*
 %dir /etc/samba/
 %config /etc/samba/*
