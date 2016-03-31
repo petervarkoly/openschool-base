@@ -160,6 +160,8 @@ exit 0
 %config /etc/cron.daily/oss*
 %config(noreplace) /etc/logrotate.d/oss-base
 %config(noreplace) /etc/cron.d/oss*
+%dir /var/lib/support/
+/var/lib/support/oss.include
 %else
 %dir /etc/postfix/
 /etc/postfix/*.in
@@ -189,7 +191,6 @@ exit 0
 
 %defattr(755,root,root)
 /etc/init.d/*mb-printserver
-/var/lib/support/oss.include
 /usr/sbin/*
 /srv/www/cgi-bin/*
 
