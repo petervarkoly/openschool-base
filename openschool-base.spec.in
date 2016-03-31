@@ -54,10 +54,11 @@ make DESTDIR=$RPM_BUILD_ROOT install
 %if 0%{?suse_version} < 1315
     rm -rf $RPM_BUILD_ROOT/etc/postfix-non-suse/
 %else
-    cp $RPM_BUILD_ROOT/etc/postfix-non-suse/*  $RPM_BUILD_ROOT/etc/postfix/
-    rm -rf $RPM_BUILD_ROOT/etc/postfix-non-suse/
+    mv $RPM_BUILD_ROOT/etc/postfix-non-suse/  $RPM_BUILD_ROOT/etc/postfix/
     rm -rf $RPM_BUILD_ROOT/etc/{cron.daily,logrotate.d,cron.d}
-    rm -f /etc/openldap/schema/{openxchange,phpgwaccount,phpgwcontact}.schema.in
+    rm -f  $RPM_BUILD_ROOT/etc/openldap/schema/{openxchange,phpgwaccount,phpgwcontact}.schema.in
+    rm -rf $RPM_BUILD_ROOT/var/lib/support
+    rm -rf $RPM_BUILD_ROOT/etc/imap
 %endif
 
 for f in `find $RPM_BUILD_ROOT/etc/skel/Desktop -name "*.desktop"` ; do
@@ -145,21 +146,27 @@ exit 0
 %config /etc/apache2/vhosts.d/oss_include.conf.in
 %config /etc/apache2/vhosts.d/oss/*
 %config /etc/apache2/vhosts.d/oss-ssl/*
+%config /etc/apache2/vhosts.d/admin-ssl/admin.conf
 %config /etc/slp.reg.d/oss.reg
 %dir /etc/apache2/vhosts.d/admin/
 %dir /etc/apache2/vhosts.d/admin-ssl/
 %dir /etc/apache2/vhosts.d/oss/
 %dir /etc/apache2/vhosts.d/oss-ssl/
-%config /etc/apache2/vhosts.d/admin-ssl/admin.conf
+%dir /etc/slp.reg.d
+
 %if 0%{?suse_version} < 1315
+%dir /etc/imap
+%config /etc/imap/procmailrc
 %config /etc/cron.daily/oss*
 %config(noreplace) /etc/logrotate.d/oss-base
 %config(noreplace) /etc/cron.d/oss*
+%else
+%dir /etc/postfix/
+/etc/postfix/*.in
 %endif
+
 %config(noreplace) /etc/squid/acl_*
 %config(noreplace) /etc/uucp/*
-%dir /etc/imap
-%config /etc/imap/procmailrc
 %config /etc/openldap/*
 %dir /etc/samba/
 %config /etc/samba/*
