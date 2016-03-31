@@ -13,13 +13,29 @@ Release:      @RELEASE@
 Source:       openschool-base.tar.bz2
 BuildRoot:    %{_tmppath}/%{name}-root
 BuildArch:    noarch
-Requires:     amavisd-new
-Requires:     cron perl perl-Config-IniFiles perl-Crypt-SmbHash perl-DBI
-Requires:     perl-DBD-mysql perl-Digest-SHA1 perl-Net-Netmask perl-NetxAP
-Requires:     perl-ldap quota perl-Quota mysql
-Prereq:	      apache2 openldap2 postfix samba yast2 filesystem
+Prereq:	      apache2
+Requires:     filesystem
+Requires:     openldap2
+Requires:     perl
+Requires:     perl-Config-IniFiles
+Requires:     perl-DBI
+Requires:     perl-DBD-mysql
+Requires:     perl-Digest-SHA1
+Requires:     perl-Net-Netmask
+Requires:     perl-NetxAP
+Requires:     perl-ldap
+Requires:     postfix
+Requires:     quota
+Requires:     samba
+Requires:     yast2
+
 %if 0%{?suse_version} < 1315
+Prereq:	      cron
+Prereq:	      perl-Crypt-SmbHash
 Prereq:       sitar
+Requires:     mysql
+else
+Requires:	mariadb
 %endif
 
 BuildRequires: update-desktop-files
@@ -35,8 +51,14 @@ BuildRequires: update-desktop-files
 %install
 make DESTDIR=$RPM_BUILD_ROOT install
 
-#TODO do not remove if it is not SUSE
-rm -r $RPM_BUILD_ROOT/etc/postfix-non-suse/
+%if 0%{?suse_version} < 1315
+    rm -rf $RPM_BUILD_ROOT/etc/postfix-non-suse/
+%else
+    cp $RPM_BUILD_ROOT/etc/postfix-non-suse/*  $RPM_BUILD_ROOT/etc/postfix/
+    rm -rf $RPM_BUILD_ROOT/etc/postfix-non-suse/
+    rm -rf $RPM_BUILD_ROOT/etc/{cron.daily,logrotate.d,cron.d}
+    rm -f /etc/openldap/schema/{openxchange,phpgwaccount,phpgwcontact}.schema.in
+%endif
 
 for f in `find $RPM_BUILD_ROOT/etc/skel/Desktop -name "*.desktop"` ; do
     %suse_update_desktop_file $f
@@ -49,9 +71,12 @@ rm -rf $RPM_BUILD_ROOT;
 
 # ---------------------------------------------------------------------------
 %post
+
+%if 0%{?suse_version} < 1315
 cp /etc/openldap/schema/openxchange.schema.in  /etc/openldap/schema/openxchange.schema
 cp /etc/openldap/schema/phpgwaccount.schema.in /etc/openldap/schema/phpgwaccount.schema
 cp /etc/openldap/schema/phpgwcontact.schema.in /etc/openldap/schema/phpgwcontact.schema
+%endif
 
 if [ ${1:-0} -gt 1 ]
 then
@@ -126,14 +151,17 @@ exit 0
 %dir /etc/apache2/vhosts.d/oss/
 %dir /etc/apache2/vhosts.d/oss-ssl/
 %config /etc/apache2/vhosts.d/admin-ssl/admin.conf
+%if 0%{?suse_version} < 1315
 %config /etc/cron.daily/oss*
 %config(noreplace) /etc/logrotate.d/oss-base
 %config(noreplace) /etc/cron.d/oss*
+%endif
 %config(noreplace) /etc/squid/acl_*
 %config(noreplace) /etc/uucp/*
 %dir /etc/imap
 %config /etc/imap/procmailrc
 %config /etc/openldap/*
+%dir /etc/samba/
 %config /etc/samba/*
 %dir /etc/squid/
 %config /etc/squid/squid*
@@ -145,6 +173,7 @@ exit 0
 /srv/www/admin
 /usr/share/oss
 /usr/share/cups/drivers/*
+%dir /var/lib/samba/
 /var/lib/samba/netlogon
 /var/adm/fillup-templates/sysconfig.schoolserver
 
