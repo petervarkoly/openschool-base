@@ -17,7 +17,11 @@ Requires:     amavisd-new
 Requires:     cron perl perl-Config-IniFiles perl-Crypt-SmbHash perl-DBI
 Requires:     perl-DBD-mysql perl-Digest-SHA1 perl-Net-Netmask perl-NetxAP
 Requires:     perl-ldap quota perl-Quota mysql
-Prereq:	      apache2 openldap2 postfix samba yast2 filesystem sitar
+Prereq:	      apache2 openldap2 postfix samba yast2 filesystem
+%if 0%{?suse_version} < 1315
+Prereq:       sitar
+%endif
+
 BuildRequires: update-desktop-files
 
 # ---------------------------------------------------------------------------
