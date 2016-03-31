@@ -26,7 +26,6 @@ Requires:     perl-NetxAP
 Requires:     perl-ldap
 Requires:     postfix
 Requires:     quota
-Requires:     samba
 Requires:     yast2
 
 %if 0%{?suse_version} < 1315
@@ -34,6 +33,7 @@ Prereq:	      cron
 Prereq:	      perl-Crypt-SmbHash
 Prereq:       sitar
 Requires:     mysql
+Requires:     samba
 else
 Requires:	mariadb
 %endif
