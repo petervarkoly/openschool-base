@@ -4294,8 +4294,9 @@ sub get_free_rooms($)
 =item B<get_rooms(undef|'all'|'clients','ownerDN') >
 
 Returns the rooms.
-   undef => all registered rooms
-   all   => all registered rooms inkl. SERVER_NET & ANON_DHCP
+   undef   => all registered rooms
+   all     => all registered rooms inkl. SERVER_NET + ANON_DHCP
+   known   => all registered rooms + SERVER_NET
    clients => all registered rooms inkl. ANON_DHCP
 
 EXAMPLE:
@@ -4317,6 +4318,10 @@ sub get_rooms()
     elsif( defined $all && $all eq 'clients' )
     {
 	    $filter = '(&(Objectclass=SchoolRoom)(description=*)(!(description=SERVER_NET)))';
+    }
+    elsif( defined $all && $all eq 'known' )
+    {
+	    $filter = '(&(Objectclass=SchoolRoom)(description=*)(!(description=ANON_DHCP)))';
     }
     elsif( defined $all && $all =~ /^uid=.*/ )
     {
