@@ -34,7 +34,7 @@ Prereq:	      perl-Crypt-SmbHash
 Prereq:       sitar
 Requires:     mysql
 Requires:     samba
-else
+%else
 Requires:	mariadb
 %endif
 
