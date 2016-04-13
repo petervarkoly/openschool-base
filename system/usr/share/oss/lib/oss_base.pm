@@ -1067,6 +1067,62 @@ sub get_attribute($$)
 }
 #-----------------------------------------------------------------------
 
+#-----------------------------------------------------------------------
+
+=item B<add_attribute(dn,attribute,value)>
+
+Add an attribute of the object given by the dn.
+
+EXAMPLE:
+
+  my $homedirectory = $oss->add_attribute('uid=varkpete,ou=people,dc=extis,dc=de','uidnumber','12345');
+
+=cut
+
+sub add_attribute($$$)
+{
+    my $this      = shift;
+    my $dn        = shift;
+    my $attribute = shift;
+    my $value     = shift;
+
+    my $mesg = $this->{LDAP}->modify( dn => $dn, add=> {$attribute => $value} );
+    if( $mesg->code() )
+    {
+        $this->ldap_error($mesg);
+        return undef;
+    }
+    return 1;
+}
+#-----------------------------------------------------------------------
+
+=item B<del_attribute(dn,attribute,value)>
+
+Deletes an attribute with a given value of the object given by the dn. 
+
+EXAMPLE:
+
+  my $homedirectory = $oss->del_attribute('uid=varkpete,ou=people,dc=extis,dc=de','uidnumber','12345');
+
+=cut
+
+sub del_attribute($$$)
+{
+    my $this      = shift;
+    my $dn        = shift;
+    my $attribute = shift;
+    my $value     = shift;
+
+    my $mesg = $this->{LDAP}->modify( dn => $dn, delete=> {$attribute => $value} );
+    if( $mesg->code() )
+    {
+        $this->ldap_error($mesg);
+        return undef;
+    }
+    return 1;
+}
+#-----------------------------------------------------------------------
+
 =item B<set_attribute(dn,attribute,value)>
 
 Sets an attribute of the object given by the dn to the new value. 
