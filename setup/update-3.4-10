@@ -1,0 +1,22 @@
+#!/bin/bash
+# Copyright (c) 2016 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+
+if [ -e /var/adm/oss/update-3.4-10 ]
+then
+echo "Patch 3.4-10 already installed"
+        exit 0
+fi
+
+#add_school_config(KEY,VALUE,DESCRIPTION,TYPE,READONLY,PATH,[SCHOOL_BASE)
+echo "SCHOOL_CLEAN_UP_PRINTERS
+yes
+Remove all network printers from the users profile by the login process
+yesno
+no
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+/usr/sbin/oss_ldap_to_sysconfig.pl
+
+
+touch /var/adm/oss/update-3.4-10
+

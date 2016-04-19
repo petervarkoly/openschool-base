@@ -25,6 +25,7 @@ my $oss = oss_base->new();
 
 my $room     = $oss->get_room_of_ip($IP);
 my $wdn      = $oss->get_workstation($IP);
+my $cleanup  = $oss->get_school_config("SCHOOL_CLEAN_UP_PRINTERS") || "yes" ;
 my $dprint   = $oss->get_vendor_object($wdn,'EXTIS','DEFAULT_PRINTER');
 $dprint  = $oss->get_vendor_object($room,'EXTIS','DEFAULT_PRINTER') if( !scalar(@$dprint) );
 my $prints   = $oss->get_vendor_object($wdn,'EXTIS','AVAILABLE_PRINTER');
@@ -83,20 +84,19 @@ else
 	}
 }
 
-#my $printers    = $oss->get_printers();
-#foreach my $printer (sort (keys %{$printers})) {
-#        $script .= "rundll32 printui.dll,PrintUIEntry /q /dn /n \\\\printserver\\$printer /j\"Default $printer\"\r\n";
-#}
-
-$script .= '(echo strComputer = "."'."\r\n".
-'echo Set objWMIService = GetObject^("winmgmts:\\\" ^& strComputer ^& "\root\cimv2"^)'."\r\n".
-'echo Set colInstalledPrinters =  objWMIService.ExecQuery _'."\r\n".
-'echo ^("Select * from Win32_Printer Where Network = TRUE"^)'."\r\n".
-'echo For Each objPrinter in colInstalledPrinters'."\r\n".
-'echo objPrinter.Delete_'."\r\n".
-'echo Next) > Z:\RemovePrinters.vbs'."\r\n".
-'Z:\RemovePrinters.vbs'."\r\n".
-'del /Q /S Z:\RemovePrinters.vbs'."\r\n";
+#Clean up printers only if is not forbidden.
+if( lc($cleanup) ne "no" )
+{
+	$script .= '(echo strComputer = "."'."\r\n".
+	'echo Set objWMIService = GetObject^("winmgmts:\\\" ^& strComputer ^& "\root\cimv2"^)'."\r\n".
+	'echo Set colInstalledPrinters =  objWMIService.ExecQuery _'."\r\n".
+	'echo ^("Select * from Win32_Printer Where Network = TRUE"^)'."\r\n".
+	'echo For Each objPrinter in colInstalledPrinters'."\r\n".
+	'echo objPrinter.Delete_'."\r\n".
+	'echo Next) > Z:\RemovePrinters.vbs'."\r\n".
+	'Z:\RemovePrinters.vbs'."\r\n".
+	'del /Q /S Z:\RemovePrinters.vbs'."\r\n";
+}
 
 foreach ( @$dprint )
 {
