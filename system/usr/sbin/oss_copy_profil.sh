@@ -38,11 +38,12 @@ then
   exit 1;
 fi
 
+gid=`oss_get_primary_gid $1`
+
 if [ $2 = 'Linux' ]
 then
 	IFS=$'\n'
         home=`oss_get_home $1`
-	gid=`oss_get_primary_gid $1`
         test -d $home/Desktop && rm -r $home/Desktop
 	#these must be deleted
 	if [ -e /usr/share/oss/templates/delete-from-linux-profile ]; then
@@ -115,9 +116,9 @@ else
 				exit 0
 			fi
 		fi
-		rsync -a      "$TPROFIL/Desktop/"  "$PROFIL/Desktop/"
-		chown $1:$gid "$PROFIL/Desktop/"
-		chmod -R 700  "$PROFIL/Desktop/"
+		rsync -a         "$TPROFIL/Desktop/"  "$PROFIL/Desktop/"
+		chown -R $1:$gid "$PROFIL/Desktop/"
+		chmod -R 700  "   $PROFIL/Desktop/"
 		exit 0
 	fi
 
