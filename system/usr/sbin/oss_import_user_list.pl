@@ -43,6 +43,7 @@ my $userpassword = 0;
 my $mustchange   = 0;
 my $alias        = 0;
 my $notest       = 0;
+my $resetPW      = 0;
 my $message     = {};
 my @attr_ext      = ();
 my $attr_ext_name = {};
@@ -88,6 +89,7 @@ sub usage
 	print "                 Default: EN \n";
         print "  --sessionID    The sessionID of the web session started this script.\n";
         print "  --notest       If this option is not given no changes will be done. The scipt only reports what's to do.\n";
+        print "  --resetPW      If this option is set the password of old user will be reseted too.\n";
 }
 
 
@@ -171,7 +173,8 @@ $result = GetOptions(\%options,
                         "lang=s",
                         "mailenabled=s",
                         "userpassword=s",
-                        "sessionID=s"
+                        "sessionID=s",
+			"resetPW"
                         );
 
 if (!$result && ($#ARGV != -1))
@@ -207,6 +210,10 @@ if ( defined($options{'debug'}) )
 if ( defined($options{'notest'}) )
 {
 	$notest = 1;
+}
+if ( defined($options{'resetPW'}) )
+{
+	$resetPW = 1;
 }
 if ( defined($options{'alias'}) )
 {
@@ -673,6 +680,24 @@ sub add_user
 	    $ERRORS .= "<b>".$USER{'givenname'}." ".$USER{'sn'}."</b>: ".__('old_classes').": ".join(" ",@old_classes)." ".__('new_classes').": ".$MYCLASSES."<br>\n";
 	    if( $notest )
 	    {
+		    if( $resetPW )
+		    {
+			# If a default password was defined we use it
+			if( $userpassword )
+			{
+			  $USER{'userpassword'} = $userpassword;
+			}
+			if( !$USER{'userpassword'} || $USER{'userpassword'} eq "*")
+			{
+			   $USER{'userpassword'} = '';    
+			   for( my $i=0; $i < 8; $i++)
+			   {
+			     $USER{'userpassword'} .= pack( "C", int(rand(25)+97) );
+			   } 
+			    
+			}
+			$oss->set_password( $udn, $USER{'userpassword'}, $mustchange, 0,'md5' );
+		    }
 		    if( $MYCLASSES ) {
                         $oss->{LDAP}->modify($udn, replace => { 'ou' =>$MYCLASSES });
                     }
