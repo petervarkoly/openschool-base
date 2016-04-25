@@ -26,36 +26,14 @@ my $dn = $oss->get_user_dn($uid);
 my $mesg = $oss->{LDAP}->search( base => $dn,
                                 scope => "base",
                                 filter=> "objectClass=SchoolAccount",
-                                 attrs=> [ 'authData','preferredLanguage','homeDirectory','configurationValue','role' ] );
+                                 attrs=> [ 'authData','preferredLanguage','homeDirectory','role' ] );
 exit if ($mesg->count != 1);
 
 my $authData = $mesg->entry(0)->get_value('authData');
 my $LANG     = $mesg->entry(0)->get_value('preferredLanguage');
 my $home     = $mesg->entry(0)->get_value('homeDirectory');
 my $role     = $mesg->entry(0)->get_value('role');
-my @confs    = $mesg->entry(0)->get_value('configurationValue');
-my @newconfs = ();
-
-foreach my $v (@confs)
-{
-   if( $v =~ /^LOGGED_ON=.*/ )
-   {
-      push @newconfs, "LOGGED_ON=$IP";
-   }
-   else
-   {
-      push @newconfs, $v;
-   }
-}
-if( $#confs eq -1 || $#confs != $#newconfs )
-{
-   push @newconfs, "LOGGED_ON=$IP";
-}
-if( $#confs > -1 )
-{
-   $oss->{LDAP}->modify( $dn ,  delete => [ 'configurationValue' ] );
-}
-$oss->{LDAP}->modify( $dn ,     add    => { configurationValue => \@newconfs } );
+$oss->{LDAP}->modify( $dn ,     add    => { configurationValue => "LOGGED_ON=$IP" } );
 if( $role =~ /students/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_STUDENTS_MULTIPLE_LOGIN} ne "yes" )
 {
    $oss->{LDAP}->modify( $dn ,     add    => { sambaUserWorkstations => $name } );

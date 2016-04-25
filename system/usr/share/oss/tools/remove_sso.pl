@@ -27,21 +27,8 @@ my $home     = $mesg->entry(0)->get_value('homeDirectory');
 my $role     = $mesg->entry(0)->get_value('role');
 my @newconfs = ();
 
-foreach my $v (@confs)
-{       
-   if( $v !~ /^LOGGED_ON=.*/ )
-   {
-      push @newconfs, $v;
-   }    
-}       
-if( $#confs > -1 )
-{       
-   $oss->{LDAP}->modify( $dn ,  delete => [ 'configurationValue' ] );
-}       
-if( $#newconfs > -1 )
-{       
-   $oss->{LDAP}->modify( $dn ,  add    => { configurationValue => \@newconfs } );
-}
+$oss->{LDAP}->modify( $dn ,  delete => { configurationValue => "LOGGED_ON=$IP" } );
+
 if( $role =~ /students/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_STUDENTS_MULTIPLE_LOGIN} ne "yes" )
 {
    $oss->{LDAP}->modify( $dn ,  delete => [ 'sambaUserWorkstations' ] );
