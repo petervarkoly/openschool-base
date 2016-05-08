@@ -33,6 +33,19 @@ my $authData = $mesg->entry(0)->get_value('authData');
 my $LANG     = $mesg->entry(0)->get_value('preferredLanguage');
 my $home     = $mesg->entry(0)->get_value('homeDirectory');
 my $role     = $mesg->entry(0)->get_value('role');
+
+#First we have to 'log off' other user
+my $mesg = $oss->{LDAP}->search( base    => $oss->{SYSCONFIG}->{USER_BASE},
+                                          scope   => 'sub',
+                                          attrs   => ['uid','cn'],
+                                          filter  => "(configurationValue=LOGGED_ON=$IP)"
+        );
+foreach my $e ( $mesg->entries )
+{
+	$oss->{LDAP}->modify( $e->dn ,  delete    => { configurationValue => "LOGGED_ON=$IP" } );
+}
+
+#Now we ar setting our attributes.
 $oss->{LDAP}->modify( $dn ,     add    => { configurationValue => "LOGGED_ON=$IP" } );
 if( $role =~ /students/ && $oss->{SYSCONFIG}->{SCHOOL_ALLOW_STUDENTS_MULTIPLE_LOGIN} ne "yes" )
 {
