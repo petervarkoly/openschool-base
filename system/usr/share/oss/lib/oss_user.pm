@@ -574,6 +574,19 @@ sub delete($)
     #delete webdav share
     $this->make_delete_user_webdavshare( "$dn", "0" );
 
+    #Delete the users registered WLAN devices
+    my $wlanDeleted = 0;
+    my $mesg = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{DHCP_BASE},
+                         scope  => 'sub',
+                         filter => "configurationValue=DEVICE_OWNER=$dn"
+                );
+    foreach my $entry ( $mesg->entries() )
+    {
+	$wlanDeleted = 1;
+	$this->delete_host($entry->dn());
+    }
+
+
     #Now we delets the user from the groups.
     foreach my $group ( @{$this->get_groups_of_user($dn,1)} )
     {
