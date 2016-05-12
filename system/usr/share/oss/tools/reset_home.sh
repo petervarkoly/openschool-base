@@ -115,6 +115,9 @@ then
 	    	echo "Group $cn do not exists. Can not repair $i"
 	    fi
 	done
+        setfacl -R -dm o::--- /home/groups/TEACHERS
+        setfacl -R -m  o::--- /home/groups/TEACHERS
+        chmod -R o-x /home/groups/TEACHERS
 
 	for uid in $(ldapsearch -x objectclass=schoolAccount uid | grep uid: | sed 's/uid: //')
 	do
