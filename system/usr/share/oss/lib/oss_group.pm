@@ -400,6 +400,31 @@ sub modify
     foreach my $i ( keys %{$group} )
     {
         next if ( "role" eq "$i" );
+	#group web share
+	if($i eq "web"){
+		my $cn  = $old->get_value('cn');
+		my $gid = $old->get_value('gidnumber');
+		if( ! $group->{web} && -e '/etc/apache2/vhosts.d/'.$cn.'.group' )
+		{
+			system("rm /etc/apache2/vhosts.d/$cn.group" );
+			system( "rcapache2 reload");
+		}
+		elsif( $group->{web} )
+		{
+			my $shareddir = $this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/groups/$cn/";
+			my $command   = 'setfacl -m u:wwwrun:x '.$shareddir.'; mkdir -p -m 755 '.$shareddir.'/public_html; chgrp '.$gid.' '.$shareddir.'/public_html;'; 
+			my $conf = "Alias /".$cn." ".$shareddir."/public_html\n".
+			           "<Directory ".$shareddir."/public_html>\n".
+			           "   Options +Indexes -FollowSymLinks\n".
+			           "   AllowOverride None\n".
+			           "   Order allow,deny\n".
+			           "   Allow from all\n".
+			           "</Directory>\n";
+			write_file('/etc/apache2/vhosts.d/'.$cn.'.group',$conf);
+			system( "rcapache2 reload");
+		}
+                next;
+	}
 	#group webdav share
 	if($i eq "webdav_access"){
 		$this->make_delete_group_webdavshare( "$group->{dn}", "$group->{webdav_access}" );
