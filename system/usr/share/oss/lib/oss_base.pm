@@ -4128,7 +4128,7 @@ sub delete_host($)
     system("rm -rf /srv/itool/hwinfo/$cn") if( -d '/srv/itool/hwinfo/'.$cn );
     my $udn  = $this->get_user_dn($cn);
     #We have to delete all rasAccess entries
-    my $result = $this->{LDAP}->search( ase   => $this->{SYSCONFIG}->{USER_BASE},
+    my $result = $this->{LDAP}->search( base   => $this->{SYSCONFIG}->{USER_BASE},
                              filter => "(rasAccess=$HW)",
                               scope => 'one',
                              attr   => []
