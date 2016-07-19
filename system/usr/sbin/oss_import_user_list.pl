@@ -650,7 +650,7 @@ sub add_user
 	if( exists($ALLUSER{$key}) )
 	{
 	   $uid=$ALLUSER{$key};
-	   if( $USER{'uid'} eq "" )
+	   if( !defined  $USER{'uid'} || $USER{'uid'} eq "" )
 	   {
 	   	$USER{'uid'} = $uid;
 	   }
