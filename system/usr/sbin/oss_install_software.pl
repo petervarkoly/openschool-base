@@ -11,12 +11,14 @@ use oss_base;
 use oss_utils;
 my $client   = "";
 my $software = "";
+my $promptly = 0;
 #Parse parameter
 use Getopt::Long;
 my %options    = ();
 my $result = GetOptions(\%options,
                         "help",
                         "description",
+                        "promptly",
                         "client=s",
                         "software=s"
                 );
@@ -31,6 +33,7 @@ sub usage
                 '           --software     Comma separated list of software. This can be CNs or DNs or "all". '."\n".
                 '                          Ex: LibreOffice,GrafstatV4.276'."\n".
                 'Optional parameters: '."\n".
+                '       -p, --promptly     Start intstallation promptly.'."\n\n";
                 '       -h, --help         Display this help.'."\n".
                 '       -d, --description  Display the description.'."\n\n";
 }
@@ -52,11 +55,16 @@ if( defined($options{'description'}) ){
                 '                   --client      : Comma separated list of clients. This can be CNs or DNs or "all". Ex: edv-pc01,edv-pc02'."\n".
                 '                   --software    : Comma separated list of software. This can be CNs or DNs or "all". Ex: LibreOffice,GrafstatV4.276'."\n".
                 '       OPTIONAL:'."\n".
+                '               -p, --promptly    : Start intstallation promptly.'."\n";
                 '               -h, --help        : Display this help.(type=boolean)'."\n".
                 '               -d, --description : Display the descriptiont.(type=boolean)'."\n";
         exit 0;
 }
 
+if ( defined($options{'promptly'}) )
+{
+	$promptly = 1;
+}
 if ( defined($options{'client'}) )
 {
         $client=$options{'client'};
@@ -75,6 +83,7 @@ my $oss = oss_base->new();
 my @clients = split /,/,$client;
 my @sw      = split /,/,$software;
 my @clientsDN = ();
+my @clientsCN = ();
 my @swDN      = ();
 
 if( $client eq "all" )
@@ -87,6 +96,7 @@ if( $client eq "all" )
     foreach my $entry ( $result->entries )
     {
             push @clientsDN, $entry->dn;
+            push @clientsCN, get_name_of_dn($entry->dn);
     }
 }
 else
@@ -96,9 +106,11 @@ else
        if( /^uid=/ )
        {
            push @clientsDN, $_;
+           push @clientsCN, get_name_of_dn($_);
        }
        else
        {
+           push @clientsCN, $_;
            push @clientsDN,$oss->get_user_dn($_);
        }
     }
@@ -116,3 +128,9 @@ foreach( @sw )
 }
 
 $oss->makeInstallDeinstallCmd('install',\@clientsDN,\@swDN);
+
+if( $promptly )
+{
+	makeInstallationNow(\@clientsCN);
+}
+
