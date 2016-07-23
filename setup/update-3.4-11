@@ -1,0 +1,32 @@
+#!/bin/bash
+# Copyright (c) 2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+# Update Script to make the OSS preexec and postexec scripts in the samba 
+# configuration enhancable
+
+if [ -e /var/adm/oss/update-3.4-11 ]
+then
+echo "Patch 3.4-11 already installed"
+        exit 0
+fi
+
+#Adapt printserver.conf
+perl -e 'use strict;
+use Config::IniFiles;
+
+my $m = new Config::IniFiles( -file => "/etc/samba/printserver.conf" );
+$m->WriteConfig("/etc/samba/printserver.conf-befor-OSS-3.4-11-patch");
+$m->setval("global","printer admin","root, \@SYSADMINS");
+$m->setval("print\$","force group","SYSADMINS");
+$m->setval("print\$","write list","root, \@SYSADMINS");
+$m->newval("print\$","force create mode","0664");
+$m->RewriteConfig();
+'
+chgrp -R SYSADMINS /var/lib/samba/drivers
+find /var/lib/samba/drivers -type f -exec chmod 0664 {} \;
+find /var/lib/samba/drivers -type d -exec chmod 0775 {} \;
+sed -i s/ntadmin/SYSADMINS/ /usr/share/lmd/alibs/ManagePrinter.pm
+
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-11
+
