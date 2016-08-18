@@ -2,12 +2,21 @@
 
 user=$1
 arch=$3
+group=$( id -g $user )
+
+. /etc/sysconfig/schoolserver
 
 if [ ! -e $SCHOOL_HOME_BASE/profile/$user/$arch ]; then
 	mkdir -m 700 -p $SCHOOL_HOME_BASE/profile/$user/$arch
 	chown $user $SCHOOL_HOME_BASE/profile/$user $SCHOOL_HOME_BASE/profile/$user/$arch
 fi
 USERHOME=$( /usr/sbin/oss_get_home $user )
+
+if [ "${USERHOME/home/}" = "$USERHOME" ]; then
+        echo "check_profil.sh error $user does not have homedirectory $USERHOME"
+        exit 1
+fi
+
 MODE="700"
 # Die neuen Ordner werden, falls nicht vorhanden, angelegt
 if [ ! -d $USERHOME/Documents ]; then
