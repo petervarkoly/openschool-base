@@ -944,14 +944,16 @@ if( $role eq 'students' &&  $full )
 if( $allClasses )
 {   #Remove Classes which are not in the list
     my $MESSAGE = __("<b>Classes to remove:</b>");
-    foreach my $dn (@{$oss->get_school_groups('class')} )
+    my $oss_group         = oss_group->new();
+    foreach my $dn (@{$oss_group->get_school_groups('class')} )
     {
         Encode::_utf8_on($dn);
         my $cn = get_name_of_dn($dn);
 	next if( defined $ALLCLASSES{$cn} );
 	$MESSAGE .= " $cn";
-	$oss->{LDAP}->delete($dn) if( $notest );
+	$oss_group->delete($dn) if( $notest );
     }
+    $oss_group->destroy();
     open( OUT, ">>$output");
     print OUT  "$MESSAGE<br>";
     close( OUT );
