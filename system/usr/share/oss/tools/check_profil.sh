@@ -43,4 +43,8 @@ if [ ! -d $USERHOME/Videos ]; then
         mkdir -m $MODE $USERHOME/Videos
 	chown $user:$group $USERHOME/Videos
 fi
+if [ ! -d $USERHOME/WinDesktop ]; then
+        mkdir -m $MODE $USERHOME/WinDesktop
+	chown $user:$group $USERHOME/WinDesktop
+fi
 
