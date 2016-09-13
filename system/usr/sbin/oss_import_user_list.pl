@@ -49,6 +49,7 @@ my @attr_ext      = ();
 my $attr_ext_name = {};
 my $cleanClassDirs= 0;
 my $allClasses    = 0;
+my $identifier    = 'sn-gn-bd';
 my $output       = "";
 my $admin_user   = `oss_get_uid admin`;
 my $admin_group  = `oss_get_gid sysadmins`;
@@ -93,6 +94,10 @@ sub usage
         print "                 This parameter has only affect when role=students\n";
         print "  --cleanClassDirs Remove the content of the directories of the classes.\n";
         print "                 This parameter has only affect when role=students\n";
+        print "  --identifier   Which attribute(s) will be used to identify an user.\n";
+        print "                 Normaly the sn givenname and birthday combination will be used.\n";
+        print "                 Possible values are uid or uniqueidentifier.\n";
+
 }
 
 
@@ -174,7 +179,8 @@ $result = GetOptions(\%options,
                         "sessionID=s",
                         "resetPW",
                         "allClasses",
-                        "cleanClassDirs"
+                        "cleanClassDirs",
+			"identifier=s"
                         );
 
 if (!$result && ($#ARGV != -1))
@@ -234,6 +240,10 @@ if ( defined($options{'domain'}) )
 if ( defined($options{'lang'}) )
 {
         $lang = $options{'lang'};
+}
+if ( defined($options{'identifier'}) )
+{
+       $identifier = $options{'identifier'};
 }
 if ( defined($options{'sessionID'}) )
 {
@@ -351,6 +361,10 @@ foreach my $entry ($result->all_entries)
    Encode::_utf8_on($sn);        #if( ! utf8::is_utf8($sn) );
    Encode::_utf8_on($givenname); #if( ! utf8::is_utf8($givenname) );
    my $key = "$sn-$givenname-$birthday";
+   if( $identifier ne 'sn-gn-bd' )
+   {
+      $key = $entry->get_value($identifier);
+   }
    $key =~ s/\s//g;
    $ALLUSER{uc($key)} = $i;
 }
@@ -646,6 +660,10 @@ foreach my $act_line (@lines)
     # Do this user exist?
 
     my $key = uc($USER{'sn'}.'-'.$USER{'givenname'}.'-'.$USER{'birthday'});
+    if( $identifier ne 'sn-gn-bd' )
+    {
+       $key = uc($USER{lc($identifier)});
+    }
     $key =~ s/\s//g;
     print "  USER-KEY $key\n";
     if( exists($ALLUSER{$key}) )
