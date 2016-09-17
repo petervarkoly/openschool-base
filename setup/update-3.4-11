@@ -26,6 +26,16 @@ find /var/lib/samba/drivers -type f -exec chmod 0664 {} \;
 find /var/lib/samba/drivers -type d -exec chmod 0775 {} \;
 sed -i s/ntadmin/SYSADMINS/ /usr/share/lmd/alibs/ManagePrinter.pm
 
+#Add new system variables
+echo "SCHOOL_MOVE_PROFILE_TO_HOME
+no
+If this variable is set to yes, some directories from the windows profiles will be moved to home.
+yesno
+no
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+/usr/sbin/oss_ldap_to_sysconfig.pl
+
 #Mark this patch as installed
 mkdir -p /var/adm/oss
 touch /var/adm/oss/update-3.4-11
