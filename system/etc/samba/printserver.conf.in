@@ -30,11 +30,11 @@
    comment = Printer Drivers
    create mask = 0664
    directory mask = 0775
-   force group = ntadmin
+   force group = SYSADMINS
    guest ok = no
    path = /var/lib/samba/drivers
    printable = no
-   write list = @ntadmin root
+   write list = @SYSADMINS root
    read only = no
 
 [printers]
