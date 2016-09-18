@@ -381,6 +381,12 @@ SCHOOL_ALLOW_STUDENTS_MULTIPLE_LOGIN="no"
 # If this variable is set to yes, users which are not students users may login on more than one workstation.
 SCHOOL_ALLOW_MULTIPLE_LOGIN="yes"
 
+## Type:	yesno
+## Default:     yes
+# If this variable is set to yes, some directories from the windows profiles will be moved to home.
+# Documents Downloads Faworites Pictures Desktop Videos Music
+SCHOOL_MOVE_PROFILE_TO_HOME="yes"
+
 ## Type:	string
 ## Default:     lrswi	
 # Default rights for group members in their shared folder.

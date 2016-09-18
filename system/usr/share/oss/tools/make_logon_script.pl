@@ -26,6 +26,7 @@ my $oss = oss_base->new();
 my $room     = $oss->get_room_of_ip($IP);
 my $wdn      = $oss->get_workstation($IP);
 my $cleanup  = $oss->get_school_config("SCHOOL_CLEAN_UP_PRINTERS") || "yes" ;
+my $mv_profil= $oss->get_school_config("SCHOOL_MOVE_PROFILE_TO_HOME") || "no" ;
 my $dprint   = $oss->get_vendor_object($wdn,'EXTIS','DEFAULT_PRINTER');
 $dprint  = $oss->get_vendor_object($room,'EXTIS','DEFAULT_PRINTER') if( !scalar(@$dprint) );
 my $prints   = $oss->get_vendor_object($wdn,'EXTIS','AVAILABLE_PRINTER');
@@ -82,6 +83,19 @@ else
 	{
 		$script = `cat /var/lib/samba/netlogon/students.bat`;
 	}
+}
+
+#Set registry to move profil content to home
+if( lc($mv_profile) eq "yes" )
+{
+	$script .= 'REM Modify registries to move profil to home'."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Personal" /d "Z:\Documents" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "{374DE290-123F-4565-9164-39C4925E467B}" /d "Z:\Downloads" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Favorites" /d "Z:\Favorites" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Pictures" /d "Z:\Pictures" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Desktop" /d "Z:\WinDesktop" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Video" /d "Z:\Videos" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Music" /d "Z:\Music" /f '."\r\n";
 }
 
 #Clean up printers only if is not forbidden.

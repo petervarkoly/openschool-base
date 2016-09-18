@@ -38,14 +38,16 @@ sub debug
 
 sub usage
 {
-        print   'Usage: add_hosts_to_oss.pl [OPTION]  CSV.file'."\n\n".
+        print   'Usage: add_import_hosts.pl [OPTION]  CSV.file'."\n\n".
                 'With this script we can add hosts to the OSS server.'."\n\n".
 		'The CSV file must have the following format:'."\n".
 		'  Fields must be separated by ";"'."\n".
 		'  The Fields can be closed between "-signs'."\n".
 		'  The head must contains following fields:'."\n".
-		'  * mac	The MAC (hardware addresse) of the WLAN device.'."\n".
+		'  * mac	The MAC (hardware addresse) of the device.'."\n".
+		'		When the device has ETH and WLAN card this must be the MAC of the ETH device.'."\n".
 		'  Following fields are allowed:'."\n".
+		'  * wmac	The MAC (hardware addresse) of the WLAN device.'."\n".
 		'  * uid 	The uid of the user the WLAN device belongs to. More then one uid must be separated by space.'."\n".
 		'  * room       The name of the room the host must be registered. If the room does not exist this will be created'."\n".
 		'  * wlan       The host is a WLAN device.'."\n".
@@ -100,6 +102,7 @@ while(<IN>)
     my @line   = split(/;/,$_);
     my $MAC    = uc($line[$attrs{'mac'}]);
     my $UDN    = defined $attrs{'uid'}    ? $oss->get_user_dn($line[$attrs{'uid'}])    : "" ;
+    my $WMAC   = defined $attrs{'wmac'}   ? $line[$attrs{'wmac'}]   : undef ;
     my $WLAN   = defined $attrs{'wlan'}   ? $line[$attrs{'wlan'}]   : $wlan ;
     my $HWCONF = defined $attrs{'hwconf'} ? $line[$attrs{'hwconf'}] : undef ;
     my $NAME   = defined $attrs{'name'}   ? $line[$attrs{'name'}]   : '' ;
@@ -133,6 +136,7 @@ while(<IN>)
     }
     my $result= addHost( {
     	mac         => $MAC,
+	wmac        => $WMAC,
 	other_name  => $NAME,
 	room        => $oss->get_room_by_name($ROOM),
 	hwconfig    => $HWCONF,
@@ -234,6 +238,32 @@ sub addHost($)
                    };
         }
 
+	if( defined $HOST->{wmac} )
+	{
+		#Check the wmac address:
+		if( !check_mac($HOST->{wmac}) )
+		{
+		    return { TYPE => 'ERROR' ,
+		             CODE => 'HW_ADDRESS_INVALID',
+		             MESSAGE => "The wmac hardware address is invalid",
+		             MESSAGE1 => $HOST->{wmac},
+		           };
+		}
+		my $result = $oss->{LDAP}->search( base   => $oss->{SYSCONFIG}->{DHCP_BASE},
+		                   filter => "(dhcpHWAddress=ethernet ".$HOST->{wmac}.")",
+		                   attrs  => ['cn']
+		                 );
+		if($result->count() > 0)
+		{
+		    my $cn = $result->entry(0)->get_value('cn');
+		    return { TYPE => 'ERROR' ,
+		             CODE => 'HW_ALREADY_EXISTS',
+		             MESSAGE  => "The wmac hardware address already exists.",
+		             NOTRANSLATE_MESSAGE1 => "$cn => ".$HOST->{wmac}
+		           };
+		}
+	}
+
         #Check the alternat name.
         if( $HOST->{other_name} ne '' )
         {
@@ -269,8 +299,16 @@ sub addHost($)
                 }
 		$name = $HOST->{other_name};
         }
+	#Add host realy
         my @dns = $oss->add_host($name.'.'.$domain,$ip,$HOST->{mac},$HOST->{hwconfig},$HOST->{master},$HOST->{wlanaccess});
-	
+
+	#This host has 2 network cards
+	if( defined $HOST->{wmac} )
+	{
+	      my ($tmp,$ip) = get_next_free_pc($HOST->{room});
+              $oss->add_host($name.'-wlan.'.$domain,$ip,$HOST->{wmac},'wlanclone',0,1);
+	}
+
 	#Create WLAN access
 	if( $HOST->{wlanaccess} )
 	{
@@ -278,7 +316,7 @@ sub addHost($)
 		my $HW = $HOST->{mac};
 	        $HW =~ s/:/-/g;
 		#First we have to delete all old entries
-		$result = $oss->{LDAP}->search( base   => $this->{SYSCONFIG}->{USER_BASE},
+		$result = $oss->{LDAP}->search( base   => $oss->{SYSCONFIG}->{USER_BASE},
                                                 filter => "(rasAccess=$HW)",
                                                  scope => 'one',
                                                 attr   => []
@@ -308,7 +346,7 @@ sub addHost($)
 	}
 
 	if( $ADDWS ) {
-		if( ! $oss->add( { uid            => $name,
+		if( ! $oss->add( { uid             => $name,
 			     sn                    => $name.' Workstation-User',
 			     role                  => 'workstations',
 			     userpassword          => $name,
