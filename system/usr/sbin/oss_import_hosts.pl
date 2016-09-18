@@ -38,7 +38,7 @@ sub debug
 
 sub usage
 {
-        print   'Usage: add_hosts_to_oss.pl [OPTION]  CSV.file'."\n\n".
+        print   'Usage: add_import_hosts.pl [OPTION]  CSV.file'."\n\n".
                 'With this script we can add hosts to the OSS server.'."\n\n".
 		'The CSV file must have the following format:'."\n".
 		'  Fields must be separated by ";"'."\n".
