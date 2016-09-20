@@ -46,6 +46,7 @@ sed -i "s/#DOMAIN#/$SCHOOL_DOMAIN/" /etc/squid/squid.conf.in
 sed -i "s/#PROXY#/$SCHOOL_PROXY/" /etc/squid/squid.conf.in
 sed -i "s/#LDAPBASE#/$LDAPBASE/" /etc/squid/squid.conf.in
 cp /etc/squid/squid.conf.in /etc/squid/squid.conf
+rcsquid restart
 
 #Mark this patch as installed
 mkdir -p /var/adm/oss
