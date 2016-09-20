@@ -1128,9 +1128,6 @@ sub SetupProxy
   sed -i 's/#LDAPBASE#/".$globals->{LDAPBASE}."/g'     /etc/squid/squid.conf.in
   sed -i 's/#DOMAIN#/".$globals->{DOMAIN}."/g'         /etc/squid/squid.conf.in
   sed -i 's/#PROXY#/".$globals->{PROXY}."/g'           /etc/squid/squid.conf.in
-  sed -i 's/#DOMAIN#/".$globals->{DOMAIN}."/g'         /etc/squid/squid.primaryschool.in
-  sed -i 's/#PROXY#/".$globals->{PROXY}."/g'           /etc/squid/squid.primaryschool.in
-  sed -i 's/#LDAPBASE#/".$globals->{LDAPBASE}."/g'     /etc/squid/squid.primaryschool.in
   sed -i 's/#DOMAIN#/".$globals->{DOMAIN}."/g'         /etc/squid/acl_no_caching
   sed -i 's#SERVER_NET#".$globals->{SERVER_NET}."#g'   /etc/squid/acl_server_net
   ln /srv/www/admin/proxy.pac                          /srv/www/admin/proxy.pa
@@ -1138,15 +1135,8 @@ sub SetupProxy
   cp /usr/share/oss/setup/ldap/LDAP_WHITELISTS.ldif    /var/lib/ldap/LDAP_WHITELISTS.ldif
   sed -i 's/#LDAPBASE#/".$globals->{LDAPBASE}."/g'     /var/lib/ldap/LDAP_WHITELISTS.ldif
   /usr/bin/ldapadd -x -c -a -D '".$ldapbinddn."' -y '".$ldappasswd."' -f  /var/lib/ldap/LDAP_WHITELISTS.ldif
+  cp /etc/squid/squid.conf.in /etc/squid/squid.conf
 ";
-    if( $globals->{TYPE} eq 'primary'  )
-    {
-       $todo .= "cp /etc/squid/squid.primaryschool.in /etc/squid/squid.conf";
-    }
-    else
-    {
-       $todo .= "cp /etc/squid/squid.conf.in /etc/squid/squid.conf";
-    }
     system($todo);
     print DEBUG "###########\n#PROXY SERVER SETUP\n###########\n$todo\n##############\n" if ($debug);
 }
