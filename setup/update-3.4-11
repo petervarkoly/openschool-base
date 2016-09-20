@@ -36,6 +36,17 @@ Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
 /usr/sbin/oss_ldap_to_sysconfig.pl
 
+. /etc/sysconfig/ldap
+. /etc/sysconfig/schoolserver
+DATE=$( /usr/share/oss/tools/oss_date.sh )
+LDAPBASE=`echo $BASE_CONFIG_DN | sed s/ou=ldapconfig,//`
+DATE=$( /usr/share/oss/tools/oss_date.sh )
+cp /etc/squid/squid.conf /etc/squid/squid.conf-$DATE
+sed -i "s/#DOMAIN#/$SCHOOL_DOMAIN/" /etc/squid/squid.conf.in
+sed -i "s/#PROXY#/$SCHOOL_PROXY/" /etc/squid/squid.conf.in
+sed -i "s/#LDAPBASE#/$LDAPBASE/" /etc/squid/squid.conf.in
+cp /etc/squid/squid.conf.in /etc/squid/squid.conf
+
 #Mark this patch as installed
 mkdir -p /var/adm/oss
 touch /var/adm/oss/update-3.4-11
