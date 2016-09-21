@@ -18,6 +18,12 @@ if [ "${USERHOME/home/}" = "$USERHOME" ]; then
 fi
 
 MODE="700"
+
+if [ "$group" = "501" -a "$SCHOOL_TEACHER_OBSERV_HOME" = "yes" -a  "$SCHOOL_MOVE_PROFILE_TO_HOME" = "yes" ]; then
+	echo "SCHOOL_TEACHER_OBSERV_HOME and SCHOOL_MOVE_PROFILE_TO_HOME can not be set together to yes"
+	exit 1
+fi
+
 # Die neuen Ordner werden, falls nicht vorhanden, angelegt
 if [ "$SCHOOL_MOVE_PROFILE_TO_HOME" = "yes" ]; then
 	for i in Documents  Downloads  Favorites Music Pictures Videos
