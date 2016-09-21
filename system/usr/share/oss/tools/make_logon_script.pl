@@ -86,7 +86,7 @@ else
 }
 
 #Set registry to move profil content to home
-if( lc($mv_profile) eq "yes" )
+if( lc($mv_profil) eq "yes" )
 {
 	$script .= 'REM Modify registries to move profil to home'."\r\n".
 	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Personal" /d "Z:\Documents" /f '."\r\n".
