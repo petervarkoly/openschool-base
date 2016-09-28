@@ -141,11 +141,11 @@ if( $client eq "all" )
     {
 	if( $checkos )
 	{
-	    my $hw = $oss->get_config_value( $entry->dn, 'HW' );
+	    my $hw = $oss->get_config_value( $oss->get_workstation(get_name_of_dn($entry->dn)), 'HW' );
 	    next if !defined $hw;
-	    my $hwDN='configurationKey='.$hw.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
-	    my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
-	    next if( defined $res or ! $res->count() );
+	    my $hwDn='configurationKey='.$hw.','.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
+	    my $res = $oss->{LDAP}->search( base   => $hwDn, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+	    next if( !defined $res or ! $res->count() );
 	}
         push @clientsDN, $entry->dn;
         push @clientsCN, get_name_of_dn($entry->dn);
@@ -167,11 +167,11 @@ else
        }
        if( $checkos )
        {
-           my $hw = $oss->get_config_value( $dn, 'HW' );
+	   my $hw = $oss->get_config_value( $oss->get_workstation($uid), 'HW' );
            next if !defined $hw;
-           my $hwDN='configurationKey='.$hw.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
-           my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
-           next if( defined $res or ! $res->count() );
+           my $hwDn='configurationKey='.$hw.','.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
+           my $res = $oss->{LDAP}->search( base   => $hwDn, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+           next if( !defined $res or ! $res->count() );
        }
        push @clientsCN, $uid;
        push @clientsDN, $dn;
@@ -199,8 +199,8 @@ foreach my $hwDn ( @hwConf )
 {
     if( $checkos )
     {
-       my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
-       next if( defined $res or ! $res->count() );
+       my $res = $oss->{LDAP}->search( base   => $hwDn, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+       next if( !defined $res or ! $res->count() );
     }
 
     foreach my $pkgDn ( @swDN )
