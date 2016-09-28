@@ -13,6 +13,7 @@ my $client   = "";
 my $software = "";
 my $hwconf   = "";
 my $promptly = 0;
+my $checkos  = 0;
 #Parse parameter
 use Getopt::Long;
 my %options    = ();
@@ -20,6 +21,7 @@ my $result = GetOptions(\%options,
                         "help",
                         "description",
                         "promptly",
+                        "checkos",
                         "client=s",
                         "hwconf=s",
                         "software=s"
@@ -36,9 +38,11 @@ sub usage
                 '                          Ex: LibreOffice;GrafstatV4.276'."\n".
                 'Optional parameters: '."\n".
                 '           --hwconf       Semicolon separated list of software. This can be CNs or DNs or "all".'."\n".
+		'           --checkos      Check if the software tmeets the hwconfiguration.'."\n\n";
                 '       -p, --promptly     Start intstallation promptly.'."\n\n";
                 '       -h, --help         Display this help.'."\n".
                 '       -d, --description  Display the description.'."\n\n";
+
 }
 
 if (!$result && ($#ARGV != -1)){
@@ -59,12 +63,17 @@ if( defined($options{'description'}) ){
                 '                   --software    : Semicolon separated list of software. This can be CNs or DNs. Ex: LibreOffice;GrafstatV4.276'."\n".
                 '       OPTIONAL:'."\n".
                 '                   --hwconf      : Semicolon separated list of software. This can be CNs or DNs or "all". Ex: hwconf0,hwconf13'."\n".
+		'                   --checkos     : Check if the software tmeets the hwconfiguration.'."\n\n";
                 '               -p, --promptly    : Start intstallation promptly.'."\n";
                 '               -h, --help        : Display this help.(type=boolean)'."\n".
                 '               -d, --description : Display the descriptiont.(type=boolean)'."\n";
         exit 0;
 }
 
+if ( defined($options{'checkos'}) )
+{
+	$checkos = 1;
+}
 if ( defined($options{'promptly'}) )
 {
 	$promptly = 1;
@@ -130,24 +139,42 @@ if( $client eq "all" )
                           );
     foreach my $entry ( $result->entries )
     {
-            push @clientsDN, $entry->dn;
-            push @clientsCN, get_name_of_dn($entry->dn);
+	if( $checkos )
+	{
+	    my $hw = $oss->get_config_value( $entry->dn, 'HW' );
+	    next if !defined $hw;
+	    my $hwDN='configurationKey='.$hw.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
+	    my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+	    next if( defined $res or ! $res->count() );
+	}
+        push @clientsDN, $entry->dn;
+        push @clientsCN, get_name_of_dn($entry->dn);
     }
 }
 else
 {
     foreach( @clients )
     {
+       my $uid = $_;
+       my $dn  = $_;
        if( /^uid=/ )
        {
-           push @clientsDN, $_;
-           push @clientsCN, get_name_of_dn($_);
+           $uid = get_name_of_dn($_);
        }
        else
        {
-           push @clientsCN, $_;
-           push @clientsDN,$oss->get_user_dn($_);
+           $dn = $oss->get_user_dn($_);
        }
+       if( $checkos )
+       {
+           my $hw = $oss->get_config_value( $dn, 'HW' );
+           next if !defined $hw;
+           my $hwDN='configurationKey='.$hw.$oss->{SYSCONFIG}->{COMPUTERS_BASE};
+           my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+           next if( defined $res or ! $res->count() );
+       }
+       push @clientsCN, $uid;
+       push @clientsDN, $dn;
     }
 }
 
@@ -164,10 +191,18 @@ foreach( @sw )
     }
 }
 
+#Mark package to install
 $oss->makeInstallDeinstallCmd('install',\@clientsDN,\@swDN);
 
+#Assign package to hwconfigurations
 foreach my $hwDn ( @hwConf )
 {
+    if( $checkos )
+    {
+       my $res = $oss->{LDAP}->search( base   => $hwDN, filter => "configurationValue=PART_*_OS=Win*", scope => 'base', attr   => [] );
+       next if( defined $res or ! $res->count() );
+    }
+
     foreach my $pkgDn ( @swDN )
     {
 	$oss->add_config_value( $hwDn, 'SWPackage', $pkgDn);
