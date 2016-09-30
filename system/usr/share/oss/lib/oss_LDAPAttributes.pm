@@ -837,14 +837,14 @@ sub check_group_ldap_attributes($)
     {
     	return "Group name must conain at last 1 characters";
     }
-    if( $group->{cn} =~ / |\t/ )
+    if( $group->{cn} =~ /\s/ )
     {
-    	return "Group name must not contains white spaces!";
+        return "Group name must not contains white spaces!";
     }
-    if( $group->{cn} !~ /^[a-zA-Z0-9][a-zA-Z0-9_\.\-]{0,28}[a-zA-Z0-9]{0,28}$/ ){
-	$error .= "Invalid group name: ".$group->{cn}."\n";
-	$error .= "Please don\'t use special characters when entering the GroupName  ( ex. special charakter: á, ú, ű, é, ß, ä ).";
-    	return $error;
+    if( $group->{cn} =~ /[\*\?\$\"\'\#]/ ){
+        $error .= "Invalid group name: ".$group->{cn}."\n";
+        $error .= "Please don\'t use special characters when entering the GroupName  ( ex. special charakter: space \*\?\$\"\'\# ).";
+        return $error;
     }
     return $error;
 }
