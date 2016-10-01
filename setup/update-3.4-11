@@ -26,6 +26,17 @@ find /var/lib/samba/drivers -type f -exec chmod 0664 {} \;
 find /var/lib/samba/drivers -type d -exec chmod 0775 {} \;
 sed -i s/ntadmin/SYSADMINS/ /usr/share/lmd/alibs/ManagePrinter.pm
 
+#Seting the school Variable SCHOOL_VERSION.
+#This is very important for Cephalix
+echo "SCHOOL_VERSION" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+
+echo "SCHOOL_VERSION
+3.4.2
+OSS Version
+string
+yes
+Basis" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
 #Add new system variables
 echo "SCHOOL_MOVE_PROFILE_TO_HOME
 no
@@ -47,6 +58,7 @@ sed -i "s/#PROXY#/$SCHOOL_PROXY/" /etc/squid/squid.conf.in
 sed -i "s/#LDAPBASE#/$LDAPBASE/" /etc/squid/squid.conf.in
 cp /etc/squid/squid.conf.in /etc/squid/squid.conf
 rcsquid restart
+
 
 #Mark this patch as installed
 mkdir -p /var/adm/oss
