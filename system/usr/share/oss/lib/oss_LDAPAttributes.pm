@@ -753,9 +753,11 @@ sub check_user_ldap_attributes
 		}
 	}
 	if( /^userpassword$/ ){
-		if( length($user->{$_}) < $plength ){
-			$error .= "The user password is at least $plength characters long.<br>";
-		}
+                my $pwerr = check_pw($user->{$_});
+                if( $pwerr )
+                {
+                        $error .= $pwerr;
+                }
 	}
     	if( /^mobile$|^homePhone$|TelephoneNumber$/i )
 	{

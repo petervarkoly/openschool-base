@@ -52,6 +52,7 @@ use vars qw(
 @EXPORT = qw(
 	@LANGUAGES
 	@DAY_FIND_STRING
+	&check_pw
 	&check_mac
 	&cmd_pipe
 	&contains
@@ -112,6 +113,45 @@ my $ssl_verify_mode = '0x01';
 #######################################################################################
 # End header                                                                          #
 #######################################################################################
+
+=item B<check_pw(PW)>
+
+Check if the pw is secure enough. If not returns the error.
+If yes returns empty string.
+
+EXAMPLE:
+
+    my $err = check_pw($pw);
+    if( $err ne "" )
+    {
+        print "Bad password:\n".$err;
+    }
+=cut
+
+sub check_pw($)
+{
+        my $pw    = shift;
+        my ( $minpw ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MINIMAL_PASSWORD_LENGTH=");
+        my ( $maxpw ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MAXIMAL_PASSWORD_LENGTH=");
+        $minpw = 8  if( !$minpw );
+        $maxpw = 16 if( !$maxpw );
+        my $error = cmd_pipe('/usr/sbin/cracklib-check',$pw);
+        $error =~ s/^.*: OK$//;
+        if( length($pw) < $minpw ){
+                $error .= "The user password is at least $minpw characters long.<br>";
+        }
+        if( length($pw) > $maxpw ){
+                $error .= "The user password is maximum $maxpw characters long.<br>";
+        }
+        if( -e "/usr/share/oss/lib/custom_pw_check.pl" )
+        {
+                my $check = `cat /usr/share/oss/lib/custom_pw_check.pl`;
+                eval $check;
+        }
+        return $error;
+}
+#-----------------------------------------------------------------------
+
 
 =item B<check_mac(MAC-ADDRESSE)>
 
