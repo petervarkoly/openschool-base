@@ -10,10 +10,12 @@ use Time::Local;
 use Getopt::Long;
 
 my $uid='*';
+my $shadowMax=365;
 #Parse parameter
 my %options    = ();
 my $result = GetOptions(\%options,
 			"uid=s",
+			"shadowMax=s",
 			"help",
 			"description",
 		);
@@ -26,6 +28,7 @@ sub usage
 		"	No need for mandatory parameters. (There's no need for parameters for running this script.)\n".
 		'Optional parameters: '."\n".
 		'	-u, --uid <uid>    Username. If not set all user will be reseted.'."\n".
+		'	-s, --shadowMax    Maximal passwort age in days.'."\n".
 		'	-h, --help         Display this help.'."\n".
 		'	-d, --description  Display the descriptiont.'."\n";
 }
@@ -34,6 +37,9 @@ if ( defined($options{'help'}) ){
 }
 if ( defined($options{'uid'}) ){
 	$uid=$options{'uid'};
+}
+if ( defined($options{'shadowMax'}) ){
+	$shadowMax=$options{'shadowMax'};
 }
 if( defined($options{'description'}) ){
 	print   'NAME:'."\n".
@@ -45,6 +51,7 @@ if( defined($options{'description'}) ){
 		"		                  : No need for mandatory parameters. (There's no need for parameters for running this script.)\n".
 		'	OPTIONAL:'."\n".
 		'		-u, --uid <uid>   : Username. If not set all user will be reseted.'."\n".
+		'		-s, --shadowMax   : Maximal passwort age in days.'."\n".
 		'		-h, --help        : Display this help.(type=boolean)'."\n".
 		'		-d, --description : Display the descriptiont.(type=boolean)'."\n";
 	exit 0;
@@ -56,7 +63,7 @@ my $days_since_1970 = int($time / 3600 / 24);
 my $mesg = $oss->{LDAP}->search( base   => $oss->{LDAP_BASE},
                        filter => "(&(objectclass=sambaSamAccount)(uid=$uid))",
 		       scope  => 'sub',
-		       attrs  => ['shadowlastchange']
+		       attrs  => ['shadowlastchange','shadowMax']
 		     );
 
 foreach my $entry ( $mesg->entries ) {
@@ -68,6 +75,15 @@ foreach my $entry ( $mesg->entries ) {
   {
      $oss->{LDAP}->modify( $entry->dn(), add => { shadowlastchange=>$days_since_1970 });
      print $entry->dn()." added shadowlastchange\n";
+  }
+  if( $entry->exists('shadowMax') ) {
+     $oss->{LDAP}->modify( $entry->dn(), replace => { shadowMax=>$shadowMax });
+     print $entry->dn()." corrected shadowMax\n";
+  }
+  else
+  {
+     $oss->{LDAP}->modify( $entry->dn(), add => { shadowMax=>$shadowMax });
+     print $entry->dn()." added shadowMax\n";
   }
   $oss->{LDAP}->modify( $entry->dn(), replace => { sambapwdlastset=>$time });
 }
