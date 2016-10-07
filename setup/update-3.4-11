@@ -45,6 +45,24 @@ yesno
 no
 Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
 
+echo "SCHOOL_MAXIMAL_PASSWORD_LENGTH" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+#Add new system variables
+echo "SCHOOL_MAXIMAL_PASSWORD_LENGTH
+16
+Maximal lenght of password. Should not be graeter then 16 if you are using Office365.
+integer(10:16)
+no
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+echo "SCHOOL_MINIMAL_PASSWORD_LENGTH" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+#Add new system variables
+echo "SCHOOL_MINIMAL_PASSWORD_LENGTH
+8
+Minimal lenght of password. Must not be less then 8 and graether then SCHOOL_MAXIMAL_PASSWORD_LENGTH
+integer(8:16)
+no
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
 /usr/sbin/oss_ldap_to_sysconfig.pl
 
 . /etc/sysconfig/ldap

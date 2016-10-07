@@ -135,7 +135,7 @@ sub check_pw($)
         my ( $maxpw ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MAXIMAL_PASSWORD_LENGTH=");
         $minpw = 8  if( !$minpw );
         $maxpw = 16 if( !$maxpw );
-        my $error = cmd_pipe('/usr/sbin/cracklib-check',$pw);
+        my $error = cmd_pipe('/usr/sbin/cracklib-check',$pw); chomp($error);
         $error =~ s/^.*: OK$//;
         if( length($pw) < $minpw ){
                 $error .= "The user password is at least $minpw characters long.<br>";
