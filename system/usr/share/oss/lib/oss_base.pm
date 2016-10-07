@@ -2807,9 +2807,10 @@ sub set_password($$$$$)
     my $mustchange = shift;
     my $sso        = shift;
     my $pwmech     = shift;
-    my $pwlength   = $this->get_school_config('SCHOOL_MINIMAL_PASSWORD_LENGTH') || '6';    
-    if( length($password) < $pwlength ){
-	$this->{ERROR}->{text} = "The user password is at least $pwlength characters long.<br>";
+    my $pwcheck    = check_pw($password);    
+    if( "" ne $pwcheck  )
+    {
+	$this->{ERROR}->{text} = $pwcheck;
 	return 0;
     }
     my $uid = get_name_of_dn($dn);
