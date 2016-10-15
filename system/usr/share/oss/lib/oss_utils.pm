@@ -57,6 +57,7 @@ use vars qw(
 	&cmd_pipe
 	&contains
 	&create_job
+	&create_secure_pw
 	&get_name_of_dn
 	&get_time_zones
 	&get_parent_dn
@@ -306,6 +307,47 @@ sub get_time_zones() {
 
    return { default=>$defaultTZ, zones=>\@timezones };
 
+}
+#-----------------------------------------------------------------------
+
+=item B<create_secure_pw>
+
+Returns a secure pw containing upper and lower case letters numbers and some special sign.
+
+EXAMPLE:
+
+my $pw = create_secure_pw;
+
+
+=cut
+
+sub create_secure_pw {
+    my $lenght = shift || 10;
+    $lenght    = $lenght-2;
+    my $pw     = "";
+    my @SIGNS  = ( '#', '+', '$','&','!');
+    my $start  = int(rand($lenght/2))+3;
+    for( my $i=0; $i < $start; $i++)
+    {
+        my $i = int(rand(2));
+	if( $i ) {
+          $pw .= pack( "C", int(rand(25)+97) );
+        } else {
+          $pw .= pack( "C", int(rand(25)+65) );
+	}
+    }
+    $pw .= $SIGNS[int(rand(5))];
+    $pw .= int(rand(9))+1;
+    for( my $i=0; $i < $lenght-$start; $i++)
+    {
+        my $i = int(rand(2));
+	if( $i ) {
+          $pw .= pack( "C", int(rand(25)+97) );
+        } else {
+          $pw .= pack( "C", int(rand(25)+65) );
+	}
+    }
+    return $pw;
 }
 #-----------------------------------------------------------------------
 
