@@ -37,9 +37,9 @@ sub usage
                 '           --software     Semicolon separated list of software. This can be CNs or DNs. '."\n".
                 '                          Ex: LibreOffice;GrafstatV4.276'."\n".
                 'Optional parameters: '."\n".
-                '           --hwconf       Semicolon separated list of software. This can be CNs or DNs or "all".'."\n".
-		'           --checkos      Check if the software tmeets the hwconfiguration.'."\n\n";
-                '       -p, --promptly     Start intstallation promptly.'."\n\n";
+                '           --hwconf       Semicolon separated list of hwconfiguration.. This can be CNs or DNs or "all".'."\n".
+		'           --checkos      Check if the software meets the hwconfiguration.'."\n\n".
+                '       -p, --promptly     Start intstallation promptly.'."\n\n".
                 '       -h, --help         Display this help.'."\n".
                 '       -d, --description  Display the description.'."\n\n";
 
@@ -62,9 +62,9 @@ if( defined($options{'description'}) ){
                 '                   --client      : Semicolon separated list of clients. This can be CNs or DNs or "all". Ex: edv-pc01;edv-pc02'."\n".
                 '                   --software    : Semicolon separated list of software. This can be CNs or DNs. Ex: LibreOffice;GrafstatV4.276'."\n".
                 '       OPTIONAL:'."\n".
-                '                   --hwconf      : Semicolon separated list of software. This can be CNs or DNs or "all". Ex: hwconf0,hwconf13'."\n".
-		'                   --checkos     : Check if the software tmeets the hwconfiguration.'."\n\n";
-                '               -p, --promptly    : Start intstallation promptly.'."\n";
+                '                   --hwconf      : Semicolon separated list of hwconfiguration.. This can be CNs or DNs or "all". Ex: hwconf0,hwconf13'."\n".
+		'                   --checkos     : Check if the software meets the hwconfiguration.'."\n\n".
+                '               -p, --promptly    : Start intstallation promptly.'."\n".
                 '               -h, --help        : Display this help.(type=boolean)'."\n".
                 '               -d, --description : Display the descriptiont.(type=boolean)'."\n";
         exit 0;
