@@ -752,7 +752,7 @@ sub check_user_ldap_attributes
 			$error .= "Please don\'t use special characters when entering the $_ ( ex. special charakter: á, ú, ű, é, ß, ä ).<br>";
 		}
 	}
-	if( /^userpassword$/ ){
+	if( $user->{role} !~ /workstations|machine/ && /^userpassword$/ ){
                 my $pwerr = check_pw($user->{$_});
                 if( $pwerr )
                 {
