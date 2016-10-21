@@ -742,48 +742,48 @@ sub check_user_ldap_attributes
 	    $error .= "required attribute '$attr' is not defined<br>";
 	}
     }
-#TODO make syntax checks
-    foreach(keys %$user)
+    foreach my $attr (keys %$user)
     {
-	next if( !defined $user->{$_} );
-	if( $user->{$_} && /^uid$/i ){
-		if( $user->{$_} !~ /^[a-zA-Z0-9][\.\$\-a-zA-Z0-9_]{0,30}[a-zA-Z0-9\$]$/ ){
-			$error .= 'uid: '.$user->{$_}.'<br>';
-			$error .= "Please don\'t use special characters when entering the $_ ( ex. special charakter: á, ú, ű, é, ß, ä ).<br>";
+	next if( !defined $user->{$attr} );
+	if( $user->{$attr} && /^uid$/i ){
+		if( $user->{$attr} !~ /^[a-zA-Z0-9][\.\$\-a-zA-Z0-9_]{0,30}[a-zA-Z0-9\$]$/ ){
+			$error .= 'uid: '.$user->{$attr}.'<br>';
+			$error .= "Please don\'t use special characters when entering the $attr ( ex. special charakter: á, ú, ű, é, ß, ä ).<br>";
 		}
 	}
-	if( $user->{role} !~ /workstations|machine/ && /^userpassword$/ ){
-                my $pwerr = check_pw($user->{$_});
+	if( $user->{role} !~ /workstations|machine/ && $attr =~ /^userpassword$/i ){
+                my $pwerr = check_pw($user->{$attr});
                 if( $pwerr )
                 {
                         $error .= $pwerr;
                 }
 	}
-    	if( /^mobile$|^homePhone$|TelephoneNumber$/i )
+        if( $attr =~ /^mobile$|^homePhone$|TelephoneNumber$/i )
 	{
-		if( $user->{$_} eq '' )
+		if( $user->{$attr} eq '' )
 		{
-			delete $user->{$_};
+			delete $user->{$attr};
 			next;
 		}
-		if( $user->{$_} =~ /[^a-zA-Z0-9-+.()\/ ]+/ )
+		if( $user->{$attr} =~ /[^a-zA-Z0-9-+.()\/ ]+/ )
 		{
 			if( ! $correct )
 			{
-				$error .= "Attribute $_ has value in bad syntax: '".$user->{$_}."' During import this Problem will be corrected.\n";
+				$error .= "Attribute $attr has value in bad syntax: '".$user->{$attr}."'\n";
 			}
 			elsif( $correct eq 'correct' )
 			{
-				$user->{$_} =~ s/[^a-zA-Z0-9-+.()\/ ]/ /g;
+				$error .= "Attribute $attr has value in bad syntax: '".$user->{$attr}."' During import this Problem will be corrected.\n";
+				$user->{$attr} =~ s/[^a-zA-Z0-9-+.()\/ ]/ /g;
 			}
 			else
 			{
-				delete $user->{$_};
+				delete $user->{$attr};
 			}
 		}
 	}
-	if( /^newsusemailacceptaddress$|^newsusemailforwardaddress$/ ){
-		foreach my $i ( @{$user->{$_}} )
+	if( $attr =~ /^newsusemailacceptaddress$|^newsusemailforwardaddress$/ ){
+		foreach my $i ( @{$user->{$attr}} )
 		{
 			if( !check_email_address($i) ){
 				$error .= "'$i' is an invalid email address.\n";
