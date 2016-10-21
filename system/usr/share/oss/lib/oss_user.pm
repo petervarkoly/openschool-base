@@ -683,11 +683,11 @@ sub modify
 	    foreach($old->get_value($i))
 	    {
 	    	$old->delete( $i => $_ ) ;
-	    	$attr .= "delete  $_\n";
+	    	$attr .= "delete rasaccess $_\n";
 	    }
 	    foreach(@{$user->{$i}})
 	    {
-	    	$attr .= "add  $_\n";
+	    	$attr .= "add rasaccess $_\n";
 	    	$old->add( $i => $_ );
 	    }
 	    next;
