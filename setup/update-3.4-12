@@ -1,0 +1,46 @@
+#!/bin/bash
+# Copyright (c) 2015 Peter Varkoly Nürnberg, Germany.  All rights reserved.
+# Update Script to make the OSS preexec and postexec scripts in the samba 
+# configuration enhancable
+
+if [ -e /var/adm/oss/update-3.4-12 ]
+then
+echo "Patch 3.4-12 already installed"
+        exit 0
+fi
+
+#Seting the school Variable SCHOOL_VERSION.
+#This is very important for Cephalix
+echo "SCHOOL_VERSION" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+
+echo "SCHOOL_VERSION
+3.4.2
+OSS Version
+string
+yes
+Basis" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+#Avahi does not work at the time. Turn off it
+echo "SCHOOL_ENABLE_AVAHI_PRINTER_CONFIG" | /usr/sbin/oss_base_wrapper.pl delete_school_config
+
+echo "SCHOOL_ENABLE_AVAHI_PRINTER_CONFIG
+no
+Enable/Disable avahi printer configuration
+yesno
+yes
+Basis" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+#Add new system variables
+echo "SCHOOL_CHECK_PASSWORD_QUALITY
+yes
+Should the quality of the user passwort be checked for setting it? The minimal and maximal will be checked everytime.
+yesno
+no
+Settings" | /usr/sbin/oss_base_wrapper.pl add_school_config
+
+/usr/sbin/oss_ldap_to_sysconfig.pl
+
+#Mark this patch as installed
+mkdir -p /var/adm/oss
+touch /var/adm/oss/update-3.4-12
+
