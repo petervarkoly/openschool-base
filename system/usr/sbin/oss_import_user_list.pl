@@ -696,7 +696,24 @@ foreach my $act_line (@lines)
            push @old_classes_dn, $i;
            push @old_classes, get_name_of_dn($i);
         }
-        $ERRORS .= "<b>".$USER{'givenname'}." ".$USER{'sn'}."</b>: ".__('old_classes').": ".join(" ",@old_classes)." ".__('new_classes').": ".$MYCLASSES."<br>\n";
+        $ERRORS .= "<b>".$USER{'givenname'}." ".$USER{'sn'}."</b>: ".__('old_classes').": ".join(" ",@old_classes)." ".__('new_classes').": ".$MYCLASSES;
+        if( $resetPW )
+        {
+            if( $userpassword )
+            {
+              $USER{'userpassword'} = $userpassword;
+	    }
+	    if( defined $USER{'userpassword'} and $USER{'userpassword'} ne "*" and $USER{'userpassword'} ne "" )
+	    {
+	      my $err = check_pw($USER{'userpassword'});
+	      if( $err != "" )
+	      {
+	          $ERRORS .= "<font color='red'>".__('incorrect_passwd').$USER{'userpassword'}."</font>";
+	          $ERROR = 1;
+	      }
+	    }
+	}
+	$ERRORS .= "<br>\n";
         if( $notest )
         {
                 if( $resetPW )
@@ -708,11 +725,7 @@ foreach my $act_line (@lines)
                     }
                     if( !$USER{'userpassword'} || $USER{'userpassword'} eq "*")
                     {
-                       $USER{'userpassword'} = '';
-                       for( my $i=0; $i < 8; $i++)
-                       {
-                         $USER{'userpassword'} .= pack( "C", int(rand(25)+97) );
-                       }
+                       $USER{'userpassword'} = create_secure_pw();
                     }
                     $oss->set_password( $udn, $USER{'userpassword'}, $mustchange, 0,'md5' );
                 }
@@ -769,16 +782,16 @@ foreach my $act_line (@lines)
         # It is a new user
         if( !$USER{'userpassword'} || $USER{'userpassword'} eq "*")
         {
-           $USER{'userpassword'} = '';
-           for( my $i=0; $i < 8; $i++)
-           {
-             $USER{'userpassword'} .= pack( "C", int(rand(25)+97) );
-           }
+           $USER{'userpassword'} = create_secure_pw();
         }
-        elsif( $USER{'userpassword'} !~ /^[\.:\/\w\d§\$\%&!]+$/ )
+        else
         {
-            $ERRORS .= "<font color='red'>".__('incorrect_passwd').$USER{'userpassword'}."</font><br>\n";
-            $ERROR = 1;
+	    my $err = check_pw($USER{'userpassword'});
+	    if( $err != "" )
+	    {
+                $ERRORS .= "<font color='red'>".__('incorrect_passwd').$USER{'userpassword'}."</font><br>\n";
+                $ERROR = 1;
+	    }
         }
         if($USER{"sn"} eq "" || $USER{"userpassword"} eq "" )
         {
@@ -894,6 +907,7 @@ foreach my $act_line (@lines)
 #    print ">>>>>>>>>>>>>>>>DUMP OF THE NEW USER LIST<<<<<<<<<<<<<\n".Dumper($NEWLIST)."\n>>>>>>>>>>>>>>>END DUMP OF THE NEW USER LIST<<<<<<<<<<<<<<<<<<<";
 # Save the user list:
 system("mkdir -pm 770 $SYSADMINSdir/userimport.$date");
+system("cp $input $SYSADMINSdir/userimport.$date/userlist.txt");
 system("chown $admin_user:$admin_group $SYSADMINSdir/userimport.$date");
 if( $role eq 'students' )
 {
