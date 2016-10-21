@@ -180,7 +180,11 @@ if( $dn eq "" )
      $dn = "uid=root,".$oss->{SYSCONFIG}->{USER_BASE};
   }
 }
-$oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech);
+if( ! $oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech) )
+{
+        print $oss->{ERROR}->{text}."\n";
+        exit 1;
+}
 
 #Starting the plugins
 my $TMP = "$dn
