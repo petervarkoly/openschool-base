@@ -2,9 +2,12 @@
 
 user=$1
 arch=$3
-group=$( id -g $user )
+group=$( id -g $user &> /dev/null )
 
 . /etc/sysconfig/schoolserver
+
+#Win8 wants to create logon for the machine accounts too.
+id $user &> /dev/null ||  exit 2
 
 if [ ! -e $SCHOOL_HOME_BASE/profile/$user/$arch ]; then
 	mkdir -m 700 -p $SCHOOL_HOME_BASE/profile/$user/$arch

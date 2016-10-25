@@ -132,12 +132,11 @@ EXAMPLE:
 sub check_pw($)
 {
         my $pw    = shift;
-        my ( $minpw ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MINIMAL_PASSWORD_LENGTH=");
-        my ( $maxpw ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MAXIMAL_PASSWORD_LENGTH=");
+        my $error = "";
+        my ( $minpw, $maxpw, $check ) = parse_file("/etc/sysconfig/schoolserver", "SCHOOL_MINIMAL_PASSWORD_LENGTH=", "SCHOOL_MAXIMAL_PASSWORD_LENGTH=", "SCHOOL_CHECK_PASSWORD_QUALITY=");
         $minpw = 8  if( !$minpw );
         $maxpw = 16 if( !$maxpw );
-        my $error = cmd_pipe('/usr/sbin/cracklib-check',$pw); chomp($error);
-        $error =~ s/^.*: OK$//;
+        $check = $check ne "" ? $check =~ /yes/ : 1;
         if( length($pw) < $minpw ){
                 $error .= "The user password is at least $minpw characters long.<br>";
         }
@@ -149,6 +148,12 @@ sub check_pw($)
                 my $check = `cat /usr/share/oss/lib/custom_pw_check.pl`;
                 eval $check;
         }
+	if( $check )
+	{
+                my $E = cmd_pipe('/usr/sbin/cracklib-check',$pw); chomp($E);
+                $E =~ s/^.*: OK$//;
+                $error .= $E;
+	}
         return $error;
 }
 #-----------------------------------------------------------------------

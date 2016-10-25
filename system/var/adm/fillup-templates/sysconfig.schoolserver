@@ -407,15 +407,25 @@ SCHOOL_MAILBOX_ACCESS="ok"
 # Students may not change password.
 SCHOOL_MAY_NOT_CHANGE_PASSWORD="no"
 
-## Type:        integer
-## Default:     6     
-# The mininal length of passwords.
-SCHOOL_MINIMAL_PASSWORD_LENGTH="6"
+## Type:        integer(10:16)
+## Default:     10
+# Maximal lenght of password. Should not be graeter then 16 if you are using Office365.
+SCHOOL_MAXIMAL_PASSWORD_LENGTH="8"
+
+## Type:        integer(8:16)
+## Default:     8
+# Minimal lenght of password. Must not be less then 8 and graether then SCHOOL_MAXIMAL_PASSWORD_LENGTH.
+SCHOOL_MINIMAL_PASSWORD_LENGTH="8"
+
+## Type:        yesno
+## Default:     yes
+# Should the quality of the user passwort be checked for setting it? The minimal and maximal will be checked everytime.
+SCHOOL_CHECK_PASSWORD_QUALITY="ye"
 
 ## Type:        yesno
 ## Default:     no
 # Enable/Disable avahi printer configuration
-SCHOOL_ENABLE_AVAHI_PRINTER_CONFIG="yes"
+SCHOOL_ENABLE_AVAHI_PRINTER_CONFIG="no"
 
 ## Type:	string(telex,simple)
 ## Default:	telex
