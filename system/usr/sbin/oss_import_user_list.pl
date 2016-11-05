@@ -313,6 +313,11 @@ foreach my $attr (@parameters)
 }
 # Setup the header
 open( OUT, ">>$output");
+my $commandAttributes = "";
+foreach(keys $options)
+{
+	
+}
 print OUT "role=$role,lang=$lang,test=$notest,full=$full,alias=$alias,mustchange=$mustchange,userpassword=$userpassword,mailenabled=$mailenabled\n";
 close( OUT );
 
