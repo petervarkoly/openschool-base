@@ -31,10 +31,11 @@ echo $$ > /var/adm/oss/BackupRunning
 function TheEnd(){
 	rm /var/adm/oss/BackupRunning
 	if [ "$2" ]; then
-		echo $2;
+		LOG $2;
 	fi
 	exit $1
 }
+
 function usage (){
 	echo 
 	echo "Usage: `basename $0` [OPTION] "
@@ -135,7 +136,13 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     #create the backup direcktory
     BACKUP_DIR="$SCHOOL_BACKUP_INC_DIR/$LAST_BACKUP"
     mkdir -p $BACKUP_DIR
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
     touch $SCHOOL_BACKUP_FULL_DIR/DO_BACKUP
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
 
     export BACKUP_DIR
     export SCHOOL_BACKUP_FULL_DIR
@@ -157,10 +164,16 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 		mv $SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz $BACKUP_DIR/SLAPCAT.gz
 	fi
         slapcat | gzip > $SCHOOL_BACKUP_FULL_DIR/SLAPCAT.gz
+        if [ $? != 0 ]; then
+            TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+        fi  
     fi
 
     # copy sysconfig file schoolconf to the base for simple recovery
     cp /etc/sysconfig/schoolserver $SCHOOL_BACKUP_FULL_DIR/
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
 
     # save custom squidGuard database
     LOG "Syncing custom squidGuard database" 
@@ -169,6 +182,9 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/var/lib/squidGuard/db/custom/ \
 		/var/lib/squidGuard/db/custom/ \
 		$SCHOOL_BACKUP_FULL_DIR/var/lib/squidGuard/db/custom/
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
 
     # save samba settings
     if chkconfig -c smb
@@ -188,6 +204,9 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	fi
         mkdir -p $BACKUP_DIR/var/lib/samba/
     	rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/var/lib/samba/ /var/lib/samba/ $SCHOOL_BACKUP_FULL_DIR/var/lib/samba/
+        if [ $? != 0 ]; then
+            TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+        fi  
     fi
 
     # save /etc - must run after samba-backup otherwise secrets.tdb.bak is not saved
@@ -201,12 +220,18 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     LOG "Syncing /etc/"
     mkdir -p $BACKUP_DIR/etc/
     rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/etc/ /etc/ $SCHOOL_BACKUP_FULL_DIR/etc/
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
 
     # save server certificates
     LOG "Saving server certificate"
     test -d $SCHOOL_BACKUP_FULL_DIR/var/lib/CAM || mkdir -p $SCHOOL_BACKUP_FULL_DIR/var/lib/CAM
     test -d $BACKUP_DIR/var/lib/CAM || mkdir -p $BACKUP_DIR/var/lib/CAM
     rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/var/lib/CAM/ /var/lib/CAM/ $SCHOOL_BACKUP_FULL_DIR/var/lib/CAM/
+    if [ $? != 0 ]; then
+	TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+    fi  
     
     # save /root (needed already for ssh-key files)
     LOG "Syncing /root/"
@@ -231,9 +256,15 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	    	mkdir -p $BACKUP_DIR/home/
 	    fi
 	    rsync $RSYNCPARS --exclude-from=/usr/share/oss/templates/exclude-from-home-backup --link-dest=$BACKUP_DIR/home/ /home/ $SCHOOL_BACKUP_FULL_DIR/home/
+	    if [ $? != 0 ]; then
+		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    fi  
 	else
 	    mkdir -p $BACKUP_DIR/home/
 	    rsync $RSYNCPARS --exclude-from=/usr/share/oss/templates/exclude-from-home-backup -b --backup-dir=$BACKUP_DIR/home/ /home/ $SCHOOL_BACKUP_FULL_DIR/home/
+	    if [ $? != 0 ]; then
+		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    fi  
 	fi
     fi
 
@@ -242,6 +273,9 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     	mkdir -p $SCHOOL_BACKUP_FULL_DIR/srv/itool
     	mkdir -p $BACKUP_DIR/srv/itool
     	rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/itool/ /srv/itool/ $SCHOOL_BACKUP_FULL_DIR/srv/itool/
+        if [ $? != 0 ]; then
+            TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+        fi  
     fi
     
     if [ "$SCHOOL_BACKUP_DB" = "yes" ]; then
@@ -252,11 +286,17 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	    mkdir -p $SCHOOL_BACKUP_FULL_DIR/srv/www/oss/openxchange/var/   
             cp $BACKUP_DIR/openexchange.gz $SCHOOL_BACKUP_FULL_DIR/openexchange.gz    
             rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/www/oss/openxchange/var/ /srv/www/oss/openxchange/var/ $SCHOOL_BACKUP_FULL_DIR/srv/www/oss/openxchange/var/
+	    if [ $? != 0 ]; then
+		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    fi  
         fi
         if [ "$SCHOOL_USE_EGROUPWARE" = "yes" ]; then
             LOG "Syncing eGroupware Database" 
             mysqldump $MYSQLDUMP_OPTIONS egroupware | gzip > $BACKUP_DIR/egroupware.gz    
             cp $BACKUP_DIR/egroupware.gz $SCHOOL_BACKUP_FULL_DIR/egroupware.gz    
+	    if [ $? != 0 ]; then
+		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    fi  
         fi
 	if [ "$SCHOOL_BACKUP_JOOMLA" = "yes" ]; then
 	  if [ `echo "show databases;" | mysql -u root | grep -q joomla; echo $?` -eq 0 ] ; then
@@ -266,6 +306,9 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	  fi
 	fi
         mysqldump $MYSQLDUMP_OPTIONS lmd | gzip > $BACKUP_DIR/lmd.gz    
+	if [ $? != 0 ]; then
+	    TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	fi  
     fi
 
     if [ "$SCHOOL_BACKUP_MOODLE" = "yes" ]; then
@@ -279,12 +322,18 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     		rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/www/moodledata/ \
     		 /srv/www/moodledata/ \
     		 $SCHOOL_BACKUP_FULL_DIR/srv/www/moodledata/
+	         if [ $? != 0 ]; then
+	             TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	         fi  
     	elif [ "$SCHOOL_BACKUP_HOME" != "yes" ]; then
     		test -d $SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/ || mkdir -p $SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/
     		test -d $BACKUP_DIR/home/groups/moodledata/ 		|| mkdir -p $BACKUP_DIR/home/groups/moodledata/
     		rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/home/groups/moodledata/ \
     		 /home/groups/moodledata/ \
     		$SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/
+	         if [ $? != 0 ]; then
+	             TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	         fi  
     	fi # otherwise moodledata is included in /home
       fi
     fi
@@ -295,6 +344,9 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
             mkdir -p $SCHOOL_BACKUP_FULL_DIR/$i
             mkdir -p $BACKUP_DIR/$i
             rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/$i /$i $SCHOOL_BACKUP_FULL_DIR/$i
+	    if [ $? != 0 ]; then
+	        TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    fi  
         done    
     fi
 
