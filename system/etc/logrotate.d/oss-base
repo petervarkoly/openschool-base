@@ -18,7 +18,7 @@
     copytruncate
 }
 
-/var/log/apach2/admin*.log  /var/log/apach2/schoolserver*.log {
+/var/log/apache2/admin*log  /var/log/apache2/schoolserver*log {
     compress
     dateext
     maxage 120
