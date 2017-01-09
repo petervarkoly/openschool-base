@@ -745,7 +745,7 @@ sub check_user_ldap_attributes
     foreach my $attr (keys %$user)
     {
 	next if( !defined $user->{$attr} );
-	if( $user->{$attr} && $uid =~ /^uid$/i ){
+	if( $user->{$attr} && $attr =~ /^uid$/i ){
 		if( $user->{$attr} !~ /^[a-zA-Z0-9][\.\$\-a-zA-Z0-9_]{0,30}[a-zA-Z0-9\$]$/ ){
 			$error .= 'uid: '.$user->{$attr}.'<br>';
 			$error .= "Please don\'t use special characters when entering the $attr ( ex. special charakter: á, ú, ű, é, ß, ä ).<br>";
