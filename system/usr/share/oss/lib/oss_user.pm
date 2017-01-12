@@ -544,7 +544,7 @@ sub delete($)
     my $homedir     = $this->get_attribute($dn,'homedirectory');
     my $school_base = $this->get_school_base($dn);
     my $home_base   = '/home';
-    if( $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."admin" )
+    if( $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."admin" || $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."cephalix" )
     {
             $this->{ERROR}->{code} = "USER-MUST-NOT-BE-DELETED";
             $this->{ERROR}->{text} = "The user must not be deleted.";
