@@ -6,6 +6,7 @@ BEGIN{
 
 use strict;
 use oss_base;
+use oss_utils;
 use Data::Dumper;
 
 #Parse parameter
@@ -54,13 +55,13 @@ foreach my $dn ( sort keys %{$user} )
 {
 	my $webdav_access_value = $this->get_vendor_object($dn,'EXTIS','WebDavAccess');
 	if( $webdav_access_value->[0] ){
-		print $this->get_attribute( $dn, 'uid' )."\n";
+		my $uid = get_name_of_dn($dn);
+		print $uid."\n";
 		my $user_homeDirectory = $this->get_attribute( $dn, 'homeDirectory' );
                 system("find $user_homeDirectory/ -type f -exec setfacl -m u:wwwrun:rw {} \\;");
-                system("find $user_homeDirectory/ -type f -exec setfacl -m u::rw {} \\;");
+                system("find $user_homeDirectory/ -type d -exec chown $uid {} \\;");
                 system("find $user_homeDirectory/ -type d -exec setfacl -m u:wwwrun:rwx {} \\;");
-                system("find $user_homeDirectory/ -type d -exec setfacl -m u::rwx {} \\;");
-                system("find $user_homeDirectory/ -type d -exec setfacl -dm u::rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u:$uid:rwx {} \\;");
                 system("find $user_homeDirectory/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 	}
 }
@@ -80,13 +81,11 @@ foreach my $workgroup ( @$workgroups ){
 foreach my $group_dn ( @groups ){
 	my $webdav_access_value = $this->get_vendor_object($group_dn,'EXTIS','WebDavAccess') ;
 	if( $webdav_access_value->[0] ){
-		print $this->get_attribute( $group_dn, 'cn')."\n";
 		my $group_cn = $this->get_attribute( $group_dn, 'cn' );
-                system("find /home/groups/$group_cn/ -type f -exec setfacl -m g::rw {} \\;");
+		print $group_cn."\n";
                 system("find /home/groups/$group_cn/ -type f -exec setfacl -m u:wwwrun:rw {} \\;");
-                system("find /home/groups/$group_cn/ -type d -exec setfacl -m g::rwx {} \\;");
                 system("find /home/groups/$group_cn/ -type d -exec setfacl -m u:wwwrun:rwx {} \\;");
-                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm g::rwx {} \\;");
+                system("find /home/groups/$group_cn/ -type d -exec setfacl -dm g:$group_cn:rwx {} \\;");
                 system("find /home/groups/$group_cn/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 	}
 
