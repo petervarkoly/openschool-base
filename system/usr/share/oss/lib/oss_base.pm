@@ -1018,6 +1018,10 @@ sub set_config_value($$$)
     my $value     = shift;
 
     my $entry     = $this->get_entry( $dn, 1);
+    if( !defined $entry )
+    {
+        return 0;
+    }
     my @configs   = $entry->get_value('configurationValue');
     foreach my $config ( @configs )
     {
