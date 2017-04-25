@@ -321,13 +321,17 @@ sub activate_whitelist
 					     attributes => [ 'dn' ] );
 		foreach my $entry ( $res->entries )
 		{
-			$this->{LDAP}->modify( $entry->dn , add => { activatedIP => \@IPS } );
+			foreach my $ip ( @IPS ) {
+				$this->{LDAP}->modify( $entry->dn , add => { activatedIP => $ip } );
+			}
 			$this->add_value_to_vendor_object($room,'oss','whiteLists',$entry->dn);
 		}
 	}
 	else
 	{
-		$this->{LDAP}->modify( $wl , add => { activatedIP => \@IPS } );
+		foreach my $ip ( @IPS ) {
+			$this->{LDAP}->modify( $wl , add => { activatedIP => $ip } );
+		}
 		$this->add_value_to_vendor_object($room,'oss','whiteLists',$wl);
 	}
 }
@@ -360,14 +364,18 @@ sub deactivate_whitelist
 					     attributes => [ 'dn' ] );
 		foreach my $entry ( $res->entries )
 		{
-			$this->{LDAP}->modify( $entry->dn , delete => { activatedIP => \@IPS } );
+                        foreach my $ip ( @IPS ) {
+                                $this->{LDAP}->modify( $entry->dn , delete => { activatedIP => $ip } );
+                        }
 			$this->delete_value_from_vendor_object($room,'oss','whiteLists',$entry->dn);
 		}
 		$this->delete_value_from_vendor_object($room,'oss','whiteLists',$wl);
 	}
 	else
 	{
-		$this->{LDAP}->modify( $wl , delete => { activatedIP => \@IPS } );
+                foreach my $ip ( @IPS ) {
+                        $this->{LDAP}->modify( $wl , delete => { activatedIP => $ip } );
+                }
 		$this->delete_value_from_vendor_object($room,'oss','whiteLists',$wl);
 	}
 }

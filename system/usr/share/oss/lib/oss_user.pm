@@ -544,7 +544,7 @@ sub delete($)
     my $homedir     = $this->get_attribute($dn,'homedirectory');
     my $school_base = $this->get_school_base($dn);
     my $home_base   = '/home';
-    if( $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."admin" )
+    if( $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."admin" || $uid eq $this->{SYSCONFIG}->{SCHOOL_LOGIN_PREFIX}."cephalix" )
     {
             $this->{ERROR}->{code} = "USER-MUST-NOT-BE-DELETED";
             $this->{ERROR}->{text} = "The user must not be deleted.";
@@ -855,8 +855,8 @@ sub make_delete_user_webdavshare
 		my $user_uid_lc = lc("$user_uid");
 
                 system("find $user_homeDirectory/ -type f -exec setfacl -m  u:wwwrun:rw {} \\;");
-                system("find $user_homeDirectory/ -type d -exec setfacl -dm u::rwx {} \\;");
                 system("find $user_homeDirectory/ -type d -exec setfacl -m  u:wwwrun:rwx {} \\;");
+                system("find $user_homeDirectory/ -type d -exec setfacl -dm u:$user_uid_lc:rwx {} \\;");
                 system("find $user_homeDirectory/ -type d -exec setfacl -dm u:wwwrun:rwx {} \\;");
 		my $file_content = "Alias /webdav/u/$user_uid_lc \"$user_homeDirectory/\"\n".
 				"<IfModule mod_dav_fs.c>\n".

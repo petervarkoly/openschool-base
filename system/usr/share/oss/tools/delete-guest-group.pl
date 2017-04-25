@@ -10,7 +10,10 @@ use oss_utils;
 my $cn = shift;
 $cn = uc($cn);
 
-
+if( $cn eq "" ) {
+   print "Please define a group.\n";
+   exit 1;
+}
 my $user = oss_user->new( { withIMAP=>1 } );
 my $dng = $user->get_group_dn($cn);
 my $users =$user->get_users_of_group("$dng");

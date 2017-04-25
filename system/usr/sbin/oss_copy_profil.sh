@@ -44,6 +44,10 @@ if [ $2 = 'Linux' ]
 then
 	IFS=$'\n'
         home=`oss_get_home $1`
+        if [ $home = ${home/\/home/} ]; then
+                echo "Bad home '$home'"
+                exit 1
+        fi
         test -d $home/Desktop && rm -r $home/Desktop
 	#these must be deleted
 	if [ -e /usr/share/oss/templates/delete-from-linux-profile ]; then
