@@ -17,6 +17,12 @@ my $GROUP         ={};
 my $connect       = { withIMAP => 1 };
 my $oss_host      = undef;
 
+while(my $param = shift)
+{
+    if( $param =~ /text/i ) { $connect->{XML}=0; }
+    if( $param =~ /--noplugin/i ) { $connect->{noplugin}=1; }
+}
+
 binmode STDIN, ':utf8';
 binmode STDOUT, ":utf8";
 
