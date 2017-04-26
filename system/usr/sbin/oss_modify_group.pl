@@ -14,6 +14,7 @@ binmode STDIN, ':utf8';
 # Global variable
 my $connect    = { withIMAP => 1 };
 my $XML        = 1;
+my $noplugin   = 0;
 my $line       ='';
 my $oid        = '';
 my $uid        = '';
@@ -32,6 +33,7 @@ my @mboxacls   = ();
 while(my $param = shift)
 {
    $XML=0 if( $param =~ /text/i );
+   $noplugin=1 if( $param =~ /--noplugin/i );
 }
 
 while(<STDIN>)
@@ -163,8 +165,11 @@ foreach my $dn ( @dns )
     }
 
 }
-#Starting the plugins
-my $TMPFILE = write_tmp_file($plugin);
-system("/usr/share/oss/plugins/plugin_handler.sh modify_group $TMPFILE");
+
+if( !$noplugin) {
+	#Starting the plugins
+	my $TMPFILE = write_tmp_file($plugin);
+	system("/usr/share/oss/plugins/plugin_handler.sh modify_group $TMPFILE");
+}
 $oss->destroy();
 exit;

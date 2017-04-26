@@ -21,6 +21,7 @@ my $uid        = "";
 my $userpassword   = "";
 my $sso        = 0;
 my $mustchange = 0;
+my $noplugin   = 0;
 my $pwmech     = 'SMD5';
 binmode STDIN, ':utf8';
 
@@ -56,6 +57,10 @@ if( ! defined @ARGV || $ARGV[0] eq '-' )
 	  {
 		$sso = 1;
 	  }
+	  elsif ( $key eq 'noplugin' )
+	  {
+		$noplugin = 1;
+	  }
 	  elsif ( $key eq 'pwmech' )
 	  {
 		$pwmech = $value;
@@ -80,6 +85,7 @@ else
 	                      "uid=s",
 	                      "pwmech=s",
 	                      "mustchange",
+	                      "noplugin",
 	                      "sso"
 	                      );
 	
@@ -108,6 +114,10 @@ else
 	{
 	      $sso=1;
 	}
+	if ( defined($options{'noplugin'}) )
+	{
+	      $noplugin=1;
+	}
 	if ( defined($options{'mustchange'}) )
 	{
 	      $mustchange=1;
@@ -132,6 +142,7 @@ sub usage {
         print "  --pwmech       the required pasword hash mechanismus\n";
         print "  --sso          shows if single-sing-on is required\n";
         print "  --mustchange   shows if the user have to change the pasword\n\n";
+        print "  --noplugin     do not start the plugins\n\n";
         print "Otherwise you can pipe the attributes on STDIN (it is safer). In this case use '-' as option:\n\n";
         print "echo \"uid bigboss\n";
         print "userpassword Very#q%&Secur\n";
@@ -180,16 +191,10 @@ if( $dn eq "" )
      $dn = "uid=root,".$oss->{SYSCONFIG}->{USER_BASE};
   }
 }
-if( ! $oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech) )
+if( ! $oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech,$noplugin) )
 {
         print $oss->{ERROR}->{text}."\n";
         exit 1;
 }
 
-#Starting the plugins
-my $TMP = "$dn
-uid $uid
-userpassword $userpassword";
-my $TMPFILE = write_tmp_file($TMP);
-system("/usr/share/oss/plugins/plugin_handler.sh modify_user $TMPFILE");
 $oss->destroy();

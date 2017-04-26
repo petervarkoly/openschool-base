@@ -2803,7 +2803,7 @@ EXAMPLE:
 
 =cut
 
-sub set_password($$$$$)
+sub set_password
 {
     my $this = shift;
     my $dn         = shift;
@@ -2811,6 +2811,7 @@ sub set_password($$$$$)
     my $mustchange = shift;
     my $sso        = shift;
     my $pwmech     = shift;
+    my $noplugin   = shift || 0;
     my $pwcheck    = check_pw($password);    
     if( "" ne $pwcheck  )
     {
@@ -2888,8 +2889,10 @@ sub set_password($$$$$)
 	   return 0;
 	}
     }
-    my $TMPFILE = write_tmp_file("$dn\nuserpassword $password");
-    system("/usr/share/oss/plugins/plugin_handler.sh modify_user $TMPFILE &> /dev/null");
+    if( !$noplugin ) {
+      my $TMPFILE = write_tmp_file("$dn\nuserpassword $password");
+      system("/usr/share/oss/plugins/plugin_handler.sh modify_user $TMPFILE &> /dev/null");
+    }
     return 1;
 
 }
