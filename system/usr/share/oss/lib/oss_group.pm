@@ -276,26 +276,28 @@ sub add($)
 		close(OUT);
 	}
     }
-    #Now we start the plugins
-    print "Create plugin attributes\n"  if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
-    my $attrs = '';
-    foreach my $i ( keys %{$GROUP} )
-    {
-        if( $GROUP->{$i} =~ /^ARRAY/ )
-        {
-            foreach my $j ( @{$GROUP->{$i}} )
-            {
-                $attrs .= $i.' '.$j."\n";
-            }
-        }
-        else
-        {
-            $attrs .= $i.' '.$GROUP->{$i}."\n";
-        }
+    if( !defined $this->{noplugin} ) {
+       #Now we start the plugins
+       print "Create plugin attributes\n"  if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
+       my $attrs = '';
+       foreach my $i ( keys %{$GROUP} )
+       {
+           if( $GROUP->{$i} =~ /^ARRAY/ )
+           {
+               foreach my $j ( @{$GROUP->{$i}} )
+               {
+                   $attrs .= $i.' '.$j."\n";
+               }
+           }
+           else
+           {
+               $attrs .= $i.' '.$GROUP->{$i}."\n";
+           }
+       }
+       print $attrs if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
+       my $TMPFILE = write_tmp_file($attrs);
+       system("/usr/share/oss/plugins/plugin_handler.sh add_group $TMPFILE &> /dev/null");
     }
-    print $attrs if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
-    my $TMPFILE = write_tmp_file($attrs);
-    system("/usr/share/oss/plugins/plugin_handler.sh add_group $TMPFILE &> /dev/null");
     return $GROUP->{dn};
 }
 
@@ -315,11 +317,13 @@ sub delete($)
     my $this = shift;
     my $dn = shift;
 
-    #First we start the plugins:
-    my $TMP = hash_to_text({ $dn , $this->get_group($dn)});
-    chomp $TMP;
-    my $TMPFILE = write_tmp_file($TMP);
-    system("/usr/share/oss/plugins/plugin_handler.sh del_group $TMPFILE &> /dev/null");
+    if( !defined $this->{noplugin} ) {
+       #First we start the plugins:
+       my $TMP = hash_to_text({ $dn , $this->get_group($dn)});
+       chomp $TMP;
+       my $TMPFILE = write_tmp_file($TMP);
+       system("/usr/share/oss/plugins/plugin_handler.sh del_group $TMPFILE &> /dev/null");
+    }
 
     my $cn          = get_name_of_dn($dn);
     my $gidnumber   = $this->get_attribute($dn,'gidnumber');
@@ -545,8 +549,10 @@ sub modify
     {
     	$this->add_user_to_group($_,$group->{dn});
     }
-    my $TMPFILE = write_tmp_file($attr);
-    system("/usr/share/oss/plugins/plugin_handler.sh modify_group $TMPFILE &> /dev/null");
+    if( !defined $this->{noplugin} ) {
+        my $TMPFILE = write_tmp_file($attr);
+        system("/usr/share/oss/plugins/plugin_handler.sh modify_group $TMPFILE &> /dev/null");
+    }
     return 1;
 }
 

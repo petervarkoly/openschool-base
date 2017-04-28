@@ -15,6 +15,7 @@ binmode STDIN, ':utf8';
 # Global variable
 my $connect    = { withIMAP => 1 };
 my $XML        = 1;
+my $noplugin   = 0;
 my $line       ='';
 my $plugin     = '';
 my $fquota     = '';
@@ -36,6 +37,7 @@ my $ChangeCN   = 0;
 while(my $param = shift)
 {
    $XML=0 if( $param =~ /text/i );
+   $noplugin=1 if( $param =~ /--noplugin/i );
 }
 
 while(<STDIN>)
@@ -168,7 +170,7 @@ foreach my $dn ( @dns )
    
     if( $userpassword ne '' )
     {
-	$oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech);
+	$oss->set_password($dn,$userpassword,$mustchange,$sso,$pwmech,1);
     } 
     #Now we make the changes in the group
     my @groups = ();
@@ -222,9 +224,11 @@ foreach my $dn ( @dns )
 
     print $oss->reply({ $dn => $oss->get_user($dn)});
 }
-#Starting the plugins
-my $TMPFILE = write_tmp_file($plugin);
-system("/usr/share/oss/plugins/plugin_handler.sh modify_user $TMPFILE");
 
+if( !$noplugin) {
+	#Starting the plugins
+	my $TMPFILE = write_tmp_file($plugin);
+	system("/usr/share/oss/plugins/plugin_handler.sh modify_user $TMPFILE");
+}
 $oss->destroy();
 exit;

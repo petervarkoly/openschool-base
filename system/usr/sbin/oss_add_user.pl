@@ -19,6 +19,7 @@ my $connect  = { withIMAP => 1 };
 while(my $param = shift)
 {
     if( $param =~ /text/i ) { $connect->{XML}=0; }
+    if( $param =~ /--noplugin/i ) { $connect->{noplugin}=1; }
 }
 
 while(<STDIN>)

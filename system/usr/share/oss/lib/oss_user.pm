@@ -499,26 +499,28 @@ sub add($)
     { # no plugin for machine accounts
         return $USER->{dn};
     }
-    #Now we start the plugins
-    print "Create plugin attributes\n"  if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
-    my $attrs = '';
-    foreach my $i ( keys %{$USER} )
-    {
-        if( $USER->{$i} =~ /^ARRAY/ )
-	{
-	    foreach my $j ( @{$USER->{$i}} )
-	    {
-	        $attrs .= $i.' '.$j."\n";
-	    }
-	}
-	else
-	{
-	    $attrs .= $i.' '.$USER->{$i}."\n";
-	}
+    if( !defined $this->{noplugin} ) {
+        #Now we start the plugins
+        print "Create plugin attributes\n"  if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
+        my $attrs = '';
+        foreach my $i ( keys %{$USER} )
+        {
+            if( $USER->{$i} =~ /^ARRAY/ )
+            {
+                foreach my $j ( @{$USER->{$i}} )
+                {
+                    $attrs .= $i.' '.$j."\n";
+                }
+            }
+            else
+            {
+                $attrs .= $i.' '.$USER->{$i}."\n";
+            }
+        }
+        print $attrs if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
+        my $TMPFILE = write_tmp_file($attrs);
+        system("/usr/share/oss/plugins/plugin_handler.sh add_user $TMPFILE &> /dev/null");
     }
-    print $attrs if( $this->{SYSCONFIG}->{SCHOOL_DEBUG} eq 'yes' );
-    my $TMPFILE = write_tmp_file($attrs);
-    system("/usr/share/oss/plugins/plugin_handler.sh add_user $TMPFILE &> /dev/null");
     return $USER->{dn};
 }
 
@@ -553,13 +555,15 @@ sub delete($)
     if( $school_base ne $this->{LDAP_BASE} )
     {
       $home_base = $this->get_school_config('SCHOOL_HOME_BASE',$school_base) || '/home';
-    }  
-    #First we start the plugins:
-    my @attrs = @userAttributes;
-    push @attrs, 'group';
-    my $TMP = hash_to_text({ $dn , $this->get_user($dn,\@attrs)}); chomp $TMP;
-    my $TMPFILE = write_tmp_file($TMP);
-    system("/usr/share/oss/plugins/plugin_handler.sh del_user $TMPFILE &> /dev/null");
+    }
+    if( !defined $this->{noplugin} ) {
+	#First we start the plugins:
+	my @attrs = @userAttributes;
+	push @attrs, 'group';
+	my $TMP = hash_to_text({ $dn , $this->get_user($dn,\@attrs)}); chomp $TMP;
+	my $TMPFILE = write_tmp_file($TMP);
+	system("/usr/share/oss/plugins/plugin_handler.sh del_user $TMPFILE &> /dev/null");
+    }
 
     if( defined $this->{IMAP} )
     {
