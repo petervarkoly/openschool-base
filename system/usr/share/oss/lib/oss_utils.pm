@@ -348,7 +348,7 @@ sub create_secure_pw {
 	}
     }
     $pw .= $SIGNS[int(rand(5))];
-    $pw .= int(rand(9))+1;
+    $pw .= int(rand(8))+2;
     for( my $i=0; $i < $lenght-$start; $i++)
     {
         my $i = int(rand(2));
@@ -358,6 +358,9 @@ sub create_secure_pw {
           $pw .= pack( "C", int(rand(25)+65) );
 	}
     }
+    #Il can be read very badly
+    $pw =~ s/I/G/g;
+    $pw =~ s/l/g/g;
     return $pw;
 }
 #-----------------------------------------------------------------------
