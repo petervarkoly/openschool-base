@@ -1362,7 +1362,7 @@ sub init_sysconfig
 
     if( defined $dn && $dn eq 'file')
     {
-      open( IN, "/etc/sysconfig/schoolserver" );
+      open( IN, "</etc/sysconfig/schoolserver" );
       while(<IN>){
         next if (/^#/);
         /([A-Z_]+)="(.*)"/;
@@ -1371,6 +1371,7 @@ sub init_sysconfig
           $this->{SYSCONFIG}->{$1}= $2;
         }
       }
+      close(IN);
     }
     else
     {
