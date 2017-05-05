@@ -1,9 +1,14 @@
 #!/bin/bash
-# Copyright (c) 2012 Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
+# Copyright (c) 2012-2017 Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
 if [ -z $1 ]
 then
         echo "Usage:
      $0  class|primary|workgroup"
 fi
-ldapsearch -x -LLL "(&(objectclass=schoolGroup)(grouptype=$1))" cn | grep cn: | sed 's/cn: //'
+if [ "$2" = "dn" ]
+then
+        ldapsearch -x -LLL "(&(objectclass=schoolGroup)(grouptype=$1))" dn | grep dn: | sed 's/dn: //'
+else
+        ldapsearch -x -LLL "(&(objectclass=schoolGroup)(grouptype=$1))" cn | grep cn: | sed 's/cn: //'
+fi
 
