@@ -1,8 +1,14 @@
 #!/bin/bash
-# Copyright (c) 2012 Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
+# Copyright (c) 2012-2017 Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
 role=$1;
 if [ -z $role ]
 then
     role='*'
 fi
-ldapsearch -x -LLL "(&(objectclass=schoolAccount)(role=$role))" uid | grep uid: | sed 's/uid: //'
+if [ "$2" = "dn" ]
+then
+        ldapsearch -x -LLL "(&(objectclass=schoolAccount)(role=$role))" dn | grep dn: | sed 's/dn: //'
+else
+        ldapsearch -x -LLL "(&(objectclass=schoolAccount)(role=$role))" uid | grep uid: | sed 's/uid: //'
+fi
+
