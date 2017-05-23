@@ -1224,6 +1224,12 @@ chmod 755 /home/profile/linux/pam_session
 #############################################
 # Initialize the system overview
 /usr/share/oss/tools/make_data_systemoverview.pl
+
+if [ ! -e /etc/ssl/certs/YaST-CA.pem ]
+then
+    cp /var/lib/CAM/YaST_Default_CA/cacert.pem /etc/ssl/certs/YaST-CA.pem
+    /usr/bin/c_rehash /etc/ssl/certs/
+fi
 ';
 #if ( $globals->{REG_CODE} =~ /([0-9A-F]{4}-[0-9A-F]{4})-([0-9A-F]{4}-[0-9A-F]{4})-[0-9A-F]{4}/ )
 #{ #This oss is registered
