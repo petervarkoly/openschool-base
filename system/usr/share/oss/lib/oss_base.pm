@@ -3751,7 +3751,7 @@ sub get_school_groups
 
 Delivers the lists of the groups of a school with theier descriptions.
 
-   my ($primaries, $classes, $workgroups) = $oss->get_school_groups_to_search();
+   my ($primaries, $classes, $workgroups, $helpers ) = $oss->get_school_groups_to_search();
 
 Delivers the lists of the those groups of a school with theier descriptions in which
 the user is member.
@@ -3774,9 +3774,11 @@ sub get_school_groups_to_search
     my @primary     = ();
     my @class       = ();
     my @group       = ();
+    my @helper      = ();
     my %pri         = ();
     my %cla         = ();
     my %gro         = ();
+    my %help        = ();
     my @mygroups    = $this->get_attribute($uDN,'memberOf');
 
     foreach my $p (@{$this->get_school_groups('primary')})
@@ -3798,6 +3800,13 @@ sub get_school_groups_to_search
 	next if( defined $uDN && ( defined $writerDN && $writer && $writerDN ne $uDN ) );
 	$gro{$desc} = $p;
     }
+    foreach my $p (@{$this->get_school_groups('helper')})
+    {
+        my $desc = $this->get_attribute($p,'description') || $this->get_attribute($p,'cn');
+        my $writerDN = $this->get_attribute($p,'writerDN');
+        next if( defined $uDN && ( defined $writerDN && $writer && $writerDN ne $uDN ) );
+        $help{$desc} = $p;
+    }
     foreach my $desc ( sort {uc($a) cmp uc($b)} keys %pri )
     {
 	push @primary,  [ $pri{$desc}, $desc ];
@@ -3810,7 +3819,11 @@ sub get_school_groups_to_search
     {
 	push @group,  [ $gro{$desc}, $desc ];
     }
-    return (\@primary, \@class, \@group );
+    foreach my $desc ( sort {uc($a) cmp uc($b)} keys %help )
+    {
+        push @helper,  [ $help{$desc}, $desc ];
+    }
+    return (\@primary, \@class, \@group, \@helper );
 }
 #-----------------------------------------------------------------------
 
