@@ -30,8 +30,9 @@ echo $$ > /var/adm/oss/BackupRunning
 
 function TheEnd(){
 	rm /var/adm/oss/BackupRunning
+	echo $DATE > /var/adm/backup/LAST_BACKUP
 	if [ "$2" ]; then
-		LOG $2;
+		LOG "$2 $1";
 	fi
 	exit $1
 }
@@ -287,7 +288,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
             cp $BACKUP_DIR/openexchange.gz $SCHOOL_BACKUP_FULL_DIR/openexchange.gz    
             rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/srv/www/oss/openxchange/var/ /srv/www/oss/openxchange/var/ $SCHOOL_BACKUP_FULL_DIR/srv/www/oss/openxchange/var/
 	    if [ $? != 0 ]; then
-		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+		LOG "   CAN_NOT_MAKE_BACKUP"
 	    fi  
         fi
         if [ "$SCHOOL_USE_EGROUPWARE" = "yes" ]; then
@@ -295,7 +296,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
             mysqldump $MYSQLDUMP_OPTIONS egroupware | gzip > $BACKUP_DIR/egroupware.gz    
             cp $BACKUP_DIR/egroupware.gz $SCHOOL_BACKUP_FULL_DIR/egroupware.gz    
 	    if [ $? != 0 ]; then
-		TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+		LOG "  CAN_NOT_MAKE_BACKUP"
 	    fi  
         fi
 	if [ "$SCHOOL_BACKUP_JOOMLA" = "yes" ]; then
@@ -305,9 +306,10 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 		cp $BACKUP_DIR/joomla.gz $SCHOOL_BACKUP_FULL_DIR/joomla.gz
 	  fi
 	fi
+	LOG "Syncing LMD Database" 
         mysqldump $MYSQLDUMP_OPTIONS lmd | gzip > $BACKUP_DIR/lmd.gz    
 	if [ $? != 0 ]; then
-	    TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    LOG " CAN_NOT_MAKE_BACKUP"
 	fi  
     fi
 
@@ -323,7 +325,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     		 /srv/www/moodledata/ \
     		 $SCHOOL_BACKUP_FULL_DIR/srv/www/moodledata/
 	         if [ $? != 0 ]; then
-	             TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    		LOG " CAN_NOT_MAKE_BACKUP"
 	         fi  
     	elif [ "$SCHOOL_BACKUP_HOME" != "yes" ]; then
     		test -d $SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/ || mkdir -p $SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/
@@ -332,7 +334,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
     		 /home/groups/moodledata/ \
     		$SCHOOL_BACKUP_FULL_DIR/home/groups/moodledata/
 	         if [ $? != 0 ]; then
-	             TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    		LOG " CAN_NOT_MAKE_BACKUP"
 	         fi  
     	fi # otherwise moodledata is included in /home
       fi
@@ -345,7 +347,7 @@ if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
             mkdir -p $BACKUP_DIR/$i
             rsync $RSYNCPARS -b --backup-dir=$BACKUP_DIR/$i /$i $SCHOOL_BACKUP_FULL_DIR/$i
 	    if [ $? != 0 ]; then
-	        TheEnd 6 "CAN_NOT_MAKE_BACKUP"
+	    	LOG " CAN_NOT_MAKE_BACKUP"
 	    fi  
         done    
     fi

@@ -657,8 +657,13 @@ foreach my $act_line (@lines)
        $ERROR = 1;
     }
 
-    # Do this user exist?
+    # uid must be lower case
+    if( defined  $USER{'uid'} and  $USER{'uid'} eq "" )
+    {
+               $USER{'uid'} = lc($USER{'uid'});
+    }
 
+    # Do this user exist?
     my $key = uc($USER{'sn'}.'-'.$USER{'givenname'}.'-'.$USER{'birthday'});
     if( $identifier ne 'sn-gn-bd' )
     {
