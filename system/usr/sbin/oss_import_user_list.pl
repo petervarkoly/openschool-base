@@ -658,7 +658,7 @@ foreach my $act_line (@lines)
     }
 
     # uid must be lower case
-    if( defined  $USER{'uid'} and  $USER{'uid'} eq "" )
+    if( defined  $USER{'uid'} and  $USER{'uid'} ne "" )
     {
                $USER{'uid'} = lc($USER{'uid'});
     }
