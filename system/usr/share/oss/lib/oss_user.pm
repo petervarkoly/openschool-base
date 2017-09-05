@@ -505,7 +505,7 @@ sub add($)
         my $attrs = '';
         foreach my $i ( keys %{$USER} )
         {
-            if( $USER->{$i} =~ /^ARRAY/ )
+            if( ref $user->{$i} eq 'ARRAY' )
             {
                 foreach my $j ( @{$USER->{$i}} )
                 {
