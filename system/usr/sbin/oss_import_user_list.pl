@@ -792,7 +792,7 @@ foreach my $act_line (@lines)
         else
         {
 	    my $err = check_pw($USER{'userpassword'});
-	    if( $err != "" )
+	    if( $err ne "" )
 	    {
                 $ERRORS .= "<font color='red'>".__('incorrect_passwd').$USER{'userpassword'}."</font><br>\n";
                 $ERROR = 1;
@@ -875,7 +875,7 @@ foreach my $act_line (@lines)
         my $line = "";
         foreach my $h (sort {$a <=> $b} (keys %$header))
         {
-          if( $USER{$header->{$h}} =~ /ARRAY/ )
+          if( ref $USER{$header->{$h}} eq 'ARRAY' )
           {
              # This is a class or a group
              my @t = ();
