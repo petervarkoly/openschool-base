@@ -72,7 +72,12 @@ if ( defined($options{'wlan'}) ){
 if ( defined($options{'debug'}) ){
 	$DEBUG = 1;
 }
-
+if ( defined($options{'addws'}) ){
+        $ADDWS = 1;
+}
+if ( defined($options{'dma'}) ){
+        $ADDMA = 1;
+}
 
 open IN,"<$file" or die("Can not open file '$file'");
 my $head = <IN>;
