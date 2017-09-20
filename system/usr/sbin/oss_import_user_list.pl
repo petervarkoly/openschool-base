@@ -515,9 +515,10 @@ foreach my $act_line (@lines)
       {  #It may be more then one classes
          foreach my $c (split /\s+/,$line[$h])
          {
+	    $c = uc($c);
             $ALLCLASSES{$c} = 1;
-            push @classes, uc($c);
-            push @{$USER{'class'}}, uc($c);
+            push @classes, $c;
+            push @{$USER{'class'}}, $c;
          }
       }
       elsif( $header->{$h} eq "group" )
@@ -711,7 +712,7 @@ foreach my $act_line (@lines)
 	    if( defined $USER{'userpassword'} and $USER{'userpassword'} ne "*" and $USER{'userpassword'} ne "" )
 	    {
 	      my $err = check_pw($USER{'userpassword'});
-	      if( $err != "" )
+	      if( $err ne "" )
 	      {
 	          $ERRORS .= "<font color='red'>".__('incorrect_passwd').$USER{'userpassword'}."</font>";
 	          $ERROR = 1;
