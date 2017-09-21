@@ -1696,7 +1696,9 @@ sub add_user_to_group($$)
 
     if( $this->is_class($gdn) && $this->is_student($udn) && ( $this->{SYSCONFIG}->{SCHOOL_TEACHER_OBSERV_HOME} eq 'yes' )  )
     {
-    	system("ln -s ".$this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/students/$uid  ".$this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/classes/$cn/$uid");
+	if( ! -e $this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/classes/$cn/$uid" ) {
+    		system("ln -s ".$this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/students/$uid  ".$this->{SYSCONFIG}->{SCHOOL_HOME_BASE}."/classes/$cn/$uid");
+	}
     }
     $mesg = $this->{LDAP}->modify($gdn, add=> { member    => $udn }); 
     if( $mesg->code() ){
