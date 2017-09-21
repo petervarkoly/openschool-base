@@ -11,8 +11,8 @@ my $result = GetOptions(\%options,
 		);
 sub usage
 {
-	print   'Usage: /usr/share/oss/tools/ConvertImportSchild-NRW.pl [OPTION]'."\n".
-		'With this script we can convert the "Schild-NRW" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n\n".
+	print   'Usage: /usr/share/oss/tools/ConvertImportASV-Lehrer.pl [OPTION]'."\n".
+		'With this script we can convert the "ASV-Lehrer" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n\n".
 		'Options :'."\n".
 		'Mandatory parameters :'."\n".
 		'	     --convert_import_file  File path.'."\n".
@@ -27,9 +27,9 @@ if ( defined($options{'help'}) ){
 if( defined($options{'description'}) )
 {
 	print   'NAME:'."\n".
-		'	ConvertImportSchild-NRW.pl'."\n".
+		'	ConvertImportASV-Lehrer.pl'."\n".
 		'DESCRIPTION:'."\n".
-		'	With this script we can convert the "Schild-NRW" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n".
+		'	With this script we can convert the "ASV-Lehrer" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n".
 		'PARAMETERS:'."\n".
 		'	MANDATORY:'."\n".
 		'		     --convert_import_file : File path.(type=string)'."\n".
