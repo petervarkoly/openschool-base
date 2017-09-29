@@ -1219,7 +1219,7 @@ sub check_domain_name_for_proxy
         my @bad_domain_list;
 
         foreach my $domain_name (@$domain_list){
-                if($domain_name =~ /^(?:[a-zA-Z0-9]+(?:\-*[a-zA-Z0-9])*\.)+[a-zA-Z]{2,6}$/){
+                if($domain_name =~ /^(?:[a-zA-Z0-9]+(?:\-*[a-zA-Z0-9])*\.)+[a-zA-Z]{2,}$/){
 			if($domain_name =~ /^((www[0-9]{0,10}\.)|(ftp[0-9]{0,10}\.))([\-0-9a-zA-Z]+\.)+([a-zA-Z]+)$/){
                                 $domain_name =~ s/www[0-9]{0,10}.//;
                                 $domain_name =~ s/ftp[0-9]{0,10}.//;
@@ -1227,7 +1227,7 @@ sub check_domain_name_for_proxy
                         }else{
                                 push @good_doomain_list, $domain_name;
                         }
-		}elsif($with_dot && $domain_name =~ /^\.(?:[a-zA-Z0-9]+(?:\-*[a-zA-Z0-9])*\.)+[a-zA-Z]{2,6}$/){
+		}elsif($with_dot && $domain_name =~ /^\.(?:[a-zA-Z0-9]+(?:\-*[a-zA-Z0-9])*\.)+[a-zA-Z]{2,}$/){
 			push @good_doomain_list, $domain_name;
                 }else{
                         push @bad_domain_list, $domain_name;
