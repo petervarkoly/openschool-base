@@ -75,7 +75,7 @@ if ( defined($options{'debug'}) ){
 if ( defined($options{'addws'}) ){
         $ADDWS = 1;
 }
-if ( defined($options{'dma'}) ){
+if ( defined($options{'addma'}) ){
         $ADDMA = 1;
 }
 
