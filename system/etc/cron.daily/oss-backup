@@ -93,9 +93,17 @@ if [ ! -f $CONFIG ]; then
 	TheEnd 1
 fi
 
+# Read the configuration
 . $CONFIG
 if [ -z "$SCHOOL_BACKUP_DAYS" ]; then
         SCHOOL_BACKUP_DAYS="1234567"
+fi
+if [ "$SCHOOL_BACKUP_CAN_NOT_SAVE_ACL" = "yes" ]; then
+	RSYNCPARS=" -a --delete "	
+fi
+
+if [ "$SCHOOL_BACKUP_CAN_NOT_SAVE_OWNER" = "yes" ]; then
+	RSYNCPARS=" -r --delete "	
 fi
 
 if [ "${SCHOOL_BACKUP_DAYS/$DAY_OF_WEEK/}" = $SCHOOL_BACKUP_DAYS -a "$FORCE" != "yes" ]; then
@@ -108,9 +116,6 @@ MAILADDR="admin@$SCHOOL_DOMAIN"
 if [ "$SCHOOL_BACKUP" = "yes" ] || [ "$FORCE" = "yes" ] ; then
 	LOG "********** Starting Backup **********"
 
-    if [ "$SCHOOL_BACKUP_CAN_NOT_SAVE_ACL" = "yes" ]; then
-	RSYNCPARS=" -a --delete "	
-    fi
     if [ "$SCHOOL_BACKUP_START_CMD" ]; then
 	eval $SCHOOL_BACKUP_START_CMD
     fi
