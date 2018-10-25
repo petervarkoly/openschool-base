@@ -11,7 +11,7 @@ my $result = GetOptions(\%options,
 		);
 sub usage
 {
-	print   'Usage: /usr/share/oss/tools/ConvertImportASV-Schüler.pl [OPTION]'."\n".
+	print   'Usage: /usr/share/oss/tools/ConvertImportASV-Schueler.pl [OPTION]'."\n".
 		'With this script we can convert the "ASV-Schüler" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n\n".
 		'Options :'."\n".
 		'Mandatory parameters :'."\n".
@@ -27,7 +27,7 @@ if ( defined($options{'help'}) ){
 if( defined($options{'description'}) )
 {
 	print   'NAME:'."\n".
-		'	ConvertImportASV-Schüler.pl'."\n".
+		'	ConvertImportASV-Schueler.pl'."\n".
 		'DESCRIPTION:'."\n".
 		'	With this script we can convert the "ASV-Schüler" file type into "CSV" file type. (The output results of this script will be in the "/tmp/userlist.txt" file.)'."\n".
 		'PARAMETERS:'."\n".
