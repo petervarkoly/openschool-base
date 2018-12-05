@@ -1,9 +1,9 @@
 # spec file for package openschool-base (@VERSION@)
-# Copyright (c) 2012-2015 Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
+# Copyright (c) Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
 #
 Name:         openschool-base
-License:      Commercial
-Vendor:       EXTIS GmbH, Uttenreuth, Germany
+License:      GPL-3.0+
+Vendor:       Dipl-Ing. Peter Varkoly, Nuremberg, Germany
 Distribution: SLE11
 Group:        Productivity/
 Autoreqprov:  on
