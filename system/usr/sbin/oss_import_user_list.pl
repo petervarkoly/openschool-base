@@ -345,12 +345,22 @@ foreach my $dn (@{$oss->get_school_groups('workgroup')} )
     push @GROUPS, get_name_of_dn($dn);
 }
 # Get the list of the users
-$result = $oss->{LDAP}->search (  # perform a search
+if( $identifier ne 'sn-gn-bd' ){
+   $result = $oss->{LDAP}->search (  # perform a search
                        base   => $oss->{SYSCONFIG}->{USER_BASE},
                        scope  => "one",
                        filter => "(&(role=$role*)(uid=*))",
-                       attrs  => ['uid','sn', 'givenname', 'birthday']
+                       attrs  => ['uid','sn', 'givenname', 'birthday',$identifier]
                       );
+} else {
+    $result = $oss->{LDAP}->search (  # perform a search
+                        base   => $oss->{SYSCONFIG}->{USER_BASE},
+                        scope  => "one",
+                        filter => "(&(role=$role*)(uid=*))",
+                        attrs  => ['uid','sn', 'givenname', 'birthday']
+                       );
+}
+
 foreach my $entry ($result->all_entries)
 {
    my $i = $entry->get_value('uid');

@@ -96,6 +96,15 @@ if( lc($mv_profil) eq "yes" )
 	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Desktop" /d "Z:\WinDesktop" /f '."\r\n".
 	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Video" /d "Z:\Videos" /f '."\r\n".
 	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Music" /d "Z:\Music" /f '."\r\n";
+} else  {
+	$script .= 'REM Modify registries to move profil to home'."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Personal" /d "%USERPROFILE%\Documents" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "{374DE290-123F-4565-9164-39C4925E467B}" /d "%USERPROFILE%\Downloads" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Favorites" /d "%USERPROFILE%\Favorites" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Pictures" /d "%USERPROFILE%\Pictures" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "Desktop" /d "%USERPROFILE%\Desktop" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Video" /d "%USERPROFILE%\Videos" /f '."\r\n".
+	'reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /t REG_EXPAND_SZ /v "My Music" /d "%USERPROFILE%\Music" /f '."\r\n";
 }
 
 #Clean up printers only if is not forbidden.
@@ -107,7 +116,7 @@ if( lc($cleanup) ne "no" )
 	'echo ^("Select * from Win32_Printer Where Network = TRUE"^)'."\r\n".
 	'echo For Each objPrinter in colInstalledPrinters'."\r\n".
 	'echo objPrinter.Delete_'."\r\n".
-	'echo Next) > Z:\RemovePrinters.vbs'."\r\n".
+	'echo Next^) > Z:\RemovePrinters.vbs'."\r\n".
 	'Z:\RemovePrinters.vbs'."\r\n".
 	'del /Q /S Z:\RemovePrinters.vbs'."\r\n";
 }

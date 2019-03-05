@@ -8,16 +8,6 @@
     copytruncate
 }
 
-/var/log/virus_scan_logs/*.log {
-    compress
-    dateext
-    maxage 120
-    rotate 99
-    size=+1024k
-    missingok
-    copytruncate
-}
-
 /var/log/apache2/admin*log  /var/log/apache2/schoolserver*log {
     compress
     dateext

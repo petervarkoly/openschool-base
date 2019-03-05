@@ -336,7 +336,7 @@ sub create_secure_pw {
     my $lenght = shift || 10;
     $lenght    = $lenght-2;
     my $pw     = "";
-    my @SIGNS  = ( '#', '+', '$','&','!');
+    my @SIGNS  = ( '#', '+', '$','!');
     my $start  = int(rand($lenght/2))+3;
     for( my $i=0; $i < $start; $i++)
     {
