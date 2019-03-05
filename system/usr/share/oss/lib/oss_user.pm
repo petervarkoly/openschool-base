@@ -598,8 +598,9 @@ sub delete($)
     }
 
     sleep(1);
-    #Now we deletes the files created by the user;
-    system("nice -n 19 /usr/share/oss/tools/oss_del_user_files --uid=$uid --uidnumber=$uidnumber --startpath=$home_base --homedir=$homedir");
+    #Now we do not start deleting the files created by the user but creating a job file for this reason.
+    my $job = `uuidgen`; chomp $job;
+    system("echo 'nice -n 19 /usr/share/oss/tools/oss_del_user_files --uid=$uid --uidnumber=$uidnumber --startpath=$home_base --homedir=$homedir' > /var/adm/oss/todo/$job");
 
     #Now we delets the LDAP-entries of the user
     $this->delete_ldap_children($dn);

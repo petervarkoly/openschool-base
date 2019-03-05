@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for i in /var/adm/oss/todo/*
+do
+   if [ -f "$i" ]; then
+      chmod 755 $i
+      $i
+      rm $i
+   fi
+done
+
