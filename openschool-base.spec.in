@@ -2,8 +2,8 @@
 # Copyright (c) Peter Varkoly <peter@varkoly.de> Nürnberg, Germany.  All rights reserved.
 #
 Name:         openschool-base
-License:      GPL-3.0+
-Vendor:       Dipl-Ing. Peter Varkoly, Nuremberg, Germany
+License:      Commercial
+Vendor:       EXTIS GmbH, Uttenreuth, Germany
 Distribution: SLE11
 Group:        Productivity/
 Autoreqprov:  on
