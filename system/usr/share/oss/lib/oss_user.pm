@@ -876,7 +876,7 @@ sub make_delete_user_webdavshare
 				"        AuthName \"webdav\"\n".
 				"        AuthBasicProvider ldap\n".
 				"        AuthzLDAPAuthoritative on\n".
-				"        AuthLDAPURL ldap://localhost/$this->{LDAP_BASE}?uid??(objectclass=schoolAccount)\n".
+				"        AuthLDAPURL ldap://ldap/$this->{LDAP_BASE}?uid??(objectclass=schoolAccount)\n".
 				"        Require user $user_uid\n".
 				"</Directory>\n".
 				"</IfModule>\n";

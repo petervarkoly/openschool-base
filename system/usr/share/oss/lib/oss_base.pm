@@ -1958,9 +1958,8 @@ sub get_fquota($)
     my $uid  = $this->get_attribute($dn,'uidnumber');
     my $dev  = Quota::getqcarg("/home");
     #my ($q_used,$q_val,$block_hard, $block_timelimit,$inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query($dev ,$uid,0);
-    my $quota= `/usr/bin/quota -l -w -u $uid | grep $dev`; chomp $quota;
-    $quota =~ s/^.*$dev/$dev/g;
-    my ($q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
+    my $quota= `/usr/bin/quota -l -w -u $uid | tail -n 1`; chomp $quota;
+    my ($tmp,$q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
     if( defined $q_val )
     {
       $q_val = $q_val / 1024;
@@ -3106,9 +3105,8 @@ sub get_fquota_group($)
     my $gid  = $this->get_attribute($dn,'gidnumber');
     my $dev  = Quota::getqcarg("/home/groups");
     # my ($q_used,$q_val,$block_hard, $block_timelimit,$inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query($dev ,$gid,1);
-    my $quota= `/usr/bin/quota -l -w -g $gid | grep $dev`; chomp $quota;
-    $quota =~ s/^.*$dev/$dev/g;
-    my ($q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
+    my $quota= `/usr/bin/quota -l -w -g $gid | tail -n 1`; chomp $quota;
+    my ($tmp,$q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
 
     if( defined $q_val )
     {
