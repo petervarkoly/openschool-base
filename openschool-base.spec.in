@@ -187,6 +187,9 @@ exit 0
 /var/lib/samba/netlogon
 /var/adm/fillup-templates/sysconfig.schoolserver
 
+%dir /var/adm/oss
+%dir /var/adm/oss/todo
+
 %dir /usr/share/cups
 %dir /usr/share/cups/drivers
 
