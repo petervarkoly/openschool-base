@@ -21,7 +21,8 @@ install:
 		  cd $$i; \
 		  make install DESTDIR=$(DESTDIR) SHARE=$(SHARE) PRODNAME=$(PRODNAME); \
 		  cd .. ;\
-		done  
+		done
+		mkdir -p $(DESTDIR)/var/adm/oss/todo
 
 dist:
 		if [ -e $(PACKAGE) ] ;  then rm -rf $(PACKAGE) ; fi   
