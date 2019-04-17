@@ -1951,26 +1951,25 @@ EXAMPLE:
 
 =cut
 
-sub get_fquota($)
-{
+sub get_fquota($
     my $this = shift;
     my $dn   = shift;
     my $uid  = $this->get_attribute($dn,'uidnumber');
     my $dev  = Quota::getqcarg("/home");
     #my ($q_used,$q_val,$block_hard, $block_timelimit,$inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query($dev ,$uid,0);
     my $quota= `/usr/bin/quota -l -w -u $uid | tail -n 1`; chomp $quota;
-    my ($tmp,$q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
+    my ($q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
     if( defined $q_val )
     {
-      $q_val = $q_val / 1024;
+      $q_val = sprintf("%d", $q_val / 1024);
     }
     else
     {
       $q_val = 0;
     }
-    if( defined $q_used && $q_val )
+    if( defined $q_used )
     {
-      $q_used = $q_used / 1024;
+      $q_used = sprintf("%.2f", $q_used / 1024);
     }
     else
     {
