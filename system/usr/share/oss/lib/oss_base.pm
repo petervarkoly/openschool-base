@@ -1951,7 +1951,8 @@ EXAMPLE:
 
 =cut
 
-sub get_fquota($
+sub get_fquota($)
+{
     my $this = shift;
     my $dn   = shift;
     my $uid  = $this->get_attribute($dn,'uidnumber');
