@@ -84,6 +84,7 @@ then
     if [ -e /etc/sysconfig/schoolserver ]
     then
     	echo "Executing Update Scripts"
+	sed -i 's/# solver.allowVendorChange =.*/solver.allowVendorChange = true/' /etc/zypp/zypp.conf
     	mkdir -p /var/adm/oss
     	mkdir -p /var/log/oss-update
 	UV=$( echo %{version} | sed -r 's/(...)../\1/' )
