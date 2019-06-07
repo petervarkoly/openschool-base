@@ -1958,7 +1958,7 @@ sub get_fquota($)
     my $uid  = $this->get_attribute($dn,'uidnumber');
     my $dev  = Quota::getqcarg("/home");
     #my ($q_used,$q_val,$block_hard, $block_timelimit,$inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query($dev ,$uid,0);
-    my $quota= `/usr/bin/quota -l -w -u $uid | tail -n 1`; chomp $quota;
+    my $quota= `/usr/bin/quota -l -w -u $uid | tail -n 1`; chomp $quota; $quota =~ s/^\s+//;
     my ($q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
     if( defined $q_val )
     {
@@ -2919,8 +2919,7 @@ sub set_fquota
     
     my $uid     = $this->get_attribute($dn,'uidnumber');
     my $dev     = Quota::getqcarg($fsystem);
-    $fquota     *= 1024;
-    system("/usr/sbin/setquota -u $uid $fquota $fquota 0 0 /home");
+    system("/usr/sbin/oss_set_quota.sh $uid $fquota");
 #    Quota::setqlim($dev, $uid, $fquota,$fquota, 0, 0, 0, 0);
 
 }
