@@ -98,7 +98,7 @@ sub post_file
 		$command .= "chmod -R 700 $profile; chown -R ".$attributes->{uidnumber}->[0].':'.$attributes->{gidnumber}->[0]." $profile;";
 		system($command);
 	}
-	elsif( $clear_export )
+	elsif( $clear_export && !$this->is_teacher($dn) )
 	{
 	    system("test -e $Export && rm -rf $Export; test -e $Import && rm -rf $Import;")
 	}
@@ -152,7 +152,7 @@ sub collect_file
 	      $command .= "cp '$t' '$target/$uid-$1';\n";
 	   }
 	}
-	if( $clear_export )
+	if( $clear_export && !$this->is_teacher($dn) )
 	{
 	   $command .= "rm -r $home/Export/* ;\n";
 	}
