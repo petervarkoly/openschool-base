@@ -5,6 +5,6 @@ if [ "$1" ]; then
 else
     U=$UID
 fi
-DEV=$(mount | grep /home | gawk '{ print $1 }')
+DEV=$(mount | grep '/home ' | gawk '{ print $1 }')
 quota -wsl $U | grep $DEV | gawk  '{ print $2 " " $3 }' | sed s/\*//
 
