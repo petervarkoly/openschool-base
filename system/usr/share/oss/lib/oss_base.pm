@@ -3104,8 +3104,8 @@ sub get_fquota_group($)
     my $gid  = $this->get_attribute($dn,'gidnumber');
     my $dev  = Quota::getqcarg("/home/groups");
     # my ($q_used,$q_val,$block_hard, $block_timelimit,$inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query($dev ,$gid,1);
-    my $quota= `/usr/bin/quota -l -w -g $gid | tail -n 1`; chomp $quota;
-    my ($tmp,$q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
+    my $quota= `/usr/bin/quota -l -w -g $gid | tail -n 1`; chomp $quota; $quota =~ s/^\s+//;
+    my ($q_dev,$q_used,$q_val,$q_rest) = split /\s+/, $quota;
 
     if( defined $q_val )
     {
