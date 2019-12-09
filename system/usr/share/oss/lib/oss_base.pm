@@ -1688,6 +1688,9 @@ sub add_user_to_group($$)
     {
     	return 0;
     }
+    if( $gdn !~ /^cn=/ ) {
+        return 0;
+    }
     my $mesg = undef;
 
     my $gidnumber   = $this->get_attribute($gdn,'gidnumber');
@@ -1812,6 +1815,9 @@ sub delete_user_from_group($$)
     my $this = shift;
     my $udn  = shift;
     my $gdn  = shift;
+    if( $gdn !~ /^cn=/ ) {
+        return 0;
+    }
 
     my $gidnumber   = $this->get_attribute($gdn,'gidnumber');
     my $uid         = get_name_of_dn($udn);
